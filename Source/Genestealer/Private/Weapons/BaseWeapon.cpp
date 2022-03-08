@@ -63,7 +63,7 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	DetermineWeaponState();
 	if (LastWeapon)
 	{
-		const float Duration = PlayWeaponAnimation(GetWeaponData().EquipAnim);
+		const float Duration = PlayWeaponAnimation(EquipAnim);
 		if (Duration <= 0.0f)
 		{
 			OnEquipFinished();
@@ -77,7 +77,7 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 
 	if (OwningPawn && OwningPawn->IsPlayerControlled())
 	{
-		PlayWeaponSound(GetWeaponData().EquipSound);
+		PlayWeaponSound(EquipSound);
 	}
 	BroadcastAmmoUsage();
 }
@@ -109,7 +109,7 @@ void ABaseWeapon::OnUnEquip()
 	StopFire();
 	if (bPendingReload)
 	{
-		StopWeaponAnimation(GetWeaponData().ReloadAnim);
+		StopWeaponAnimation(ReloadAnim);
 		bPendingReload = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
@@ -118,7 +118,7 @@ void ABaseWeapon::OnUnEquip()
 
 	if (bPendingEquip)
 	{
-		StopWeaponAnimation(GetWeaponData().EquipAnim);
+		StopWeaponAnimation(EquipAnim);
 		bPendingEquip = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
@@ -132,17 +132,17 @@ void ABaseWeapon::StartReload()
 	{
 		bPendingReload = true;
 		DetermineWeaponState();
-		float AnimDuration = PlayWeaponAnimation(GetWeaponData().ReloadAnim);	
+		float AnimDuration = PlayWeaponAnimation(ReloadAnim);	
 		if (AnimDuration <= 0.0f)
 		{
-			AnimDuration = GetWeaponData().ReloadDurationIfNoAnim;
+			AnimDuration = ReloadDurationIfNoAnim;
 		}
 		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseWeapon::StopReload, AnimDuration, false);
 		GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		
 		if (OwningPawn)
 		{
-			PlayWeaponSound(GetWeaponData().ReloadSound);
+			PlayWeaponSound(ReloadSound);
 		}
 	}
 }
@@ -153,7 +153,7 @@ void ABaseWeapon::StopReload()
 	{
 		bPendingReload = false;
 		DetermineWeaponState();
-		StopWeaponAnimation(GetWeaponData().ReloadAnim);
+		StopWeaponAnimation(ReloadAnim);
 		BroadcastAmmoUsage();
 	}
 }
@@ -236,7 +236,7 @@ void ABaseWeapon::HandleFiring()
 	{
 		if (GetCurrentAmmo() == 0 && !bRefiring)
 		{
-			PlayWeaponSound(GetWeaponData().OutOfAmmoSound);
+			PlayWeaponSound(OutOfAmmoSound);
 		}
 
 		if (BurstCounter > 0)
@@ -251,10 +251,10 @@ void ABaseWeapon::HandleFiring()
 		{
 			StartReload();
 		}
-		bRefiring = (CurrentState == EWeaponState::Firing && GetWeaponData().TimeBetweenShots > 0.0f);
+		bRefiring = (CurrentState == EWeaponState::Firing && TimeBetweenShots > 0.0f);
 		if (bRefiring)
 		{
-			GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, GetWeaponData().TimeBetweenShots, false);
+			GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, TimeBetweenShots, false);
 		}
 	}
 
@@ -264,9 +264,9 @@ void ABaseWeapon::HandleFiring()
 void ABaseWeapon::OnBurstStarted()
 {
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && GetWeaponData().TimeBetweenShots > 0.0f && LastFireTime + GetWeaponData().TimeBetweenShots > GameTime)
+	if (LastFireTime > 0 && TimeBetweenShots > 0.0f && LastFireTime + TimeBetweenShots > GameTime)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, LastFireTime + GetWeaponData().TimeBetweenShots - GameTime, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, LastFireTime + TimeBetweenShots - GameTime, false);
 	}
 	else
 	{
@@ -284,7 +284,7 @@ void ABaseWeapon::OnBurstFinished()
 
 void ABaseWeapon::PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit)
 {
-	for(const TSubclassOf<AActor> CurrEffectClass : GetWeaponData().WeaponEffects)
+	for(const TSubclassOf<AActor> CurrEffectClass : WeaponEffects)
 	{
 		if(const TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, GetOwningPawn(), bShouldRotateHit))
 		{
@@ -306,7 +306,7 @@ void ABaseWeapon::ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool
 		PlayWeaponMissEffectFX(Impact, bShouldRotateHit);
 	} else
 	{
-		UEffectUtils::ApplyEffectsToHitResult(GetWeaponData().WeaponEffects, Impact, GetOwningPawn(), bShouldRotateHit);	
+		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, Impact, GetOwningPawn(), bShouldRotateHit);	
 	}
 }
 
@@ -409,9 +409,9 @@ void ABaseWeapon::PlayCameraShake()
 	if(ABasePlayerController* CurrCon = Cast<ABasePlayerController>(GetOwningPawn()->GetController()))
 	{
 		
-		if(CurrCon && GetWeaponData().FireCameraShake)
+		if(CurrCon && FireCameraShake)
 		{
-			CurrCon->ClientStartCameraShake(GetWeaponData().FireCameraShake, GetWeaponData().CameraShakeScale);
+			CurrCon->ClientStartCameraShake(FireCameraShake, CameraShakeScale);
 		}
 		
 	}

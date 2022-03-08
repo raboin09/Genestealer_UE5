@@ -8,54 +8,6 @@
 #include "BaseRangedWeapon.generated.h"
 
 class ABaseImpactEffect;
-USTRUCT(BlueprintType)
-struct FRangedWeaponData : public FWeaponData
-{
-	GENERATED_USTRUCT_BODY()
-
-	FRangedWeaponData()
-	{
-		FireFX = nullptr;
-		FireSound = nullptr;
-		FireLoopSound = nullptr;
-		FireFinishSound = nullptr;
-		FireAnim = nullptr;
-	}
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-    bool bInfiniteAmmo = true;
-    UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-    bool bInfiniteClip = false;
-    UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-    int32 MaxAmmo = 100;
-    UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-    int32 AmmoPerClip = 20;
-    UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-    int32 InitialClips = 4;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects")
-	FName MuzzleAttachPoint = "Muzzle";	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects")
-	UFXSystemAsset* FireFX;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects")
-	FRotator AltFireRotation;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects")
-	bool bLoopedMuzzleFX = true;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* FireSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* FireLoopSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	bool bLoopedFireSound = true;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* FireFinishSound;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	UAnimMontage* FireAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	bool bLoopedFireAnim = true;
-};
 
 UCLASS(Abstract, NotBlueprintable)
 class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon
@@ -77,26 +29,73 @@ protected:
 	virtual void BroadcastAmmoUsage() override;
 	virtual FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact);
 	
-	FVector GetMuzzleLocation();
-	FVector GetMuzzleDirection();
-	
-	virtual FVector GetAdjustedAim();
-    FVector GetCameraAim() const;
-    FVector GetCameraDamageStartLocation(const FVector& AimDir);
-    FHitResult WeaponTrace(const FVector& TraceFrom, const FVector& TraceTo, bool bSphereTrace = true) const;
+	FVector GetRaycastOriginLocation();
+	FVector GetRaycastOriginRotation();
+	FRotator GetRaycastSocketRotation() const;
+	FVector GetShootDirection(const FVector& AimDirection);
+	FVector GetAdjustedAim() const;
+	FVector GetCameraDamageStartLocation(const FVector& AimDirection);
+	FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact) const;
+	float GetCurrentSpread() const;
+	float GetCurrentFiringSpreadPercentage() const;
+	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const;
 
 	UFUNCTION(BlueprintImplementableEvent)
     void DebugFire(FVector Origin, FVector End, FColor ColorToDraw);
 
-	virtual FRangedWeaponData GetRangedWeaponData() PURE_VIRTUAL(ABaseRangedWeapon::GetRangedWeaponData, return FRangedWeaponData();)
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float TraceSpread = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float TraceRange = 10000.f;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	bool bRaycastFromWeapon = true;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float TargetingSpreadMod;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float FiringSpreadIncrement = 1.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float FiringSpreadMax = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	bool bInfiniteAmmo = true;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	bool bInfiniteClip = false;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	int32 MaxAmmo = 100;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	int32 AmmoPerClip = 20;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	int32 InitialClips = 4;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	FName RaycastSourceSocketName = "Muzzle";	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UFXSystemAsset* FireFXClass;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	bool bLoopedMuzzleFX = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* FireSound;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* FireLoopSound;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	bool bLoopedFireSound = true;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* FireFinishSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UAnimMontage* FireAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	bool bLoopedFireAnim = true;
 	
 private:
 
 	UPROPERTY(Transient)
-	UFXSystemComponent* FireFX;
+	UFXSystemComponent* FireFXSystem;
 	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
-
+	UPROPERTY(Transient)
+	float CurrentFiringSpread;
 	UPROPERTY(Transient)
 	int32 CurrentAmmo;
 	UPROPERTY(Transient)
@@ -108,9 +107,9 @@ private:
 public:
 	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return CurrentAmmo; }
 	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return CurrentAmmoInClip; }
-	FORCEINLINE virtual int32 GetMaxAmmo() override { return GetRangedWeaponData().MaxAmmo; }
-	FORCEINLINE virtual int32 GetAmmoPerClip() override { return GetRangedWeaponData().AmmoPerClip; }
-	FORCEINLINE virtual bool HasInfiniteAmmo() override { return GetRangedWeaponData().bInfiniteAmmo; }
-	FORCEINLINE virtual bool HasInfiniteClip() override { return GetRangedWeaponData().bInfiniteClip; }
+	FORCEINLINE virtual int32 GetMaxAmmo() override { return MaxAmmo; }
+	FORCEINLINE virtual int32 GetAmmoPerClip() override { return AmmoPerClip; }
+	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
+	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual void OnBurstFinished() override { Super::OnBurstFinished(); }
 };

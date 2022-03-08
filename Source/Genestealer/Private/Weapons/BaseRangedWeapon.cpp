@@ -8,7 +8,6 @@
 #include "Characters//BaseCharacter.h"
 #include "Components/AudioComponent.h"
 #include "Characters//InventoryComponent.h"
-#include "Core/BasePlayerController.h"
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,7 +17,7 @@
 bool ABaseRangedWeapon::CanReload()
 {
 	const bool bCanReload = OwningPawn != nullptr;
-	const bool bGotAmmo = ( GetCurrentAmmoInClip() < GetRangedWeaponData().AmmoPerClip) && (CurrentAmmo - CurrentAmmoInClip > 0 || HasInfiniteClip());
+	const bool bGotAmmo = ( GetCurrentAmmoInClip() < AmmoPerClip) && (CurrentAmmo - CurrentAmmoInClip > 0 || HasInfiniteClip());
 	const bool bStateOKToReload = ( ( CurrentState ==  EWeaponState::Idle ) || ( CurrentState == EWeaponState::Firing) );
 	return ( ( bCanReload == true ) && ( bGotAmmo == true ) && ( bStateOKToReload == true) );
 }
@@ -26,64 +25,64 @@ bool ABaseRangedWeapon::CanReload()
 void ABaseRangedWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GetRangedWeaponData().InitialClips > 0)
+	if (InitialClips > 0)
    	{
-   		CurrentAmmoInClip = GetRangedWeaponData().AmmoPerClip;
-   		CurrentAmmo = GetRangedWeaponData().AmmoPerClip * GetRangedWeaponData().InitialClips;
+   		CurrentAmmoInClip = AmmoPerClip;
+   		CurrentAmmo = AmmoPerClip * InitialClips;
    	}
 	BroadcastAmmoUsage();
 }
 
 void ABaseRangedWeapon::SimulateWeaponFire()
 {
-	if (GetRangedWeaponData().FireFX)
+	if (FireFXClass)
 	{
-		if (!GetRangedWeaponData().bLoopedMuzzleFX || FireFX == nullptr)
+		if (!bLoopedMuzzleFX || FireFXSystem == nullptr)
 		{
-			if(GetRangedWeaponData().FireFX->IsA(UParticleSystem::StaticClass()))
+			if(FireFXClass->IsA(UParticleSystem::StaticClass()))
 			{
-				FireFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(GetRangedWeaponData().FireFX), GetWeaponMesh(), GetRangedWeaponData().MuzzleAttachPoint, FVector::ZeroVector, GetRangedWeaponData().AltFireRotation, EAttachLocation::SnapToTargetIncludingScale, true);
-			} else if(GetRangedWeaponData().FireFX->IsA(UNiagaraSystem::StaticClass()))
+				FireFXSystem = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+			} else if(FireFXClass->IsA(UNiagaraSystem::StaticClass()))
 			{
-				FireFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(GetRangedWeaponData().FireFX), GetWeaponMesh(), GetRangedWeaponData().MuzzleAttachPoint, FVector::ZeroVector, GetRangedWeaponData().AltFireRotation, EAttachLocation::SnapToTargetIncludingScale, true);
+				FireFXSystem = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 			}
 		}
 	}
 
-	if (!GetRangedWeaponData().bLoopedFireAnim || !bPlayingFireAnim)
+	if (!bLoopedFireAnim || !bPlayingFireAnim)
 	{
-		PlayWeaponAnimation(GetRangedWeaponData().FireAnim);
+		PlayWeaponAnimation(FireAnim);
 		bPlayingFireAnim = true;
 	}
 
-	if (GetRangedWeaponData().bLoopedFireSound)
+	if (bLoopedFireSound)
 	{
 		if (FireAC == nullptr)
 		{
-			FireAC = PlayWeaponSound(GetRangedWeaponData().FireLoopSound);
+			FireAC = PlayWeaponSound(FireLoopSound);
 		}
 	}
 	else
 	{
-		PlayWeaponSound(GetRangedWeaponData().FireSound);
+		PlayWeaponSound(FireSound);
 	}
 	PlayCameraShake();
 }
 
 void ABaseRangedWeapon::StopSimulatingWeaponFire()
 {
-	if (GetRangedWeaponData().bLoopedMuzzleFX)
+	if (bLoopedMuzzleFX)
 	{
-		if( FireFX != nullptr )
+		if( FireFXSystem != nullptr )
 		{
-			FireFX->Deactivate();
-			FireFX = nullptr;
+			FireFXSystem->Deactivate();
+			FireFXSystem = nullptr;
 		}
 	}
 
-	if (GetRangedWeaponData().bLoopedFireAnim && bPlayingFireAnim)
+	if (bLoopedFireAnim && bPlayingFireAnim)
 	{
-		StopWeaponAnimation(GetRangedWeaponData().FireAnim);
+		StopWeaponAnimation(FireAnim);
 		bPlayingFireAnim = false;
 	}
 
@@ -92,17 +91,19 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 		FireAC->FadeOut(0.1f, 0.0f);
 		FireAC = nullptr;
 
-		PlayWeaponSound(GetRangedWeaponData().FireFinishSound);
+		PlayWeaponSound(FireFinishSound);
 	}
+	
+	CurrentFiringSpread = 0.f;
 }
 
 void ABaseRangedWeapon::ReloadWeapon()
 {
-	int32 ClipDelta = FMath::Min(GetRangedWeaponData().AmmoPerClip - CurrentAmmoInClip, CurrentAmmo - CurrentAmmoInClip);
+	int32 ClipDelta = FMath::Min(AmmoPerClip - CurrentAmmoInClip, CurrentAmmo - CurrentAmmoInClip);
 
 	if (HasInfiniteClip())
 	{
-		ClipDelta = GetRangedWeaponData().AmmoPerClip - CurrentAmmoInClip;
+		ClipDelta = AmmoPerClip - CurrentAmmoInClip;
 	}
 
 	if (ClipDelta > 0)
@@ -119,7 +120,7 @@ void ABaseRangedWeapon::ReloadWeapon()
 
 void ABaseRangedWeapon::GiveAmmo(int AddAmount)
 {
-	const int32 MissingAmmo = FMath::Max(0, GetRangedWeaponData().MaxAmmo - CurrentAmmo);
+	const int32 MissingAmmo = FMath::Max(0, MaxAmmo - CurrentAmmo);
 	AddAmount = FMath::Min(AddAmount, MissingAmmo);
 	CurrentAmmo += AddAmount;
 
@@ -148,12 +149,12 @@ void ABaseRangedWeapon::UseAmmo()
 void ABaseRangedWeapon::OnUnEquip()
 {
 	Super::OnUnEquip();
-	if(!FireFX)
+	if(!FireFXSystem)
 	{
 		return;
 	}
 
-	FireFX->DeactivateImmediate();
+	FireFXSystem->DeactivateImmediate();
 }
 
 FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact)
@@ -173,110 +174,170 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 	return Impact;
 }
 
-FVector ABaseRangedWeapon::GetMuzzleLocation()
+FVector ABaseRangedWeapon::GetRaycastOriginLocation()
 {
-	if(OwningPawn)
+	if(bRaycastFromWeapon)
 	{
-		return GetWeaponMesh()->GetSocketLocation(GetRangedWeaponData().MuzzleAttachPoint);
-	}
-	return FVector::ZeroVector;
-}
-
-FVector ABaseRangedWeapon::GetMuzzleDirection()
-{
-	if(OwningPawn)
-	{
-		return GetWeaponMesh()->GetSocketRotation(GetRangedWeaponData().MuzzleAttachPoint).Vector();
-	}
-	return FVector::ZeroVector;
-}
-
-FVector ABaseRangedWeapon::GetAdjustedAim()
-{
-	ABasePlayerController* const PlayerController = GetInstigator() ? Cast<ABasePlayerController>(GetInstigator()->Controller) : nullptr;
-	FVector FinalAim = FVector::ZeroVector;
-	if (PlayerController)
-	{
-		FVector CamLoc;
-		FRotator CamRot;
-		PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
-		FinalAim = CamRot.Vector();
-	}
-	else if (GetInstigator())
-	{
-		AAIController* AIController = OwningPawn ? Cast<AAIController>(OwningPawn->Controller) : nullptr;
-		if(AIController != nullptr )
+		if(!GetWeaponMesh())
 		{
-			FinalAim = AIController->GetControlRotation().Vector();
+			return FVector::ZeroVector;
 		}
-		else
-		{			
-			FinalAim = GetInstigator()->GetBaseAimRotation().Vector();
-		}
+		return GetWeaponMesh()->GetSocketLocation(RaycastSourceSocketName);
 	}
-	return FinalAim;
+	
+	if(!GetInstigator())
+	{
+		return FVector::ZeroVector;
+	}
+
+	if(const USkeletalMeshComponent* InstigatorMesh = GetInstigator()->FindComponentByClass<USkeletalMeshComponent>())
+	{
+		return InstigatorMesh->GetBoneLocation(RaycastSourceSocketName);
+	}
+
+	if (const UStaticMeshComponent* InstigatorMesh = GetInstigator()->FindComponentByClass<UStaticMeshComponent>())
+	{
+		return InstigatorMesh->GetSocketLocation(RaycastSourceSocketName);
+	}
+
+	return FVector::ZeroVector;
 }
 
-FVector ABaseRangedWeapon::GetCameraAim() const
+FVector ABaseRangedWeapon::GetShootDirection(const FVector& AimDirection)
 {
-	ABasePlayerController* const PlayerController = GetInstigator() ? Cast<ABasePlayerController>(GetInstigator()->Controller) : nullptr;
-	FVector FinalAim = FVector::ZeroVector;
+	const int32 RandomSeed = FMath::Rand();
+	const FRandomStream WeaponRandomStream(RandomSeed);
+	const float CurrentSpread = GetCurrentSpread();
+	const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+	CurrentFiringSpread = FMath::Min(FiringSpreadMax, CurrentFiringSpread + FiringSpreadIncrement);
+	return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
+}
 
-	if (PlayerController)
+float ABaseRangedWeapon::GetCurrentSpread() const
+{
+	return TraceSpread + CurrentFiringSpread;
+}
+
+float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
+{
+	float FinalSpread = CurrentFiringSpread;
+	// if (IInteractableInterface* CastedInterface = Cast<IInteractableInterface>(OwningPawn))
+	// {
+	// 	if(CastedInterface->IsTargeting())
+	// 	{
+	// 		FinalSpread *= TargetingSpreadMod;	
+	// 	}
+	// 	FinalSpread *= CastedInterface->GetSpreadModification();
+	// }
+
+	return FinalSpread / FiringSpreadMax;
+}
+
+
+FVector ABaseRangedWeapon::GetRaycastOriginRotation()
+{
+	if(bRaycastFromWeapon)
+	{
+		if(!GetWeaponMesh())
+		{
+			return FVector::ZeroVector;
+		}
+		return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName).Vector();
+	}
+	
+	if(!GetInstigator())
+	{
+		return FVector::ZeroVector;
+	}
+
+	if(const UMeshComponent* InstigatorMesh = GetInstigator()->FindComponentByClass<UMeshComponent>())
+	{
+		return InstigatorMesh->GetSocketLocation(RaycastSourceSocketName);
+	}
+	return FVector::ZeroVector;
+}
+
+FRotator ABaseRangedWeapon::GetRaycastSocketRotation() const
+{
+	if(!GetWeaponMesh())
+	{
+		return FRotator::ZeroRotator;
+	}
+	return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName);
+}
+
+FVector ABaseRangedWeapon::GetAdjustedAim() const
+{
+	if(!GetInstigator())
+	{
+		return FVector::ZeroVector;
+	}
+
+	if(const APlayerController* const PlayerController = Cast<APlayerController>(GetInstigator()->Controller))
 	{
 		FVector CamLoc;
 		FRotator CamRot;
 		PlayerController->GetPlayerViewPoint(CamLoc, CamRot);
-		FinalAim = CamRot.Vector();
-	}
-	else if (GetInstigator())
-	{
-		FinalAim = GetInstigator()->GetBaseAimRotation().Vector();		
+		return CamRot.Vector();
 	}
 
-	return FinalAim;
+	if(const AAIController* const AIController = Cast<AAIController>(GetInstigator()->Controller))
+	{
+		return AIController->GetControlRotation().Vector();
+	}
+	return GetInstigator()->GetBaseAimRotation().Vector();
 }
 
-FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDir)
+FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirection)
 {
-	ABasePlayerController* PlayerController = OwningPawn ? Cast<ABasePlayerController>(OwningPawn->GetController()) : nullptr;
-	AAIController* AIPC = OwningPawn ? Cast<AAIController>(OwningPawn->Controller) : nullptr;
+	APlayerController* PlayerController = GetInstigator() ? Cast<APlayerController>(GetInstigator()->GetController()) : nullptr;
+	AAIController* AIPC = GetInstigator() ? Cast<AAIController>(GetInstigator()->Controller) : nullptr;
 	FVector OutStartTrace = FVector::ZeroVector;
 
 	if (PlayerController)
 	{
 		FRotator UnusedRot;
 		PlayerController->GetPlayerViewPoint(OutStartTrace, UnusedRot);
-		OutStartTrace = OutStartTrace + AimDir * ((GetInstigator()->GetActorLocation() - OutStartTrace) | AimDir);
+		OutStartTrace = OutStartTrace + AimDirection * ((GetInstigator()->GetActorLocation() - OutStartTrace) | AimDirection);
 	}
 
 	else if (AIPC)
 	{
-		OutStartTrace = GetMuzzleLocation();
+		OutStartTrace = GetRaycastOriginLocation();
 	}
 	return OutStartTrace;
 }
 
-FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& TraceFrom, const FVector& TraceTo, bool bSphereTrace) const
+FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact) const
+{
+	if (Impact.bBlockingHit)
+	{
+		FHitResult UseImpact = Impact;
+		if (!Impact.Component.IsValid())
+		{
+			const FVector StartTrace = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
+			const FVector EndTrace = Impact.ImpactPoint - Impact.ImpactNormal * 10.0f;
+			FHitResult Hit = WeaponTrace(StartTrace, EndTrace);
+			UseImpact = Hit;
+			return UseImpact;
+		}
+	}
+	return Impact;
+}
+
+FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
 {
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
 	TraceParams.bReturnPhysicalMaterial = true;
 	FHitResult Hit(ForceInit);
 	TArray<AActor*> IgnoreActors;
-	IgnoreActors.Add(GetOwner());
-	if(bSphereTrace)
-	{
-		UKismetSystemLibrary::SphereTraceSingle(this, TraceFrom, TraceTo, 5.f, UEngineTypes::ConvertToTraceType(COLLISION_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
-	} else
-	{
-		UKismetSystemLibrary::LineTraceSingle(this, TraceFrom, TraceTo, UEngineTypes::ConvertToTraceType(COLLISION_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
-	}
-
+	IgnoreActors.Add(GetInstigator());
+	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(COLLISION_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	return Hit;
 }
 
 void ABaseRangedWeapon::BroadcastAmmoUsage()
 {
-	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / GetRangedWeaponData().AmmoPerClip) * GetRangedWeaponData().AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % GetRangedWeaponData().AmmoPerClip;
-	AmmoAmountChanged.Broadcast(CurrentAmmoInClip, GetRangedWeaponData().AmmoPerClip, TotalAmmo);
+	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / AmmoPerClip) * AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % AmmoPerClip;
+	OnAmmoAmountChanged().Broadcast(CurrentAmmoInClip, AmmoPerClip, TotalAmmo);
 }

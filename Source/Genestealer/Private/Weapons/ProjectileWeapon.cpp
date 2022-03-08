@@ -4,6 +4,7 @@
 #include "Weapons/ProjectileWeapon.h"
 
 #include "Actors/BaseOverlapProjectile.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 void AProjectileWeapon::FireWeapon()
@@ -14,11 +15,11 @@ void AProjectileWeapon::FireWeapon()
 void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 {
 	FVector ShootDir = GetAdjustedAim();
-	FVector Origin = GetMuzzleLocation();
+	FVector Origin = GetRaycastOriginLocation();
 	constexpr float ProjectileAdjustRange = 10000.0f;
 	const FVector StartTrace = GetCameraDamageStartLocation(ShootDir);
 	const FVector EndTrace = StartTrace + ShootDir * ProjectileAdjustRange;
-	FHitResult Impact = WeaponTrace(StartTrace, EndTrace, bShouldSphereTrace);
+	FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
 	if (Impact.bBlockingHit)
 	{
 		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);//.GetSafeNormal();
@@ -31,7 +32,7 @@ void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 		}
 		else if (DirectionDot < 0.5f)
 		{
-			FVector MuzzleStartTrace = Origin - GetMuzzleDirection() * 150.0f;
+			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 150.0f;
 			FVector MuzzleEndTrace = Origin;
 			FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace);
 			if (MuzzleImpact.bBlockingHit)
@@ -51,17 +52,12 @@ void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 	}
 	FTransform SpawnTrans = FTransform();
 	SpawnTrans.SetLocation(Origin);
-	if (ABaseOverlapProjectile* Projectile = Cast<ABaseOverlapProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ProjectileConfig.ProjectileClass, SpawnTrans)))
+	if (ABaseOverlapProjectile* Projectile = Cast<ABaseOverlapProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ProjectileClass, SpawnTrans)))
 	{
 		Projectile->SetInstigator(GetInstigator());
 		Projectile->SetOwner(this);
-		Projectile->SetActorOwner(Cast<AActor>(GetOwningPawn()));
+		Projectile->SetActorOwner(GetOwningPawn());	
 		Projectile->InitVelocity(ShootDir);
 		UGameplayStatics::FinishSpawningActor(Projectile, SpawnTrans);
 	}
-}
-
-void AProjectileWeapon::ApplyWeaponConfig(FProjectileWeaponData& Data) const
-{
-	Data = ProjectileConfig;
 }

@@ -14,49 +14,6 @@ class USkeletalMeshComponent;
 class ABaseCharacter;
 class USoundCue;
 
-USTRUCT(BlueprintType)
-struct FWeaponData
-{
-	GENERATED_BODY()
-
-	FWeaponData()
-	{
-		ReloadAnim = nullptr;
-		EquipAnim = nullptr;
-		OutOfAmmoSound = nullptr;
-		ReloadSound = nullptr;
-		EquipSound = nullptr;
-		WeaponOverlayState = EALSOverlayState::Default;
-	}
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|ALS")
-    EALSOverlayState WeaponOverlayState;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|WeaponStat")
-	float AI_UseRange = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|WeaponStat")
-	float TimeBetweenShots = .2f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Config", meta=(MustImplement="Effect"))
-	TArray<TSubclassOf<AActor>> WeaponEffects;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* EquipSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-    USoundCue* ReloadSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* OutOfAmmoSound;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	UAnimMontage* EquipAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	UAnimMontage* ReloadAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	float ReloadDurationIfNoAnim = 1.f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
-	TSubclassOf<UCameraShakeBase> FireCameraShake;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
-	float CameraShakeScale = 1.f;
-};
-
 /**
  * 
  */
@@ -82,12 +39,10 @@ public:
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
 	FORCEINLINE virtual USceneComponent* GetWeaponRoot() const override { return GetRootComponent(); }
-	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return GetWeaponData().WeaponOverlayState; };
+	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; };
 	FORCEINLINE virtual EWeaponState GetWeaponState() override { return CurrentState; }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
-	FORCEINLINE virtual float GetWeaponRange() override { return  GetWeaponData().AI_UseRange; }
-	FORCEINLINE virtual FVector GetEquipOffset() const override { return AttachOffset; }
-	FORCEINLINE virtual FRotator GetEquipRotation() const override { return AttachRotation; }
+	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
 
 	UFUNCTION(BlueprintCallable)
     virtual int32 GetCurrentAmmo() override PURE_VIRTUAL(ABaseWeapon::GetCurrentAmmo, return 0;)
@@ -127,7 +82,6 @@ protected:
 	virtual void SimulateWeaponFire() PURE_VIRTUAL(ABaseWeapon::SimulateWeaponFire,)
 	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)	
 	virtual void ReloadWeapon() PURE_VIRTUAL(ABaseWeapon::ReloadWeapon,)
-	virtual FWeaponData GetWeaponData() PURE_VIRTUAL(ABaseWeapon::GetWeaponData, return FWeaponData(););
 
 	/////////////////////////////////
 	// IWeapon overrides
@@ -143,22 +97,40 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BlueprintEquip(bool bEquipping);
 	
-	UPROPERTY()
-	ACharacter* OwningPawn;
-	UPROPERTY()
-	UInventoryComponent* OwningInventory;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Config")
-	FVector AttachOffset;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Config")
-	FRotator AttachRotation;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Weapon|Config")
 	UStaticMeshComponent* WeaponStaticMesh;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Weapon|Config")
 	USkeletalMeshComponent* WeaponSkeletalMesh;
 	UPROPERTY()
-	FAmmoAmountChanged AmmoAmountChanged;
-
+	ACharacter* OwningPawn;
 	EWeaponState CurrentState;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	EALSOverlayState WeaponOverlayState;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float AI_UseRange = 500.f;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	float TimeBetweenShots = .2f;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects", meta=(MustImplement="Effect"))
+	TArray<TSubclassOf<AActor>> WeaponEffects;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* EquipSound;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* ReloadSound;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	USoundCue* OutOfAmmoSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UAnimMontage* EquipAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UAnimMontage* ReloadAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	float ReloadDurationIfNoAnim = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
+	TSubclassOf<UCameraShakeBase> FireCameraShake;
+	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
+	float CameraShakeScale = 1.f;
 private:
 	
 	void HandleFiring();
@@ -166,10 +138,12 @@ private:
 	void SetWeaponState(EWeaponState NewState);
 	void DetermineWeaponState();
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
-
-	// Private variables
 	
-private:
+	UPROPERTY()
+	UInventoryComponent* OwningInventory;
+	UPROPERTY()
+	FAmmoAmountChanged AmmoAmountChanged;
+	
 	UPROPERTY(Transient)
 	bool bPendingReload;
 	UPROPERTY(Transient)

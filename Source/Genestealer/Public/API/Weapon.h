@@ -66,8 +66,6 @@ public:
 	virtual int32 GetCurrentAmmoInClip() PURE_VIRTUAL(IWeapon::GetCurrentAmmoInClip, return 0;)
 	virtual int32 GetAmmoPerClip() PURE_VIRTUAL(IWeapon::GetAmmoPerClip, return 0;)
 	virtual int32 GetMaxAmmo() PURE_VIRTUAL(IWeapon::GetMaxAmmo, return 0;);
-	virtual FVector GetEquipOffset() const PURE_VIRTUAL(IWeapon::EquipOffset, return FVector::ZeroVector; );
-	virtual FRotator GetEquipRotation() const PURE_VIRTUAL(IWeapon::EquipOffset, return FRotator::ZeroRotator; );
 	virtual bool HasInfiniteAmmo() PURE_VIRTUAL(IWeapon::HasInfiniteAmmo, return false;);
 	virtual bool HasInfiniteClip() PURE_VIRTUAL(IWeapon::HasInfiniteClip, return false;);
 

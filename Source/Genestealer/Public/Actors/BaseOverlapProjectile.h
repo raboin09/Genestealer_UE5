@@ -49,7 +49,6 @@ protected:
 	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;
 	
 	TWeakObjectPtr<AController> MyController;
-	FProjectileWeaponData WeaponConfig;
 
 	UPROPERTY(EditDefaultsOnly, Category="Overlap|Projectile|Effects" )
 	USoundCue* FlyBySound;

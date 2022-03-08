@@ -71,15 +71,6 @@ void ABaseOverlapProjectile::PostInitializeComponents()
 		CollisionComp->MoveIgnoreActors.Add(OwnerChar);
 	}
 	AProjectileWeapon* OwnerWeapon = Cast<AProjectileWeapon>(GetOwner());
-	if (OwnerWeapon)
-	{
-		OwnerWeapon->ApplyWeaponConfig(WeaponConfig);
-	}
-
-	if(WeaponConfig.ProjectileLife > 0)
-	{
-		SetLifeSpan( WeaponConfig.ProjectileLife );
-	}	
 	MyController = GetInstigatorController();
 }
 
