@@ -198,10 +198,8 @@ UMeshComponent* ABaseWeapon::GetWeaponMesh() const
 {
 	if(WeaponSkeletalMesh && WeaponSkeletalMesh->SkeletalMesh != nullptr)
 	{
-		UKismetSystemLibrary::PrintString(this, "SkelMesh");
 		return WeaponSkeletalMesh;
 	}
-	UKismetSystemLibrary::PrintString(this, "StatMesh");
 	return WeaponStaticMesh;
 }
 

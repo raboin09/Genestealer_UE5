@@ -134,6 +134,8 @@ struct FDeathEventPayload
 	AActor* DyingActor;
 	UPROPERTY()
 	AActor* KillingActor;
+	FHitResult HitResult;
+	FDamageHitReactEvent HitReactEvent;
 };
 
 USTRUCT(BlueprintType)

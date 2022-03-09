@@ -51,7 +51,10 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 
 	if (!bLoopedFireAnim || !bPlayingFireAnim)
 	{
-		PlayWeaponAnimation(FireAnim);
+		if (IAnimatable* Animatable = Cast<IAnimatable>(OwningPawn))
+		{
+			Animatable->PlayWeaponFireAnimation();
+		}
 		bPlayingFireAnim = true;
 	}
 
@@ -82,7 +85,10 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 
 	if (bLoopedFireAnim && bPlayingFireAnim)
 	{
-		StopWeaponAnimation(FireAnim);
+		if (IAnimatable* Animatable = Cast<IAnimatable>(OwningPawn))
+		{
+			Animatable->StopWeaponFireAnimation();
+		}
 		bPlayingFireAnim = false;
 	}
 

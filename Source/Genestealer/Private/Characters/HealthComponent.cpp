@@ -171,6 +171,7 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 		FDeathEventPayload DeathEventPayload;
 		DeathEventPayload.DyingActor = ReceivingActor;
 		DeathEventPayload.KillingActor = InstigatingActor;
+		DeathEventPayload.HitReactEvent = HitReactEvent;
 		if(ActorDeath.IsBound())
 		{
 			ActorDeath.Broadcast(DeathEventPayload);	
