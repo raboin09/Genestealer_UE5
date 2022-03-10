@@ -63,7 +63,7 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	DetermineWeaponState();
 	if (LastWeapon)
 	{
-		const float Duration = PlayWeaponAnimation(EquipAnim);
+		const float Duration = PlayWeaponAnimation(EWeaponAnimAction::Equip);
 		if (Duration <= 0.0f)
 		{
 			OnEquipFinished();
@@ -109,7 +109,7 @@ void ABaseWeapon::OnUnEquip()
 	StopFire();
 	if (bPendingReload)
 	{
-		StopWeaponAnimation(ReloadAnim);
+		StopWeaponAnimation(EWeaponAnimAction::Reload);
 		bPendingReload = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
@@ -118,7 +118,7 @@ void ABaseWeapon::OnUnEquip()
 
 	if (bPendingEquip)
 	{
-		StopWeaponAnimation(EquipAnim);
+		StopWeaponAnimation(EWeaponAnimAction::Equip);
 		bPendingEquip = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
@@ -132,7 +132,7 @@ void ABaseWeapon::StartReload()
 	{
 		bPendingReload = true;
 		DetermineWeaponState();
-		float AnimDuration = PlayWeaponAnimation(ReloadAnim);	
+		float AnimDuration = PlayWeaponAnimation(EWeaponAnimAction::Reload);	
 		if (AnimDuration <= 0.0f)
 		{
 			AnimDuration = ReloadDurationIfNoAnim;
@@ -153,7 +153,7 @@ void ABaseWeapon::StopReload()
 	{
 		bPendingReload = false;
 		DetermineWeaponState();
-		StopWeaponAnimation(ReloadAnim);
+		StopWeaponAnimation(EWeaponAnimAction::Reload);
 		BroadcastAmmoUsage();
 	}
 }
@@ -364,21 +364,21 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 	return AC;
 }
 
-float ABaseWeapon::PlayWeaponAnimation(UAnimMontage* Animation) const
+float ABaseWeapon::PlayWeaponAnimation(EWeaponAnimAction WeaponAction) const
 {
 	float Duration = 0.0f;
-	if (OwningPawn)
+	if (IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
 	{
-		Duration = OwningPawn->PlayAnimMontage(Animation);
+		Duration = AnimationOwner->PlayWeaponAnimation(WeaponArchetype, WeaponAction);
 	}
 	return Duration;
 }
 
-void ABaseWeapon::StopWeaponAnimation(UAnimMontage* Animation) const
+void ABaseWeapon::StopWeaponAnimation(EWeaponAnimAction WeaponAction) const
 {
-	if (OwningPawn)
+	if (IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
 	{
-		OwningPawn->StopAnimMontage(Animation);
+		AnimationOwner->StopWeaponAnimation(WeaponArchetype, WeaponAction);
 	}
 }
 

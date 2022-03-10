@@ -51,10 +51,7 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 
 	if (!bLoopedFireAnim || !bPlayingFireAnim)
 	{
-		if (IAnimatable* Animatable = Cast<IAnimatable>(OwningPawn))
-		{
-			Animatable->PlayWeaponFireAnimation();
-		}
+		PlayWeaponAnimation(EWeaponAnimAction::Fire);
 		bPlayingFireAnim = true;
 	}
 
@@ -62,7 +59,7 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 	{
 		if (FireAC == nullptr)
 		{
-			FireAC = PlayWeaponSound(FireLoopSound);
+			FireAC = PlayWeaponSound(FireSound);
 		}
 	}
 	else
@@ -85,10 +82,7 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 
 	if (bLoopedFireAnim && bPlayingFireAnim)
 	{
-		if (IAnimatable* Animatable = Cast<IAnimatable>(OwningPawn))
-		{
-			Animatable->StopWeaponFireAnimation();
-		}
+		StopWeaponAnimation(EWeaponAnimAction::Fire);
 		bPlayingFireAnim = false;
 	}
 

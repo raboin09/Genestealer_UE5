@@ -18,8 +18,8 @@ protected:
 	virtual void FireWeapon() override;
 	virtual void SpawnProjectile(bool bShouldSphereTrace = true);
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Projectile")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Projectile")
 	TSubclassOf<ABaseActor> ProjectileClass;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Projectile")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Projectile")
 	float ProjectileLife = -1.f;
 };

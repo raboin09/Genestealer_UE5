@@ -37,16 +37,31 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
-float ABaseCharacter::PlayWeaponFireAnimation()
+float ABaseCharacter::PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction)
 {
 	FAnimMontagePlayData PlayData;
-	PlayData.MontageToPlay = K2_GetWeaponFireAnimation();
+	PlayData.MontageToPlay = Internal_GetWeaponAnimation(WeaponArchetype, WeaponAction);
 	return Internal_PlayMontage(PlayData);
 }
 
-void ABaseCharacter::StopWeaponFireAnimation()
+void ABaseCharacter::StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction)
 {
-	StopAnimMontage(K2_GetWeaponFireAnimation());
+	StopAnimMontage(Internal_GetWeaponAnimation(WeaponArchetype, WeaponAction));
+}
+
+UAnimMontage* ABaseCharacter::Internal_GetWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) const
+{
+	switch (WeaponAction)
+	{
+	case EWeaponAnimAction::Fire:
+		return K2_GetWeaponFireAnimation(WeaponArchetype);
+	case EWeaponAnimAction::Reload:
+		return K2_GetWeaponReloadAnimation(WeaponArchetype);
+	case EWeaponAnimAction::Equip:
+		return K2_GetWeaponEquipAnimation(WeaponArchetype);
+	default:
+		return nullptr;
+	}
 }
 
 void ABaseCharacter::ChangeOverlayState(EALSOverlayState InOverlayState)

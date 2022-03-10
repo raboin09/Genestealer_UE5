@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 
-
 #define COLLISION_WEAPON ECC_GameTraceChannel1
 
 #define GENESTEALER_SURFACE_Default		SurfaceType_Default

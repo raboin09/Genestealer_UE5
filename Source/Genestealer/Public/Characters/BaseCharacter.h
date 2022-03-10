@@ -32,8 +32,8 @@ public:
 	////////////////////////////////
 	/// IAnimatable override
 	////////////////////////////////
-	virtual float PlayWeaponFireAnimation() override;
-	virtual void StopWeaponFireAnimation() override;
+	virtual float PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) override;
+	virtual void StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) override;
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual void ChangeOverlayState(EALSOverlayState InOverlayState) override;
@@ -84,24 +84,20 @@ protected:
 	////////////////////////////////
 	/// ABaseCharacter 
 	////////////////////////////////
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
 	void FireAction(bool bFiring);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
 	void TargetingAction(bool bTargeting);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
 	void ReloadAction();
-
-	////////////////////////////////
-	/// Knockbacks and Hit Reacts
-	////////////////////////////////
-	virtual void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration);
-	virtual void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent);
-	virtual void Internal_TryCharacterKnockbackRecovery();
-	virtual void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
-	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	UAnimMontage* K2_GetWeaponFireAnimation() const;
+	UAnimMontage* K2_GetWeaponFireAnimation(EWeaponAnimArchetype WeaponArchetype) const;
+	UFUNCTION(BlueprintImplementableEvent)
+	UAnimMontage* K2_GetWeaponReloadAnimation(EWeaponAnimArchetype WeaponArchetype) const;
+	UFUNCTION(BlueprintImplementableEvent)
+	UAnimMontage* K2_GetWeaponEquipAnimation(EWeaponAnimArchetype WeaponArchetype) const;
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	UAnimMontage* K2_GetHitReactAnimation(const FGameplayTag& HitReactDirection) const;
 
@@ -143,9 +139,19 @@ protected:
 	FGameplayTagContainer GameplayTagContainer;
 	
 private:
+	UAnimMontage* Internal_GetWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) const;
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
 	void Internal_AddDefaultTagsToContainer();
+
+	////////////////////////////////
+	/// Knockbacks and Hit Reacts
+	////////////////////////////////
+	virtual void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration);
+	virtual void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent);
+	virtual void Internal_TryCharacterKnockbackRecovery();
+	virtual void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
+	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;

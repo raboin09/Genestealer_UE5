@@ -17,13 +17,13 @@ protected:
 	// BaseRangedWeapon overrides
 	virtual void FireWeapon() override;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* TrailFX;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	FName TrailTargetParam = "ShockBeamEnd";
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	UCurveFloat* DegreesCurve;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FlyBySound;
 	
 private:

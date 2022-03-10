@@ -43,49 +43,47 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
     void DebugFire(FVector Origin, FVector End, FColor ColorToDraw);
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TraceSpread = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TraceRange = 10000.f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bRaycastFromWeapon = true;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TargetingSpreadMod;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float FiringSpreadIncrement = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float FiringSpreadMax = 10.f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteAmmo = true;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteClip = false;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	int32 MaxAmmo = 100;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	int32 AmmoPerClip = 20;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	int32 InitialClips = 4;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	FName RaycastSourceSocketName = "Muzzle";	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* FireFXClass;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	bool bLoopedMuzzleFX = false;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundCue* FireLoopSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	bool bLoopedFireSound = true;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireFinishSound;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	bool bLoopedFireAnim = true;
 	
 private:

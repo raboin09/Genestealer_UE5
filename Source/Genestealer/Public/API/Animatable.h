@@ -7,6 +7,26 @@
 #include "UObject/Interface.h"
 #include "Animatable.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeaponAnimAction : uint8
+{
+	Fire,
+	Reload,
+	Equip
+};
+
+UENUM(BlueprintType)
+enum class EWeaponAnimArchetype : uint8
+{
+	Melee_1H,
+	Melee_2H,
+	Grenade,
+	Rifle,
+	Pistol_1H,
+	Pistol_2H,
+	Pistol_Akimbo
+};
+
 USTRUCT(BlueprintType)
 struct FAnimMontagePlayData
 {
@@ -35,8 +55,9 @@ class GENESTEALER_API IAnimatable
 	GENERATED_BODY()
 
 public:
-	virtual float PlayWeaponFireAnimation() PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation, return -1.f;)
-	virtual void StopWeaponFireAnimation() PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation,)
+	virtual float PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation, return -1.f;)
+	virtual void StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation,)
+	
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::TryPlayAnimMontage, return -1.f;)
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::ForcePlayAnimMontage, return -1.f;)
 	virtual void ChangeOverlayState(EALSOverlayState InOverlayState) PURE_VIRTUAL(IAnimatable::ChangeOverlayState,)

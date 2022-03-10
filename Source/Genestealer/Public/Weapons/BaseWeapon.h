@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseActor.h"
+#include "API/Animatable.h"
 #include "API/Weapon.h"
 #include "Components/CapsuleComponent.h"
 #include "Effects/BaseEffect.h"
@@ -17,7 +18,7 @@ class USoundCue;
 /**
  * 
  */
-UCLASS(Abstract, NotBlueprintable)
+UCLASS(Abstract, NotBlueprintable, AutoExpandCategories=("Genestealer|Weapon"))
 class GENESTEALER_API ABaseWeapon : public ABaseActor, public IWeapon
 {
 	GENERATED_BODY()
@@ -60,8 +61,8 @@ protected:
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
 	
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound) const;
-    float PlayWeaponAnimation(UAnimMontage* Animation) const;
-    void StopWeaponAnimation(UAnimMontage* Animation) const;
+    float PlayWeaponAnimation(EWeaponAnimAction WeaponAction) const;
+    void StopWeaponAnimation(EWeaponAnimAction WeaponAction) const;
 	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	virtual void OnLeaveInventory() override;
 	virtual void PlayCameraShake();
@@ -96,40 +97,40 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BlueprintEquip(bool bEquipping);
-	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Weapon|Config")
-	UStaticMeshComponent* WeaponStaticMesh;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Weapon|Config")
-	USkeletalMeshComponent* WeaponSkeletalMesh;
+
 	UPROPERTY()
 	ACharacter* OwningPawn;
 	EWeaponState CurrentState;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Genestealer|Weapon|Config")
+	UStaticMeshComponent* WeaponStaticMesh;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Genestealer|Weapon|Config")
+	USkeletalMeshComponent* WeaponSkeletalMesh;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EALSOverlayState WeaponOverlayState;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	EWeaponAnimArchetype WeaponArchetype;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	float ReloadDurationIfNoAnim = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float AI_UseRange = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TimeBetweenShots = .2f;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Effects", meta=(MustImplement="Effect"))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* EquipSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* ReloadSound;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* OutOfAmmoSound;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	UAnimMontage* EquipAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	UAnimMontage* ReloadAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Animation")
-	float ReloadDurationIfNoAnim = 1.f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera")
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Camera")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera")
 	float CameraShakeScale = 1.f;
 private:
 	
