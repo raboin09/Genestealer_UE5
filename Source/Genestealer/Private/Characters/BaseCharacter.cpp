@@ -6,6 +6,7 @@
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/EffectUtils.h"
@@ -19,6 +20,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 	
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -194,6 +196,11 @@ void ABaseCharacter::RagdollEnd()
 void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayload& EventPayload)
 {
 	if(!EventPayload.bNaturalChange)
+	{
+		return;
+	}
+
+	if(EventPayload.DamageHitReactEvent.bOnlyHitReactOnDeath)
 	{
 		return;
 	}

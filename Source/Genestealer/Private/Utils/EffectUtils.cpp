@@ -6,6 +6,7 @@
 #include "API/Attackable.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "API/Effectible.h"
+#include "Engine/DataTable.h"
 #include "Characters//HealthComponent.h"
 #include "Effects/BaseStatModifierEffect.h"
 #include "Genestealer/Genestealer.h"
@@ -115,7 +116,7 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 		return nullptr;
 	}
 	
-	const FEffectImpactVFX* FoundRow = RowHandle.DataTable->FindRow<FEffectImpactVFX>(RowHandle.RowName, SurfaceMaterial->GetFullName());
+	const FEffectImpactVFX* FoundRow = RowHandle.DataTable->FindRow<FEffectImpactVFX>(RowHandle.RowName, RowHandle.RowName.ToString());
 	if(!FoundRow)
 	{
 		return nullptr;

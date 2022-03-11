@@ -31,5 +31,8 @@ private:
 	void Internal_SpawnTrailEffect(const FVector& EndPoint);
 	void Internal_SpawnFlybySound(const FHitResult& Impact, FVector& ShootDir);
 	void Internal_PlayWeaponMissEffectFX(const FHitResult& Impact);
+
+	UPROPERTY()
+	UFXSystemComponent* TrailParticle; 
 	
 };

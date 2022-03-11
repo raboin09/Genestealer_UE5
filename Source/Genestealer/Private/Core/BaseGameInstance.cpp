@@ -3,3 +3,8 @@
 
 #include "Core/BaseGameInstance.h"
 
+void UBaseGameInstance::Init()
+{
+	Super::Init();
+	AudioManager = NewObject<UAudioManager>(this);
+}

@@ -18,6 +18,10 @@ void AHitscanWeapon::FireWeapon()
 	FVector ShootDirection = GetShootDirection(AimDirection);
 	const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
 	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace);
+	if(TrailParticle)
+	{
+		TrailParticle->DeactivateImmediate();
+	}
 	Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
 }
 
@@ -46,17 +50,18 @@ void AHitscanWeapon::Internal_SpawnTrailEffect(const FVector& EndPoint)
 	if (TrailFX)
 	{
 		const FVector Origin = GetRaycastOriginLocation();
-		UFXSystemComponent* TrailPSC = nullptr;
+		FRotator EndRotation = UKismetMathLibrary::FindLookAtRotation(Origin, EndPoint);
 		if(TrailFX->IsA(UParticleSystem::StaticClass()))
 		{
-			TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(TrailFX), Origin, GetRaycastSocketRotation());
+			TrailParticle = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(TrailFX), Origin, EndRotation);
 		} else if(TrailFX->IsA(UNiagaraSystem::StaticClass()))
 		{
-			TrailPSC = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Cast<UNiagaraSystem>(TrailFX), Origin,  GetRaycastSocketRotation());
+			TrailParticle = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Cast<UNiagaraSystem>(TrailFX), Origin, EndRotation);
 		}
-		if(TrailPSC)
+		
+		if(TrailParticle)
 		{
-			TrailPSC->SetVectorParameter(TrailTargetParam, EndPoint);	
+			TrailParticle->SetVectorParameter(TrailTargetParam, EndPoint);	
 		}
 	}
 }

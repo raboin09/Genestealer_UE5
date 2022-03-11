@@ -98,7 +98,7 @@ struct FEffectInitializationData
 	UPROPERTY(EditDefaultsOnly, Category=Defaults, meta=(ClampMin="1.0", EditCondition = "bInfinite != true && EffectInterval != EEffectInterval::Instant", EditConditionHides))
 	float EffectDuration = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
-	EEffectInterval EffectInterval = EEffectInterval::Apply_Once;
+	EEffectInterval EffectInterval = EEffectInterval::Instant;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	TArray<FGameplayTag> TagsToApply;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)

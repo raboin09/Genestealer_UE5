@@ -3,6 +3,7 @@
 
 #include "Characters/HealthComponent.h"
 #include "Characters/BaseCharacter.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void FWoundContainer::ZeroizeWoundContainer()
 {
@@ -161,21 +162,15 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 		WoundEventPayload.bWasDamage = true;
 		WoundEventPayload.DamageHitReactEvent = HitReactEvent;
 		WoundEventPayload.DamageHitReactEvent.DamageTaken = Delta;
-		if(CurrentHealthChanged.IsBound())
-		{
-			CurrentHealthChanged.Broadcast(WoundEventPayload);
-		}
-		
+		CurrentHealthChanged.Broadcast(WoundEventPayload);		
 	} else if (!bIsAlive && ActorDeath.IsBound())
 	{
 		FDeathEventPayload DeathEventPayload;
 		DeathEventPayload.DyingActor = ReceivingActor;
 		DeathEventPayload.KillingActor = InstigatingActor;
 		DeathEventPayload.HitReactEvent = HitReactEvent;
-		if(ActorDeath.IsBound())
-		{
-			ActorDeath.Broadcast(DeathEventPayload);	
-		}
+		DeathEventPayload.HitResult = HitReactEvent.HitResult;
+		ActorDeath.Broadcast(DeathEventPayload);
 	}
 	return Delta;
 }
@@ -258,11 +253,7 @@ float UHealthComponent::CalculateDamage(const float RawDamage) const
 
 bool UHealthComponent::IsAlive()
 {
-	if(!IsValidChecked(this))
-	{
-		return WoundContainer.IsAlive();	
-	}
-	return false;
+	return WoundContainer.IsAlive();
 }
 
 void UHealthComponent::Execute(AActor* ExecutedActor, AActor* ExecutingActor)

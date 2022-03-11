@@ -21,8 +21,8 @@ class GENESTEALER_API UBaseEffectData : public UObject
 public:
 	UBaseEffectData()
 	{
-		// ImpactVFXRowHandle.DataTable = LoadObject<UDataTable>(nullptr, UTF8_TO_TCHAR("DataTable'/Game/_GenestealerTempora/Data/InGameDataTables/ImpactVFXTable.ImpactVFXTable'"));
-		// ImpactSFXRowHandle.DataTable = LoadObject<UDataTable>(nullptr, UTF8_TO_TCHAR("DataTable'/Game/_GenestealerTempora/Data/InGameDataTables/ImpactSFXTable.ImpactSFXTable'"));
+		ImpactVFXRowHandle.DataTable = LoadObject<UDataTable>(nullptr, UTF8_TO_TCHAR("DataTable'/Game/_Genestealer/Data/Genestealer_ImpactVFX.Genestealer_ImpactVFX'"));
+		ImpactSFXRowHandle.DataTable = LoadObject<UDataTable>(nullptr, UTF8_TO_TCHAR("DataTable'/Game/_Genestealer/Data/Genestealer_ImpactSFX.Genestealer_ImpactSFX'"));
 	}
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")

@@ -8,6 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "API/Taggable.h"
+#include "Core/AudioManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Utils/CombatUtils.h"
@@ -33,7 +34,7 @@ void ABaseEffect::Internal_PlayEffectSound()
 {
 	if(K2_GetEffectSound())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, K2_GetEffectSound(), GetActorLocation());
+		UAudioManager::PlaySoundAtLocation(this, K2_GetEffectSound(), GetActorLocation());
 	}
 }
 
@@ -117,5 +118,5 @@ UFXSystemAsset* ABaseEffect::K2_GetEffectParticleSystem_Implementation()
 USoundCue* ABaseEffect::K2_GetEffectSound_Implementation()
 {
 	UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
-	return UEffectUtils::GetSFXAssetFromKey(EffectDataObj->ImpactVFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
+	return UEffectUtils::GetSFXAssetFromKey(EffectDataObj->ImpactSFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
 }

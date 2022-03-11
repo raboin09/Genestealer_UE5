@@ -30,6 +30,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float BaseModifierValue;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
+	bool bOnlyHitReactOnDeath;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
 	EHitReactType HitImpulse;
 };
 

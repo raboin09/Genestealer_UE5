@@ -71,7 +71,7 @@ bool UCombatUtils::IsBoneNameHead(FName InBone)
 
 FRotator UCombatUtils::GetRotationFromComponentHit(const FHitResult& Impact)
 {
-	if(!Impact.Component.Get() || Impact.Component.IsValid())
+	if(!Impact.Component.Get() || !Impact.Component.IsValid())
 	{
 		return FRotator();
 	}

@@ -359,7 +359,7 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 	UAudioComponent* AC = nullptr;
 	if (Sound && OwningPawn)
 	{
-		AC = UGameplayStatics::SpawnSoundAttached(Sound, OwningPawn->GetRootComponent());
+		AC = UAudioManager::SpawnSoundAttached(Sound, OwningPawn->GetRootComponent());
 	}
 	return AC;
 }

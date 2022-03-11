@@ -26,6 +26,7 @@ void ABaseStatModifier::K2_ApplyStatChange_Implementation(float ModifiedStatValu
 			HitReactEvent.DamageTaken = ModifiedStatValue;
 			HitReactEvent.HitDirection = EffectContext.InstigatingActor ?  EffectContext.InstigatingActor->GetActorForwardVector().GetSafeNormal() : FVector::ZeroVector;
 			HitReactEvent.HitResult = EffectContext.SurfaceHit;
+			HitReactEvent.bOnlyHitReactOnDeath = StatEffectDataObj->bOnlyHitReactOnDeath;
 			HitReactEvent.HitReactType = StatEffectDataObj->HitImpulse;
 			UEffectUtils::TryApplyDamageToActor(EffectContext.ReceivingActor, EffectContext.InstigatingActor, ModifiedStatValue, HitReactEvent);
 		}
