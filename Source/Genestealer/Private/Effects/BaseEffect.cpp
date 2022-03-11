@@ -111,12 +111,20 @@ void ABaseEffect::DestroyEffect()
 
 UFXSystemAsset* ABaseEffect::K2_GetEffectParticleSystem_Implementation()
 {
+	if(!EffectDataObj || EffectDataObj->ImpactVFXRowHandle.IsNull())
+	{
+		return nullptr;
+	}
 	UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
 	return UEffectUtils::GetVFXAssetFromKey(EffectDataObj->ImpactVFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
 }
 
 USoundCue* ABaseEffect::K2_GetEffectSound_Implementation()
 {
+	if(!EffectDataObj || EffectDataObj->ImpactSFXRowHandle.IsNull())
+	{
+		return nullptr;
+	}
 	UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
 	return UEffectUtils::GetSFXAssetFromKey(EffectDataObj->ImpactSFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
 }

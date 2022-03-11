@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Effects/BaseEffect.h"
+#include "NiagaraComponent.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseRangedWeapon.generated.h"
 
@@ -88,8 +89,17 @@ protected:
 	
 private:
 
+	void Internal_DeactivateParticleSystem(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
+	UFXSystemComponent* Internal_PlayParticleFireEffects();
+	UFXSystemComponent* Internal_PlayNiagaraFireEffects();
+
 	UPROPERTY(Transient)
 	UFXSystemComponent* FireFXSystem;
+	UPROPERTY(Transient)
+	UParticleSystemComponent* ParticleFX;
+	UPROPERTY(Transient)
+	UNiagaraComponent* NiagaraFX;
+	
 	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
 	UPROPERTY(Transient)

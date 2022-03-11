@@ -59,9 +59,22 @@ public:
 	////////////////////////////////
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
 	FORCEINLINE bool IsDying() const { return GameplayTagContainer.HasTag(GameplayTag::State::Dead); }
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(GameplayTag::State::Dead); }
+	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	FORCEINLINE bool IsAiming() const { return !GameplayTagContainer.HasTag(GameplayTag::State::Aiming); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	UFUNCTION()
 	virtual void Die(FDeathEventPayload DeathEventPayload);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
+	void K2_HandleCoverDodgeAction();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
+	void K2_HandleFireAction(bool bFiring);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
+	void K2_HandleAimAction(bool bTargeting);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
+	void K2_HandleReloadAction();
 	
 protected:
 	////////////////////////////
@@ -76,20 +89,16 @@ protected:
 	////////////////////////////////
 	virtual void ForwardMovementAction_Implementation(float Value) override;
 	virtual void RightMovementAction_Implementation(float Value) override;
-	virtual void AimAction_Implementation(bool bValue) override;
-	virtual void JumpAction_Implementation(bool bValue) override;
 	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
 	virtual void RagdollEnd() override;
 
 	////////////////////////////////
-	/// ABaseCharacter 
+	/// ABaseCharacter Inputs
 	////////////////////////////////
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
-	void FireAction(bool bFiring);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
-	void TargetingAction(bool bTargeting);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Genestealer|Input")
-	void ReloadAction();
+	virtual void K2_HandleCoverDodgeAction_Implementation();
+	virtual void K2_HandleFireAction_Implementation(bool bFiring);
+	virtual void K2_HandleAimAction_Implementation(bool bTargeting);
+	virtual void K2_HandleReloadAction_Implementation();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	UAnimMontage* K2_GetWeaponFireAnimation(EWeaponAnimArchetype WeaponArchetype) const;

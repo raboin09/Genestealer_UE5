@@ -41,10 +41,10 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 		{
 			if(FireFXClass->IsA(UParticleSystem::StaticClass()))
 			{
-				FireFXSystem = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+				FireFXSystem = Internal_PlayParticleFireEffects();
 			} else if(FireFXClass->IsA(UNiagaraSystem::StaticClass()))
 			{
-				FireFXSystem = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+				FireFXSystem = Internal_PlayNiagaraFireEffects();
 			}
 		}
 	}
@@ -67,6 +67,30 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 		PlayWeaponSound(FireSound);
 	}
 	PlayCameraShake();
+}
+
+void ABaseRangedWeapon::Internal_DeactivateParticleSystem(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat)
+{
+	UKismetSystemLibrary::PrintString(this, "Collision");
+	if(!ParticleFX)
+	{
+		return;
+	}
+	ParticleFX->Deactivate();
+}
+
+UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
+{
+	ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	ParticleFX->OnParticleCollide.AddDynamic(this, &ABaseRangedWeapon::Internal_DeactivateParticleSystem);
+	return ParticleFX;
+}
+
+UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
+{
+	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	// TODO handle Niagara collisions
+	return NiagaraFX;
 }
 
 void ABaseRangedWeapon::StopSimulatingWeaponFire()

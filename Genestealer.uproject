@@ -11,6 +11,7 @@
 			"AdditionalDependencies": [
 				"ALSV4_CPP",
 				"Engine",
+				"EnhancedInput",
 				"AIModule",
 				"CoreUObject"
 			]

@@ -30,6 +30,12 @@ namespace GameplayTag
 		const FGameplayTag Stunned =  FGameplayTag::RequestGameplayTag("State.Stunned");	
 		const FGameplayTag Loading =  FGameplayTag::RequestGameplayTag("State.Loading");
 		const FGameplayTag Dead =  FGameplayTag::RequestGameplayTag("State.Dead");
+		const FGameplayTag Aiming =  FGameplayTag::RequestGameplayTag("State.Aiming");
+	}
+
+	namespace Attributes
+	{
+		
 	}
 }
 

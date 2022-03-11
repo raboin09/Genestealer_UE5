@@ -170,6 +170,11 @@ void UInventoryComponent::StopFiring()
 	}
 }
 
+void UInventoryComponent::OnTargetingChange(bool bIsTargeting)
+{
+	
+}
+
 void UInventoryComponent::StartReload()
 {
 	if(CurrentWeapon)

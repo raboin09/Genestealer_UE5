@@ -121,18 +121,31 @@ void ABaseCharacter::RightMovementAction_Implementation(float Value)
 	Super::RightMovementAction_Implementation(Value);
 }
 
-void ABaseCharacter::AimAction_Implementation(bool bValue)
+void ABaseCharacter::K2_HandleReloadAction_Implementation()
 {
-	Super::AimAction_Implementation(bValue);
+	UKismetSystemLibrary::PrintString(this, "Reloading");
 }
 
-void ABaseCharacter::JumpAction_Implementation(bool bValue)
+void ABaseCharacter::K2_HandleAimAction_Implementation(bool bTargeting)
 {
-	if(UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::Stunned))
+	if (bTargeting)
 	{
-		return;
+		SetRotationMode(EALSRotationMode::Aiming);
 	}
-	Super::JumpAction_Implementation(bValue);
+	else
+	{
+		SetRotationMode(DesiredRotationMode);
+	}
+}
+
+void ABaseCharacter::K2_HandleFireAction_Implementation(bool bFiring)
+{
+	UKismetSystemLibrary::PrintString(this, "Firing");
+}
+
+void ABaseCharacter::K2_HandleCoverDodgeAction_Implementation()
+{
+	UKismetSystemLibrary::PrintString(this, "CoverDodge");
 }
 
 void ABaseCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
@@ -401,14 +414,3 @@ void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 	}
 }
 
-void ABaseCharacter::ReloadAction_Implementation()
-{
-}
-
-void ABaseCharacter::TargetingAction_Implementation(bool bTargeting)
-{
-}
-
-void ABaseCharacter::FireAction_Implementation(bool bFiring)
-{
-}
