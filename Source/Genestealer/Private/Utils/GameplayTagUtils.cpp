@@ -2,13 +2,15 @@
 
 
 #include "Utils/GameplayTagUtils.h"
+
+#include "BlueprintGameplayTagLibrary.h"
 #include "API/Taggable.h"
 
-bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag)
+bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
-		return CastedActor->GetTagContainer().HasTag(InTag);
+		return UBlueprintGameplayTagLibrary::HasTag(CastedActor->GetTagContainer(), InTag, bExact);
 	}
 	return false;
 }

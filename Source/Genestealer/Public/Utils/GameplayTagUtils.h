@@ -23,6 +23,7 @@ namespace GameplayTag
 		const FGameplayTag AI = FGameplayTag::RequestGameplayTag("ActorType.AI");
 		const FGameplayTag Destructible =  FGameplayTag::RequestGameplayTag("ActorType.Destructible");
 		const FGameplayTag Weapon =  FGameplayTag::RequestGameplayTag("ActorType.Weapon");
+		const FGameplayTag Cover =  FGameplayTag::RequestGameplayTag("ActorType.Cover");
 	}
 
 	namespace State
@@ -31,6 +32,9 @@ namespace GameplayTag
 		const FGameplayTag Loading =  FGameplayTag::RequestGameplayTag("State.Loading");
 		const FGameplayTag Dead =  FGameplayTag::RequestGameplayTag("State.Dead");
 		const FGameplayTag Aiming =  FGameplayTag::RequestGameplayTag("State.Aiming");
+		const FGameplayTag InCover_Middle =  FGameplayTag::RequestGameplayTag("State.InCover.Middle");
+		const FGameplayTag InCover_Left =  FGameplayTag::RequestGameplayTag("State.InCover.Left");
+		const FGameplayTag InCover_Right =  FGameplayTag::RequestGameplayTag("State.InCover.Right");
 	}
 
 	namespace Attributes
@@ -45,7 +49,7 @@ class GENESTEALER_API UGameplayTagUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")
-	static bool ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag);
+	static bool ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact = false);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void AddTagToActor(AActor* InActor, const FGameplayTag& InTag);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")

@@ -47,12 +47,12 @@ public:
 	////////////////////////////////
 	/// ITaggable override
 	////////////////////////////////
-	FORCEINLINE virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
+	FORCEINLINE virtual FGameplayTagContainer GetTagContainer() override { return GameplayTagContainer; }
 
 	////////////////////////////////
 	/// IEffectible override
 	////////////////////////////////
-	FORCEINLINE virtual class UEffectContainerComponent* GetEffectContainerComponent() const override { return EffectContainerComponent; }
+	FORCEINLINE virtual UEffectContainerComponent* GetEffectContainerComponent() const override { return EffectContainerComponent; }
 
 	////////////////////////////////
 	/// ABaseCharacter
@@ -144,7 +144,7 @@ protected:
 	
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
-	
+
 	FGameplayTagContainer GameplayTagContainer;
 	
 private:

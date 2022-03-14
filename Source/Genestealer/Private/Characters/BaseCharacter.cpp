@@ -74,6 +74,7 @@ void ABaseCharacter::ChangeOverlayState(EALSOverlayState InOverlayState)
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Internal_AddDefaultTagsToContainer();
 	PlayerInCombatChanged.Broadcast(false, nullptr);
 	if(HealthComponent)
 	{
@@ -82,7 +83,6 @@ void ABaseCharacter::BeginPlay()
 		HealthComponent->InitHealthComponent(StartingHealth);
 	}
 	UEffectUtils::ApplyEffectsToActor(DefaultEffects, this);
-	Internal_AddDefaultTagsToContainer();
 }
 
 void ABaseCharacter::PreInitializeComponents()
@@ -367,7 +367,7 @@ void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 {
 	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
 }
-
+ 
 void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 {
 	if (GameplayTagContainer.HasTag(GameplayTag::State::Dead))
