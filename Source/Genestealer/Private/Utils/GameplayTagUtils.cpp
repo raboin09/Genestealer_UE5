@@ -5,6 +5,16 @@
 
 #include "BlueprintGameplayTagLibrary.h"
 #include "API/Taggable.h"
+#include "Kismet/KismetSystemLibrary.h"
+
+bool UGameplayTagUtils::ActorHasAnyGameplayTags(AActor* InActor, TArray<FGameplayTag> InTags, bool bExact)
+{
+	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
+	{
+		return UBlueprintGameplayTagLibrary::HasAnyTags(CastedActor->GetTagContainer(), FGameplayTagContainer::CreateFromArray(InTags), bExact);
+	}
+	return false;
+}
 
 bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact)
 {
@@ -19,6 +29,7 @@ void UGameplayTagUtils::AddTagToActor(AActor* InActor, const FGameplayTag& InTag
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
+		UKismetSystemLibrary::PrintString(InActor, "Adding " + InTag.ToString() + " to " + InActor->GetName());
 		CastedActor->GetTagContainer().AddTag(InTag);
 	}
 }

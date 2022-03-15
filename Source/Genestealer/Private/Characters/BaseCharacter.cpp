@@ -20,7 +20,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -105,7 +105,7 @@ void ABaseCharacter::PostInitializeComponents()
 
 void ABaseCharacter::ForwardMovementAction_Implementation(float Value)
 {
-	if(UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::Stunned))
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, { GameplayTag::State::Stunned, GameplayTag::State::InCover_Middle }))
 	{
 		return;
 	}
@@ -118,6 +118,17 @@ void ABaseCharacter::RightMovementAction_Implementation(float Value)
 	{
 		return;
 	}
+
+	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_Right))
+	{
+		return;
+	}
+
+	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_Left))
+	{
+		return;
+	}
+	
 	Super::RightMovementAction_Implementation(Value);
 }
 

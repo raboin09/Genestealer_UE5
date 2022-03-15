@@ -356,7 +356,7 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	FHitResult Hit(ForceInit);
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(GetInstigator());
-	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(COLLISION_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	return Hit;
 }
 

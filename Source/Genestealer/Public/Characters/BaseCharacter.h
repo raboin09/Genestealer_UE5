@@ -47,7 +47,7 @@ public:
 	////////////////////////////////
 	/// ITaggable override
 	////////////////////////////////
-	FORCEINLINE virtual FGameplayTagContainer GetTagContainer() override { return GameplayTagContainer; }
+	FORCEINLINE virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
 
 	////////////////////////////////
 	/// IEffectible override
@@ -144,7 +144,7 @@ protected:
 	
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
-
+	UPROPERTY(BlueprintReadOnly)
 	FGameplayTagContainer GameplayTagContainer;
 	
 private:

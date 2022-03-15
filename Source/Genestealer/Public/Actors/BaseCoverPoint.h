@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseActor.h"
+#include "Characters/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "BaseCoverPoint.generated.h"
@@ -20,9 +21,9 @@ public:
 	ABaseCoverPoint();
 
 	UFUNCTION(BlueprintCallable)
-	void OccupyCover(AActor* InActor, const FVector& InTargetCoverLocation);
+	void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation);
 	UFUNCTION(BlueprintCallable)
-	void VacateCover(AActor* InActor);
+	void VacateCover(ABaseCharacter* InActor);
 
 protected:
 	virtual void BeginPlay() override;
@@ -37,17 +38,17 @@ protected:
 	bool bCantMoveInThisCoverPoint;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	UStaticMeshComponent* MiddleCover;
+	UStaticMeshComponent* MiddleCoverWall;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bMiddleCoverEnabled;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	UBoxComponent* LeftCoverCollision;
+	UBoxComponent* LeftCoverCollisionBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bLeftCoverEnabled;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	UBoxComponent* RightCoverCollision;
+	UBoxComponent* RightCoverCollisionBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
@@ -61,9 +62,8 @@ private:
 	UFUNCTION()
 	void Internal_CoverTransitionFinished();
 	
-private:
 	UPROPERTY()
-	AActor* OccupiedActor;
+	ABaseCharacter* OccupiedActor;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UCurveFloat* CoverTransitionCurve;

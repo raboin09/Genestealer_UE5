@@ -23,5 +23,5 @@ class GENESTEALER_API ITaggable
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual FGameplayTagContainer GetTagContainer() = 0;
+	virtual FGameplayTagContainer& GetTagContainer() = 0;
 };

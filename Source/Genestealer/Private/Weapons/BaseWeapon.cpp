@@ -17,7 +17,7 @@ ABaseWeapon::ABaseWeapon()
 	WeaponSkeletalMesh->SetCollisionObjectType(ECC_WorldDynamic);
 	WeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	WeaponSkeletalMesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	WeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	WeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
@@ -26,7 +26,7 @@ ABaseWeapon::ABaseWeapon()
 	WeaponStaticMesh->SetCollisionObjectType(ECC_WorldDynamic);
 	WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	WeaponStaticMesh->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	WeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	WeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	DefaultGameplayTags.Add(GameplayTag::ActorType::Weapon);
