@@ -21,7 +21,7 @@ public:
 	ABaseCoverPoint();
 
 	UFUNCTION(BlueprintCallable)
-	void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation);
+	void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal);
 	UFUNCTION(BlueprintCallable)
 	void VacateCover(ABaseCharacter* InActor);
 
@@ -41,20 +41,25 @@ protected:
 	UStaticMeshComponent* MiddleCoverWall;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bMiddleCoverEnabled;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	UBoxComponent* LeftCoverCollisionBox;
+	UBoxComponent* LeftCoverEdgeBox;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UBoxComponent* LeftCoverPeekBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bLeftCoverEnabled;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	UBoxComponent* RightCoverCollisionBox;
+	UBoxComponent* RightCoverEdgeBox;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UBoxComponent* RightCoverPeekBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
 private:
-	void Internal_HandleEdgeCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor);
-	void Internal_HandleEdgeCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor);
+	void Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor);
+	void Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor);
+	void Internal_ActivateOverlapBoxes(bool bActivate);
 
 	void Internal_StartCoverTransition();
 	UFUNCTION()

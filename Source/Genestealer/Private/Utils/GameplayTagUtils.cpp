@@ -34,6 +34,14 @@ void UGameplayTagUtils::AddTagToActor(AActor* InActor, const FGameplayTag& InTag
 	}
 }
 
+void UGameplayTagUtils::RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag> InTags)
+{
+	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
+	{
+		return CastedActor->GetTagContainer().RemoveTags(FGameplayTagContainer::CreateFromArray(InTags));
+	}
+}
+
 void UGameplayTagUtils::RemoveTagFromActor(AActor* InActor, const FGameplayTag& InTag)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))

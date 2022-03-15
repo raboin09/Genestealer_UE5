@@ -33,8 +33,10 @@ namespace GameplayTag
 		const FGameplayTag Dead =  FGameplayTag::RequestGameplayTag("State.Dead");
 		const FGameplayTag Aiming =  FGameplayTag::RequestGameplayTag("State.Aiming");
 		const FGameplayTag InCover_Middle =  FGameplayTag::RequestGameplayTag("State.InCover.Middle");
-		const FGameplayTag InCover_Left =  FGameplayTag::RequestGameplayTag("State.InCover.Left");
-		const FGameplayTag InCover_Right =  FGameplayTag::RequestGameplayTag("State.InCover.Right");
+		const FGameplayTag InCover_LeftPeek =  FGameplayTag::RequestGameplayTag("State.InCover.LeftPeek");
+		const FGameplayTag InCover_LeftEdge =  FGameplayTag::RequestGameplayTag("State.InCover.LeftEdge");
+		const FGameplayTag InCover_RightPeek =  FGameplayTag::RequestGameplayTag("State.InCover.RightPeek");
+		const FGameplayTag InCover_RightEdge =  FGameplayTag::RequestGameplayTag("State.InCover.RightEdge");
 	}
 
 	namespace Attributes
@@ -54,6 +56,8 @@ public:
 	static bool ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact = false);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void AddTagToActor(AActor* InActor, const FGameplayTag& InTag);
+	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
+	static void RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag> InTags);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void RemoveTagFromActor(AActor* InActor, const FGameplayTag& InTag);
 };

@@ -105,7 +105,7 @@ void ABaseCharacter::PostInitializeComponents()
 
 void ABaseCharacter::ForwardMovementAction_Implementation(float Value)
 {
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, { GameplayTag::State::Stunned, GameplayTag::State::InCover_Middle }))
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, { GameplayTag::State::Stunned }))
 	{
 		return;
 	}
@@ -119,12 +119,12 @@ void ABaseCharacter::RightMovementAction_Implementation(float Value)
 		return;
 	}
 
-	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_Right))
+	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_RightEdge))
 	{
 		return;
 	}
 
-	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_Left))
+	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_LeftEdge))
 	{
 		return;
 	}
