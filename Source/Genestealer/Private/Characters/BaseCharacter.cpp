@@ -336,6 +336,7 @@ void ABaseCharacter::Input_ForwardMovement(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
+		MoveForwardScale = Value;
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
 	}
@@ -345,6 +346,7 @@ void ABaseCharacter::Input_RightMovement(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
+		MoveRightScale = Value;
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}

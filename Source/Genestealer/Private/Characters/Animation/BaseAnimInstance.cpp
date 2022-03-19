@@ -4,6 +4,7 @@
 #include "Characters/Animation/BaseAnimInstance.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 void UBaseAnimInstance::NativeInitializeAnimation()
@@ -70,17 +71,34 @@ void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		MoveRightScale *= .5f;
 	}
 
-	if(bUsingCover)
+	if(bUsingCover && !CharacterRef->bExitingCover)
 	{
-		if(CharacterRef->bExitingCover)
+		bIsPlayerHoldingShotKey = CharacterRef->bFiring;
+		bInCoverFacingRight = CharacterRef->bPlayerFacingRight;
+		bIsInMirroredAiming = !bInCoverFacingRight;
+		if(MoveRightScale > 0.f)
 		{
-			
-		} else
+			bInCoverMovingRight = true;
+		} else if(MoveRightScale < 0.f)
 		{
-			
-		}		
+			bInCoverMovingRight = false;
+		}
+	} else
+	{
+		const float DirectionAngleDiff = DesiredLocalMovingDirection - CurrentLocalMovingAngle;
+		const float JogLeanTarget = UKismetMathLibrary::InRange_FloatFloat(DirectionAngleDiff, -90.f, 90.f) ? DirectionAngleDiff : 0.f;
+		JogLeaningDirection = UKismetMathLibrary::FInterpTo(JogLeaningDirection, JogLeanTarget, UGameplayStatics::GetWorldDeltaSeconds(this), 4.f);
 	}
 
+	if(CharacterRef->bPlayerFacingRight)
+	{
+		MovingSidewaysInput = CharacterRef->MoveRightScale;
+		MovingForwardInput = CharacterRef->MoveForwardScale;
+	} else
+	{
+		MovingSidewaysInput = CharacterRef->MoveRightScale * -1.f;
+		MovingForwardInput = CharacterRef->MoveForwardScale * -1.f;
+	}
 	
 	// UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(PlayerAimPitch));
 }

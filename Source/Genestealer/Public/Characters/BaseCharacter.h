@@ -79,10 +79,15 @@ public:
 	/// ABaseCharacter Animation
 	////////////////////////////////
 
+	// TODO player facing right
+	bool bPlayerFacingRight;
 	// TODO true when firing
 	bool bFiring;
 	// TODO true when cover exit
 	bool bExitingCover;
+
+	float MoveRightScale;
+	float MoveForwardScale;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	float SprintSpeed = 650.f;

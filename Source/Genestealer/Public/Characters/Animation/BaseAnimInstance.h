@@ -75,11 +75,18 @@ private:
 	float MovementInputYawAngleWorldSpace;
 	float MoveForwardScale;
 	float MoveRightScale;
+	float JogLeaningDirection;
+
+	float MovingSidewaysInput;
+	float MovingForwardInput;
 
 	////////////////////////
 	/// COVER
 	////////////////////////
 
 	bool bUsingCover;
-	
+	bool bIsPlayerHoldingShotKey;
+	bool bInCoverFacingRight;
+	bool bInCoverMovingRight;
+	bool bIsInMirroredAiming;
 };
