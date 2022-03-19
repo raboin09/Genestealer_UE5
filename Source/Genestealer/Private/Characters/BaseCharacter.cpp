@@ -1,22 +1,22 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Characters/BaseCharacter.h"
-
+#include "Camera/CameraComponent.h"
 #include "Character/ALSCharacterMovementComponent.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/BasePlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
-ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+ABaseCharacter::ABaseCharacter()
 {
-	MovementModel.DataTable = LoadObject<UDataTable>(nullptr, UTF8_TO_TCHAR("DataTable'/Game/_Genestealer/Characters/GenstealerMovement.GenstealerMovement'"));
-	MovementModel.RowName = "Responsive";
-	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -28,15 +28,32 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->AddLocalOffset(FVector(0.f, 0.f, 95.f));
+	SpringArm->AddLocalRotation(FRotator(0.f, 0.f, -180.f));
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->bEnableCameraLag = true;
+	SpringArm->CameraLagSpeed = 3.f;
+	SpringArm->ProbeSize = 8.f;
+	SpringArm->TargetArmLength = 180.f;
+	SpringArm->SocketOffset = FVector(-50.f, 60.f, -30.f);
+	
+	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	ThirdPersonCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	EffectContainerComponent = CreateDefaultSubobject<UEffectContainerComponent>(TEXT("EffectContainer"));
 	CurrentAffiliation = EAffiliation::Neutral;
+
+	bUseControllerRotationYaw = false;	
 }
 
 void ABaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	Internal_TraceCameraAim();
 }
 
 float ABaseCharacter::PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction)
@@ -64,11 +81,6 @@ UAnimMontage* ABaseCharacter::Internal_GetWeaponAnimation(EWeaponAnimArchetype W
 	default:
 		return nullptr;
 	}
-}
-
-void ABaseCharacter::ChangeOverlayState(EALSOverlayState InOverlayState)
-{
-	SetOverlayState(InOverlayState);
 }
 
 void ABaseCharacter::BeginPlay()
@@ -103,120 +115,6 @@ void ABaseCharacter::PostInitializeComponents()
 	}
 }
 
-void ABaseCharacter::ForwardMovementAction_Implementation(float Value)
-{
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, { GameplayTag::State::Stunned }))
-	{
-		return;
-	}
-	Super::ForwardMovementAction_Implementation(Value);
-}
-
-void ABaseCharacter::RightMovementAction_Implementation(float Value)
-{
-	if(UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::Stunned))
-	{
-		return;
-	}
-
-	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_RightEdge))
-	{
-		return;
-	}
-
-	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, GameplayTag::State::InCover_LeftEdge))
-	{
-		return;
-	}
-	
-	Super::RightMovementAction_Implementation(Value);
-}
-
-void ABaseCharacter::K2_HandleReloadAction_Implementation()
-{
-	UKismetSystemLibrary::PrintString(this, "Reloading");
-}
-
-void ABaseCharacter::K2_HandleAimAction_Implementation(bool bTargeting)
-{
-	if (bTargeting)
-	{
-		SetRotationMode(EALSRotationMode::Aiming);
-	}
-	else
-	{
-		SetRotationMode(DesiredRotationMode);
-	}
-}
-
-void ABaseCharacter::K2_HandleFireAction_Implementation(bool bFiring)
-{
-	UKismetSystemLibrary::PrintString(this, "Firing");
-}
-
-void ABaseCharacter::K2_HandleCoverDodgeAction_Implementation()
-{
-	UKismetSystemLibrary::PrintString(this, "CoverDodge");
-}
-
-void ABaseCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
-{
-	Super::OnOverlayStateChanged(PreviousState);
-}
-
-void ABaseCharacter::RagdollEnd()
-{
-	UpdateHeldObject();
-	
-	/** Re-enable Replicate Movement and if the host is a dedicated server set mesh visibility based anim
-	tick option back to default*/
-
-	if (UKismetSystemLibrary::IsDedicatedServer(GetWorld()))
-	{
-		GetMesh()->VisibilityBasedAnimTickOption = DefVisBasedTickOp;
-	}
-
-	MyCharacterMovementComponent->bIgnoreClientMovementErrorChecksAndCorrection = 0;
-	SetReplicateMovement(true);
-
-	UAnimInstance* MainAnimInstance = GetMesh()->GetAnimInstance();
-	if (!MainAnimInstance)
-	{
-		return;
-	}
-	// Step 1: Save a snapshot of the current Ragdoll Pose for use in AnimGraph to blend out of the ragdoll
-	MainAnimInstance->SavePoseSnapshot(TEXT("RagdollPose"));
-	// Step 2: If the ragdoll is on the ground, set the movement mode to walking and play a Get Up animation.
-	// If not, set the movement mode to falling and update the character movement velocity to match the last ragdoll velocity.
-	if (bRagdollOnGround)
-	{
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		if(UAnimMontage* FoundMontage = GetGetUpAnimation(bRagdollFaceUp))
-		{
-			const float FastestBlendTime = UCombatUtils::GetKnockbackRecoveryTime(EHitReactType::Knockback_VeryLight);
-			const float ThisBlendTime = FastestBlendTime - UCombatUtils::GetKnockbackRecoveryTime(LastKnownHitReact);
-			FoundMontage->BlendIn.SetBlendTime(ThisBlendTime);
-			MainAnimInstance->Montage_Play(FoundMontage, UCombatUtils::GetKnockbackRecoveryTime(LastKnownHitReact), EMontagePlayReturnType::MontageLength, 0.0f, true);	
-		}
-	}
-	else
-	{
-		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-		GetCharacterMovement()->Velocity = LastRagdollVelocity;
-	}
-
-	// Step 3: Re-Enable capsule collision, and disable physics simulation on the mesh.
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionObjectType(ECC_Pawn);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMesh()->SetAllBodiesSimulatePhysics(false);
-
-	if (RagdollStateChangedDelegate.IsBound())
-	{
-		RagdollStateChangedDelegate.Broadcast(false);
-	}
-}
-
 void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayload& EventPayload)
 {
 	if(!EventPayload.bNaturalChange)
@@ -244,18 +142,18 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 	if(!NewWeapon)
 		return;
 	
-	if(NewWeapon->GetWeaponMesh() == nullptr)
-	{
-		// TODO handle bare handed weapon
-	} else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
-	{
-		AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
-	} else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
-	{
-		AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
-	}
-	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	SetOverlayState(NewWeapon->GetWeaponOverlay());
+	// if(NewWeapon->GetWeaponMesh() == nullptr)
+	// {
+	// 	// TODO handle bare handed weapon
+	// } else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
+	// {
+	// 	AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
+	// } else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
+	// {
+	// 	AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
+	// }
+	// NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	// SetOverlayState(NewWeapon->GetWeaponOverlay());
 }
 
 void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
@@ -307,7 +205,7 @@ float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMonta
 
 void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration)
 {
-	RagdollStart();
+	// RagdollStart();
 	GetMesh()->AddImpulse(Impulse * ImpulseScale, BoneName, bVelocityChange);
 	GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, KnockdownDuration, false);
 }
@@ -327,14 +225,14 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 		return;
 	}
 	
-	if (LastRagdollVelocity.Size() > 100)
-	{
-		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
-	}
-	else
-	{
-		RagdollEnd();
-	}
+	// if (LastRagdollVelocity.Size() > 100)
+	// {
+	// 	GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
+	// }
+	// else
+	// {
+	// 	RagdollEnd();
+	// }
 }
 
 void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent)
@@ -374,6 +272,15 @@ FGameplayTag ABaseCharacter::Internal_GetHitDirectionTag(const FVector& Originat
 	return GameplayTag::HitReact::Left;
 }
 
+void ABaseCharacter::Internal_TraceCameraAim()
+{
+	const FVector Start = ThirdPersonCamera->K2_GetComponentLocation();
+	const FVector End = (ThirdPersonCamera->GetForwardVector() * 10000.f) + Start;
+	FHitResult Hit(ForceInit);
+	UKismetSystemLibrary::LineTraceSingle(this, Start, End,  UEngineTypes::ConvertToTraceType(ECC_Visibility), false, {}, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+	CameraTraceEnd = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd; 
+}
+
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 {
 	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
@@ -398,7 +305,7 @@ void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 		InventoryComponent->DestroyInventory();
 	}
 	
-	ClearHeldObject();
+	// ClearHeldObject();
 	Internal_StopAllAnimMontages();
 	GetMesh()->SetRenderCustomDepth(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -410,18 +317,92 @@ void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 		{
 			const float TriggerRagdollTime = DeathAnimDuration - .3f;
 			GetMesh()->bBlendPhysics = true;
-			GetWorldTimerManager().SetTimer(TimerHandle_DeathRagoll, this, &ABaseCharacter::RagdollStart, FMath::Max(0.1f, TriggerRagdollTime), false);
+			// GetWorldTimerManager().SetTimer(TimerHandle_DeathRagoll, this, &ABaseCharacter::RagdollStart, FMath::Max(0.1f, TriggerRagdollTime), false);
 			SetLifeSpan(10.f);
 		}
 		else
 		{
-			RagdollStart();
+			// RagdollStart();
 			SetLifeSpan(10.f);
 		}
 	} else
 	{
-		RagdollStart();
+		// RagdollStart();
 		SetLifeSpan(10.f);
 	}
 }
 
+void ABaseCharacter::Input_ForwardMovement(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.0f))
+	{
+		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
+	}
+}
+
+void ABaseCharacter::Input_RightMovement(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.0f))
+	{
+		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
+	}
+}
+
+void ABaseCharacter::Input_CameraUp(float Value)
+{
+	AddControllerPitchInput(.8f * Value);
+}
+
+void ABaseCharacter::Input_CameraRight(float Value)
+{
+	AddControllerYawInput(.8f * Value);
+}
+
+float ABaseCharacter::CalculateAimOffsetYaw(const float CurrentAimYaw, const float Alpha) const
+{
+	const FVector ControlRotation = UKismetMathLibrary::Normal(UKismetMathLibrary::GetForwardVector(GetControlRotation()));
+	const FVector ForwardVector = UKismetMathLibrary::Normal(GetActorForwardVector());
+	const FVector RightVector = UKismetMathLibrary::Normal(GetActorRightVector());
+	const float NextAimYaw = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(ControlRotation, ForwardVector)) * UKismetMathLibrary::SignOfFloat(UKismetMathLibrary::Dot_VectorVector(ControlRotation, RightVector));
+	return UKismetMathLibrary::Lerp(NextAimYaw, CurrentAimYaw, Alpha);
+}
+
+float ABaseCharacter::CalculateAimOffsetPitch(const float CurrentAimPitch) const
+{
+	const float NextAimPitch = UKismetMathLibrary::FindLookAtRotation(GetMesh()->GetSocketLocation("head"), CameraTraceEnd).Pitch;
+	return UKismetMathLibrary::FInterpEaseInOut(CurrentAimPitch, NextAimPitch, .2f, .4f);
+}
+
+void ABaseCharacter::CalculateMovementInputScale(float& MoveForwardScale, float& MoveRightScale) const
+{
+	const FVector CurrentVelocity = GetVelocity();
+	const float Factor = CurrentVelocity.Length() / (GetCharacterMovement()->MaxWalkSpeed * .01f) * .01f;
+	MoveForwardScale = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(CurrentVelocity, .0001f), GetActorForwardVector()) * Factor;
+	MoveRightScale = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(CurrentVelocity, .0001f), GetActorRightVector()) * Factor;
+}
+
+float ABaseCharacter::CalculateCurrentInputLocalAngle() const
+{
+	const FVector LastInputVector = GetLastMovementInputVector();
+	return Internal_DotProductWithForwardAndRightVector(LastInputVector);
+}
+
+float ABaseCharacter::CalculateCurrentMovingLocalAngle(bool bLastFrame) const
+{
+	const FVector SelectedVelocity = bLastFrame ? GetCharacterMovement()->GetLastUpdateVelocity() : GetVelocity();
+	return Internal_DotProductWithForwardAndRightVector(SelectedVelocity);
+}
+
+float ABaseCharacter::Internal_DotProductWithForwardAndRightVector(FVector InputVector) const
+{
+	const FVector Dot1_A = UKismetMathLibrary::Normal({ InputVector.X, InputVector.Y, 0.f }, .0001f);
+	const FVector ActorForward = GetActorForwardVector();
+	const FVector Dot1_B = UKismetMathLibrary::Normal({ ActorForward.X, ActorForward.Y, 0.f}, .0001f);
+	const float Op_1 = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(Dot1_A, Dot1_B));
+	const FVector ActorRight = GetActorRightVector();
+	const FVector Dot2_B = UKismetMathLibrary::Normal({ ActorRight.X, ActorRight.Y, 0.f}, .0001f);
+	const float Op_2 = UKismetMathLibrary::SignOfFloat(UKismetMathLibrary::Dot_VectorVector(Dot1_A, Dot2_B));
+	return Op_1 * Op_2;
+}

@@ -11,17 +11,18 @@
  * 
  */
 UCLASS()
-class GENESTEALER_API ABasePlayerController : public AALSPlayerController
+class GENESTEALER_API ABasePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
 public:
 	virtual void OnPossess(APawn* NewPawn) override;
+	virtual void SetupInputComponent() override;
+	virtual void BindActions(UInputMappingContext* Context);
 	
 	AActor* GetTargetedActor() const { return nullptr; }
 
 protected:
-
 	UFUNCTION()
 	void ForwardMovementAction(const FInputActionValue& Value);
 	UFUNCTION()
@@ -30,14 +31,15 @@ protected:
 	void CameraUpAction(const FInputActionValue& Value);
 	UFUNCTION()
 	void CameraRightAction(const FInputActionValue& Value);
-	UFUNCTION()
-	void SprintAction(const FInputActionValue& Value);
-	UFUNCTION()
-	void AimAction(const FInputActionValue& Value);
-	UFUNCTION()
-	void CoverDodgeAction(const FInputActionValue& Value);
+	
+	UPROPERTY(BlueprintReadOnly)
+	ABaseCharacter* PossessedCharacter = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Genestealer")
+	UInputMappingContext* DefaultInputMappingContext = nullptr;
 
 private:
+	void Internal_SetupInputs();
+	
 	UPROPERTY()
 	ABasePlayerCharacter* PlayerCharacter;
 };

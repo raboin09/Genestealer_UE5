@@ -18,8 +18,8 @@ ABaseCoverPoint::ABaseCoverPoint()
 	bCantMoveInThisCoverPoint = false;
 
 	MiddleCoverWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiddleCoverWall"));
-	MiddleCoverWall->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object);
-	MiddleCoverWall->GetStaticMesh()->SetMaterial(0, ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'")).Object);
+	// MiddleCoverWall->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object);
+	// MiddleCoverWall->GetStaticMesh()->SetMaterial(0, ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'")).Object);
 	MiddleCoverWall->SetHiddenInGame(true);
 	MiddleCoverWall->AddLocalOffset(FVector(0.f, -130.f, 50.f));
 	MiddleCoverWall->SetRelativeScale3D(FVector(4.f, .1f, 1.3f));
@@ -123,9 +123,9 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	
 	OccupiedActor = InActor;
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, GameplayTag::State::InCover_Middle);
-	OccupiedActor->SetStance(EALSStance::Crouching);
-	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection);
-	OccupiedActor->SetGait(EALSGait::Walking);
+	// OccupiedActor->SetStance(EALSStance::Crouching);
+	// OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection);
+	// OccupiedActor->SetGait(EALSGait::Walking);
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
 	// TargetCoverRotation = FRotator(OccupiedActor->GetActorRotation().Pitch, MiddleCoverWall->K2_GetComponentRotation().Yaw - 90, OccupiedActor->GetActorRotation().Roll);
 	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal); 

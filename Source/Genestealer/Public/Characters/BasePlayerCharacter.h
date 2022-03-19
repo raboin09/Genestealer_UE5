@@ -13,5 +13,7 @@ UCLASS(Abstract, Blueprintable)
 class GENESTEALER_API ABasePlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
-	
+
+public:
+	ABasePlayerCharacter();
 };
