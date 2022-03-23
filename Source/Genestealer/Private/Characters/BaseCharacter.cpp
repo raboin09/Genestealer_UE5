@@ -2,11 +2,11 @@
 
 #include "Characters/BaseCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "Character/ALSCharacterMovementComponent.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/BasePlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,24 +30,39 @@ ABaseCharacter::ABaseCharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->AddLocalOffset(FVector(0.f, 0.f, 95.f));
-	SpringArm->AddLocalRotation(FRotator(0.f, 0.f, -180.f));
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bEnableCameraLag = true;
-	SpringArm->CameraLagSpeed = 3.f;
-	SpringArm->ProbeSize = 8.f;
-	SpringArm->TargetArmLength = 180.f;
-	SpringArm->SocketOffset = FVector(-50.f, 60.f, -30.f);
-	
 	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
 	ThirdPersonCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	EffectContainerComponent = CreateDefaultSubobject<UEffectContainerComponent>(TEXT("EffectContainer"));
+	AnimComponent = CreateDefaultSubobject<UAGRAnimMasterComponent>(TEXT("AnimationComponent"));
 	CurrentAffiliation = EAffiliation::Neutral;
 
-	bUseControllerRotationYaw = false;	
+	BaseLookupRate = 45.f;
+	BaseTurnRate = 45.f;
+
+	InitAGRDefaults();
+}
+
+void ABaseCharacter::InitAGRDefaults()
+{
+	// AGR Defaults
+	bUseControllerRotationYaw = false;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	NetPriority = 4.0f;
+	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
+	CharacterMovementComponent->PerchRadiusThreshold = 40.0f;
+	CharacterMovementComponent->PerchAdditionalHeight = 25.0f;
+	CharacterMovementComponent->NavAgentProps.bCanFly = true;
+	CharacterMovementComponent->NavAgentProps.bCanCrouch = true;
+	CharacterMovementComponent->bCanWalkOffLedgesWhenCrouching = true;
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -88.0f));
+	MeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+	MeshComponent->bEnableUpdateRateOptimizations = true;
+	MeshComponent->bPropagateCurvesToSlaves = true;
+	MeshComponent->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
 void ABaseCharacter::Tick(float DeltaSeconds)
@@ -285,7 +300,7 @@ void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 {
 	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
 }
- 
+
 void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 {
 	if (GameplayTagContainer.HasTag(GameplayTag::State::Dead))
@@ -336,7 +351,7 @@ void ABaseCharacter::Input_ForwardMovement(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		MoveForwardScale = Value;
+		MovingForwardInput = Value;
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
 	}
@@ -346,7 +361,7 @@ void ABaseCharacter::Input_RightMovement(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		MoveRightScale = Value;
+		MovingSidewaysInput = Value;
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}
@@ -354,12 +369,12 @@ void ABaseCharacter::Input_RightMovement(float Value)
 
 void ABaseCharacter::Input_CameraUp(float Value)
 {
-	AddControllerPitchInput(.8f * Value);
+	AddControllerPitchInput(Value * BaseTurnRate * UGameplayStatics::GetWorldDeltaSeconds(this));
 }
 
 void ABaseCharacter::Input_CameraRight(float Value)
 {
-	AddControllerYawInput(.8f * Value);
+	AddControllerYawInput(Value * BaseLookupRate * UGameplayStatics::GetWorldDeltaSeconds(this));
 }
 
 float ABaseCharacter::CalculateAimOffsetYaw(const float CurrentAimYaw, const float Alpha) const

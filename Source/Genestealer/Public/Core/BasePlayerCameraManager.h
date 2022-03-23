@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/ALSPlayerCameraManager.h"
 #include "BasePlayerCameraManager.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GENESTEALER_API ABasePlayerCameraManager : public AALSPlayerCameraManager
+class GENESTEALER_API ABasePlayerCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()
 	

@@ -9,7 +9,7 @@
 #include "API/Attackable.h"
 #include "API/Effectible.h"
 #include "API/Taggable.h"
-#include "Character/ALSCharacter.h"
+#include "Components/AGRAnimMasterComponent.h"
 #include "GameFramework/Character.h"
 #include "Utils/GameplayTagUtils.h"
 #include "Weapons/BaseWeapon.h"
@@ -86,8 +86,8 @@ public:
 	// TODO true when cover exit
 	bool bExitingCover;
 
-	float MoveRightScale;
-	float MoveForwardScale;
+	float MovingSidewaysInput;
+	float MovingForwardInput;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	float SprintSpeed = 650.f;
@@ -132,6 +132,8 @@ protected:
 	UHealthComponent* HealthComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	UInventoryComponent* InventoryComponent;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UAGRAnimMasterComponent* AnimComponent;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
@@ -145,6 +147,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
+	float BaseTurnRate;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
+	float BaseLookupRate;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds") 
 	USoundCue* DeathSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
@@ -160,6 +167,8 @@ private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
 	void Internal_AddDefaultTagsToContainer();
+
+	void InitAGRDefaults();
 
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts

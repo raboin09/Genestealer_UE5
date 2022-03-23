@@ -44,7 +44,6 @@ void ABasePlayerController::BindActions(UInputMappingContext* Context)
 			}
 			for (const UInputAction* UniqueAction : UniqueActions)
 			{
-				UKismetSystemLibrary::PrintString(this, UniqueAction->GetFName().ToString());
 				EnhancedInputComponent->BindAction(UniqueAction, ETriggerEvent::Triggered, Cast<UObject>(this), UniqueAction->GetFName());
 			}
 		}

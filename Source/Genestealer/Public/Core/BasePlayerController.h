@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/ALSPlayerController.h"
+#include "InputActionValue.h"
+#include "InputMappingContext.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "BasePlayerController.generated.h"
 

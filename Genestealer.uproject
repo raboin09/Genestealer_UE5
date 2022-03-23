@@ -9,9 +9,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"ALSV4_CPP",
 				"Engine",
-				"EnhancedInput",
 				"AIModule",
 				"CoreUObject"
 			]
@@ -24,6 +22,15 @@
 			"TargetAllowList": [
 				"Editor"
 			]
+		},
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "AGRPRO",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/c4f13f7fc2c048d8ad4985ecfbf4f6c6"
 		}
 	]
 }

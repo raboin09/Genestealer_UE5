@@ -40,7 +40,6 @@ public:
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
 	FORCEINLINE virtual USceneComponent* GetWeaponRoot() const override { return GetRootComponent(); }
-	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; };
 	FORCEINLINE virtual EWeaponState GetWeaponState() override { return CurrentState; }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
@@ -107,8 +106,6 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Genestealer|Weapon|Config")
 	USkeletalMeshComponent* WeaponSkeletalMesh;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	EALSOverlayState WeaponOverlayState;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EWeaponAnimArchetype WeaponArchetype;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")

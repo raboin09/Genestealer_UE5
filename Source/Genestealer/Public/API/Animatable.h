@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Library/ALSCharacterEnumLibrary.h"
 #include "UObject/Interface.h"
 #include "Animatable.generated.h"
 
@@ -60,5 +59,4 @@ public:
 	
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::TryPlayAnimMontage, return -1.f;)
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::ForcePlayAnimMontage, return -1.f;)
-	virtual void ChangeOverlayState(EALSOverlayState InOverlayState) PURE_VIRTUAL(IAnimatable::ChangeOverlayState,)
 };

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Library/ALSCharacterEnumLibrary.h"
 #include "UObject/Interface.h"
 #include "Weapon.generated.h"
 
@@ -72,7 +71,6 @@ public:
 	virtual UMeshComponent* GetWeaponMesh() const PURE_VIRTUAL(IWeapon::GetWeaponMesh, return nullptr;);
 	virtual USceneComponent* GetWeaponRoot() const PURE_VIRTUAL(IWeapon::GetWeaponRoot, return nullptr;);
 	virtual void SetWeaponMesh(UMeshComponent* IncomingCharacter)PURE_VIRTUAL(IWeapon::SetWeaponMesh,);
-	virtual EALSOverlayState GetWeaponOverlay() PURE_VIRTUAL(IWeapon::GetWeaponOverlay, return EALSOverlayState::Default;);
 	UFUNCTION(BlueprintCallable)
 	virtual EWeaponState GetWeaponState() PURE_VIRTUAL(IWeapon::GetWeaponState, return EWeaponState::Idle;)
 	
