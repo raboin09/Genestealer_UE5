@@ -5,7 +5,6 @@
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Core/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Genestealer/Genestealer.h"
