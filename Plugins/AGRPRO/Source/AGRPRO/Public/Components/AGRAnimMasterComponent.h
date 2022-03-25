@@ -52,19 +52,19 @@ public:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing="OnRep_RotationSpeed", EditDefaultsOnly, Category = "AGR|Setup")
 	float RotationSpeed = 360.0f;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup", meta=(EditCondition="RotationMethod == EAGR_RotationMethod::DesiredAtAngle", EditConditionHides))
+	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup")
 	float TurnStartAngle = 90.0f;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup", meta=(EditCondition="RotationMethod == EAGR_RotationMethod::DesiredAtAngle", EditConditionHides))
+	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup")
 	float TurnStopTolerance = 1.0f;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup")
 	EAGR_AimOffsets AimOffsetType = EAGR_AimOffsets::NONE;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup", meta=(EditCondition="AimOffsetType != EAGR_AimOffsets::NONE", EditConditionHides))
+	UPROPERTY(BlueprintReadWrite, Replicated, EditDefaultsOnly, Category = "AGR|Setup")
 	EAGR_AimOffsetClamp AimOffsetBehavior = EAGR_AimOffsetClamp::Nearest;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "AGR|Setup", meta=(EditCondition="AimOffsetType != EAGR_AimOffsets::NONE", EditConditionHides))
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "AGR|Setup")
 	float AimClamp = 135.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "AGR|Setup")

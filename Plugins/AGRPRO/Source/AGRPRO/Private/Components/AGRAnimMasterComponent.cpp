@@ -106,7 +106,7 @@ void UAGRAnimMasterComponent::SetupRotation(
 	const EAGR_RotationMethod InRotationMethod,
 	const float InRotationSpeed,
 	const float InTurnStartAngle,
-	const float InTurnStopTolerance)
+	const float InTurnStopTolerance) 
 {
 	RotationMethod = InRotationMethod;
 	HandleRotationMethodChange();
@@ -172,12 +172,10 @@ void UAGRAnimMasterComponent::TurnInPlaceTick()
 		const float Speed = GetOwner()->GetVelocity().Size();
 		if(AbsoluteDelta > TurnStartAngle || Speed > 25.0f)
 		{
-			UKismetSystemLibrary::PrintString(this, "Jittering", true, false, FLinearColor::Red, UGameplayStatics::GetWorldDeltaSeconds(this));
 			OwnerMovementComponent->bUseControllerDesiredRotation = true;
 		}
 		else
 		{
-			UKismetSystemLibrary::PrintString(this, "No", true, false, FLinearColor::Green, UGameplayStatics::GetWorldDeltaSeconds(this));
 			const float ClampValue = FMath::Clamp(TurnStopTolerance, 1.0f, 90.0f);
 			const float Min = ClampValue/-1.0f;
 			const float Max = ClampValue/1.0f;
@@ -273,6 +271,7 @@ void UAGRAnimMasterComponent::LookAtIfPlayerControlled()
 	FVector End = Start + (PlayerCam->GetCameraRotation().Vector() * 10000.0f);
 
 	FCollisionQueryParams QueryParams;
+	FCollisionResponseParams ResponseParams;
 
 	TArray<AActor*> IgnoredActors;
 	OwningCharacter->GetAttachedActors(IgnoredActors, true);
@@ -303,6 +302,7 @@ void UAGRAnimMasterComponent::LookAtIfPlayerControlled()
 
 			Start =  OwningCharacter->GetMesh()->GetSocketLocation(AimSocketName);
 			DrawDebugLine(GetWorld(), Start, End, AimLineColor,bLinePersists, LineLifetime, 0, LineThickness);
+			//DrawDebugSphere(GetWorld(), End, 10.f, 3, FColor::Red, false, 2.f);
 		}
 		#endif
 	}
