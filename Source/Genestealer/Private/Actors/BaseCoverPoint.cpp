@@ -12,7 +12,7 @@
 
 ABaseCoverPoint::ABaseCoverPoint()
 {
-	DefaultGameplayTags.Add(GameplayTag::ActorType::Cover);
+	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
 
 	CoverWallOffset = 40.f;
 	bCantMoveInThisCoverPoint = false;
@@ -122,12 +122,11 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	}
 	
 	OccupiedActor = InActor;
-	UGameplayTagUtils::AddTagToActor(OccupiedActor, GameplayTag::State::InCover_Middle);
-	// OccupiedActor->SetStance(EALSStance::Crouching);
-	// OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection);
-	// OccupiedActor->SetGait(EALSGait::Walking);
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_MIDDLE);
+	OccupiedActor->SetAimOffset(EAGR_AimOffsets::NONE);
+	OccupiedActor->SetCurrentCoverPoint(this);
+	OccupiedActor->AddActorLocalRotation({0.f, 180.f, 0.f});
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
-	// TargetCoverRotation = FRotator(OccupiedActor->GetActorRotation().Pitch, MiddleCoverWall->K2_GetComponentRotation().Yaw - 90, OccupiedActor->GetActorRotation().Roll);
 	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal); 
 
 	Internal_ActivateOverlapBoxes(true);	
@@ -146,9 +145,11 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
 	
-	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {GameplayTag::State::InCover_Middle,
-		GameplayTag::State::InCover_LeftEdge, GameplayTag::State::InCover_RightEdge,
-		GameplayTag::State::InCover_LeftPeek, GameplayTag::State::InCover_RightPeek});
+	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_COVER_MIDDLE,
+		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
+		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
+	OccupiedActor->SetAimOffset(EAGR_AimOffsets::Aim);
+	OccupiedActor->SetCurrentCoverPoint(nullptr);
 	OccupiedActor = nullptr;
 	Internal_ActivateOverlapBoxes(false);	
 }
@@ -168,10 +169,10 @@ void ABaseCoverPoint::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		Internal_HandlePeekCoverOverlap(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, GameplayTag::State::InCover_LeftEdge);
+		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_LEFTEDGE);
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, GameplayTag::State::InCover_RightEdge);
+		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_RIGHTEDGE);
 	}
 }
 
@@ -190,10 +191,10 @@ void ABaseCoverPoint::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActo
 		Internal_HandlePeekCoverOverlapEnd(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, GameplayTag::State::InCover_LeftEdge);
+		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTEDGE);
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, GameplayTag::State::InCover_RightEdge);
+		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_RIGHTEDGE);
 	}
 }
 
@@ -206,10 +207,10 @@ void ABaseCoverPoint::Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AAct
 	
 	if(bLeftCoverPoint)
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, GameplayTag::State::InCover_LeftPeek);
+		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_LEFTPEEK);
 	} else
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, GameplayTag::State::InCover_RightPeek);
+		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_RIGHTPEEK);
 	}
 }
 
@@ -222,10 +223,10 @@ void ABaseCoverPoint::Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, A
 	
 	if(bLeftCoverPoint)
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, GameplayTag::State::InCover_LeftPeek);
+		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTPEEK);
 	} else
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, GameplayTag::State::InCover_RightPeek);
+		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_RIGHTPEEK);
 	}
 }
 

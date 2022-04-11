@@ -1,6 +1,7 @@
 #include "Characters/InventoryComponent.h"
 #include "GameFramework/Character.h"
 #include "Utils/CoreUtils.h"
+#include "Utils/SpawnUtils.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -45,14 +46,12 @@ void UInventoryComponent::Internal_SpawnWeaponFromClass(TSubclassOf<AActor> Weap
 {
 	if(WeaponClass && WeaponClass->ImplementsInterface(UWeapon::StaticClass()))
 	{
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		AActor* SpawnedWeapon = GetWorld()->SpawnActor<AActor>(WeaponClass, SpawnInfo);
-		if(APawn* CastedOwner = Cast<APawn>(GetOwner()))
+		AActor* SpawnedWeapon = USpawnUtils::SpawnActorToWorld_Deferred<AActor>(this, WeaponClass);
+		if(const TScriptInterface<IWeapon> NewWeapon = SpawnedWeapon)
 		{
-			SpawnedWeapon->SetInstigator(CastedOwner);			
+			NewWeapon->SetOwningPawn(Cast<ACharacter>(GetOwner()));
 		}
-		SpawnedWeapon->SetOwner(GetOwner());
+		USpawnUtils::FinishSpawningActor_Deferred(SpawnedWeapon, GetOwner()->GetTransform());
 		if(const TScriptInterface<IWeapon> NewWeapon = SpawnedWeapon)
 		{
 			AddWeapon(NewWeapon, Slot);
@@ -286,6 +285,19 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 		{
 			NewWeapon->SetOwningPawn(CastedChar);
 			NewWeapon->OnEquip(LastWeapon);
+			if(USkeletalMeshComponent* MeshComponent = CastedChar->GetMesh())
+			{
+				if(NewWeapon->GetWeaponMesh())
+				{
+					NewWeapon->GetWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
+				}
+				
+				// Attach dual wield if exists
+				if(NewWeapon->GetSecondaryWeaponMesh())
+				{
+					NewWeapon->GetSecondaryWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("LeftHandSocket"));
+				}
+			}
 		}
 	}
 	CurrentWeaponChanged.Broadcast(NewWeapon, LastWeapon);

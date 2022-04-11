@@ -17,5 +17,12 @@ class GENESTEALER_API UBaseAnimInstance : public UAGRCoreAnimInstance
 public:
 	UBaseAnimInstance();
 	virtual void NativeInitializeAnimation() override;
+	
+protected:
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
+	bool bFiring = false;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
+	bool bIsInCover = false;
 };

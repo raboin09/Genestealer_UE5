@@ -33,12 +33,19 @@ void ABaseRangedWeapon::BeginPlay()
 	BroadcastAmmoUsage();
 }
 
-void ABaseRangedWeapon::SimulateWeaponFire()
+float ABaseRangedWeapon::SimulateWeaponFire()
 {
+	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
+	Internal_RotateFiringMesh();
 	if (FireFXClass)
 	{
-		if (!bLoopedMuzzleFX || FireFXSystem == nullptr)
+		if (!bLoopedMuzzleFX || !FireFXSystem)
 		{
+			if(FireFXSystem && !bLoopedMuzzleFX)
+			{
+				FireFXSystem->DeactivateImmediate();
+			}
+
 			if(FireFXClass->IsA(UParticleSystem::StaticClass()))
 			{
 				FireFXSystem = Internal_PlayParticleFireEffects();
@@ -48,11 +55,11 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 			}
 		}
 	}
-
-	if (!bLoopedFireAnim || !bPlayingFireAnim)
+	
+	if(!CurrentMontage || !bLoopedFireAnim)
 	{
-		PlayWeaponAnimation(EWeaponAnimAction::Fire);
-		bPlayingFireAnim = true;
+		PlayWeaponAnimation(PlayData);
+		CurrentMontage = PlayData.MontageToPlay;
 	}
 
 	if (bLoopedFireSound)
@@ -67,30 +74,96 @@ void ABaseRangedWeapon::SimulateWeaponFire()
 		PlayWeaponSound(FireSound);
 	}
 	PlayCameraShake();
-}
 
-void ABaseRangedWeapon::Internal_DeactivateParticleSystem(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat)
-{
-	UKismetSystemLibrary::PrintString(this, "Collision");
-	if(!ParticleFX)
+	bSecondaryWeaponsTurn = !bSecondaryWeaponsTurn;
+	if(PlayData.MontageToPlay)
 	{
-		return;
+		return PlayData.MontageToPlay->BlendIn.GetBlendTime();
 	}
-	ParticleFX->Deactivate();
+	return 0.f;
 }
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 {
-	ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
-	ParticleFX->OnParticleCollide.AddDynamic(this, &ABaseRangedWeapon::Internal_DeactivateParticleSystem);
+	ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	return ParticleFX;
 }
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
 {
-	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	// TODO handle Niagara collisions
 	return NiagaraFX;
+}
+
+FAnimMontagePlayData ABaseRangedWeapon::Internal_GetPlayData() const
+{
+	// if not akimbo, if in cover return 
+	
+	FAnimMontagePlayData PlayData;	
+	if(bAkimbo)
+	{
+		if(Internal_IsInCover())
+		{
+			PlayData.MontageToPlay = Internal_HasRightInput() ? CoverFireRightAnim : CoverFireLeftAnim;
+		} else
+		{
+			PlayData.MontageToPlay = FireAnim;
+			PlayData.MontageSection = bSecondaryWeaponsTurn ? "AltFire" : "MainFire";
+		}
+
+	} else
+	{
+		PlayData.MontageToPlay = FireAnim;
+	}
+	return PlayData;
+}
+
+void ABaseRangedWeapon::Internal_RotateFiringMesh()
+{
+	if(bAkimbo)
+	{
+		if(Internal_IsInCover())
+		{
+			if(Internal_HasRightInput())
+			{
+				NextFiringMesh = GetWeaponMesh();
+			} else
+			{
+				NextFiringMesh = GetSecondaryWeaponMesh();
+			}
+		} else
+		{
+			if(bSecondaryWeaponsTurn)
+			{
+				NextFiringMesh = GetSecondaryWeaponMesh();
+			} else
+			{
+				NextFiringMesh = GetWeaponMesh();
+			}	
+		}
+	} else
+	{
+		NextFiringMesh = GetWeaponMesh();
+	}
+}
+
+bool ABaseRangedWeapon::Internal_IsInCover() const
+{
+	if(const IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
+	{
+		return AnimOwner->IsInCover();
+	}
+	return false;
+}
+
+bool ABaseRangedWeapon::Internal_HasRightInput() const
+{
+	if(const IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
+	{
+		return AnimOwner->HasRightInput();
+	}
+	return false;
 }
 
 void ABaseRangedWeapon::StopSimulatingWeaponFire()
@@ -104,10 +177,10 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 		}
 	}
 
-	if (bLoopedFireAnim && bPlayingFireAnim)
+	if (bLoopedFireAnim && CurrentMontage)
 	{
-		StopWeaponAnimation(EWeaponAnimAction::Fire);
-		bPlayingFireAnim = false;
+		StopWeaponAnimation(CurrentMontage);
+		CurrentMontage = nullptr;
 	}
 
 	if (FireAC)
@@ -202,11 +275,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginLocation()
 {
 	if(bRaycastFromWeapon)
 	{
-		if(!GetWeaponMesh())
+		if(!NextFiringMesh)
 		{
 			return FVector::ZeroVector;
 		}
-		return GetWeaponMesh()->GetSocketLocation(RaycastSourceSocketName);
+		return NextFiringMesh->GetSocketLocation(RaycastSourceSocketName);
 	}
 	
 	if(!GetInstigator())
@@ -262,11 +335,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginRotation()
 {
 	if(bRaycastFromWeapon)
 	{
-		if(!GetWeaponMesh())
+		if(!NextFiringMesh)
 		{
 			return FVector::ZeroVector;
 		}
-		return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName).Vector();
+		return NextFiringMesh->GetSocketRotation(RaycastSourceSocketName).Vector();
 	}
 	
 	if(!GetInstigator())
@@ -283,11 +356,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginRotation()
 
 FRotator ABaseRangedWeapon::GetRaycastSocketRotation() const
 {
-	if(!GetWeaponMesh())
+	if(!NextFiringMesh)
 	{
 		return FRotator::ZeroRotator;
 	}
-	return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName);
+	return NextFiringMesh->GetSocketRotation(RaycastSourceSocketName);
 }
 
 FVector ABaseRangedWeapon::GetAdjustedAim() const
@@ -354,7 +427,7 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
 	TraceParams.bReturnPhysicalMaterial = true;
 	FHitResult Hit(ForceInit);
-	TArray<AActor*> IgnoreActors;
+	TArray<AActor*> IgnoreActors; 
 	IgnoreActors.Add(GetInstigator());
 	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	return Hit;

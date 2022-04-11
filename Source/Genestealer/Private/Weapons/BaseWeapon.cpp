@@ -11,6 +11,8 @@
 
 ABaseWeapon::ABaseWeapon()
 {
+	WeaponRootComponent = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponRoot"));
+	
 	WeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSkeletalMesh"));
 	WeaponSkeletalMesh->bReceivesDecals = false;
 	WeaponSkeletalMesh->CastShadow = true;
@@ -19,6 +21,7 @@ ABaseWeapon::ABaseWeapon()
 	WeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	WeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	WeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
 
 	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
 	WeaponStaticMesh->bReceivesDecals = false;
@@ -28,10 +31,31 @@ ABaseWeapon::ABaseWeapon()
 	WeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	WeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	WeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
-	DefaultGameplayTags.Add(GameplayTag::ActorType::Weapon);
+	SecondaryWeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SecondaryWeaponSkeletalMesh"));
+	SecondaryWeaponSkeletalMesh->bReceivesDecals = false;
+	SecondaryWeaponSkeletalMesh->CastShadow = true;
+	SecondaryWeaponSkeletalMesh->SetCollisionObjectType(ECC_WorldDynamic);
+	SecondaryWeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SecondaryWeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	SecondaryWeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
+
+	SecondaryWeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondaryWeaponStaticMesh"));
+	SecondaryWeaponStaticMesh->bReceivesDecals = false;
+	SecondaryWeaponStaticMesh->CastShadow = true;
+	SecondaryWeaponStaticMesh->SetCollisionObjectType(ECC_WorldDynamic);
+	SecondaryWeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SecondaryWeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	SecondaryWeaponStaticMesh->SetupAttachment(WeaponRootComponent);
+
+	DefaultGameplayTags.Add(TAG_ACTOR_WEAPON);
 	
-	SetRootComponent(WeaponStaticMesh);
+	SetRootComponent(WeaponRootComponent);
 }
 
 void ABaseWeapon::UseAmmo()
@@ -42,10 +66,6 @@ void ABaseWeapon::UseAmmo()
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();	
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
 }
 
 void ABaseWeapon::PostInitializeComponents()
@@ -55,15 +75,13 @@ void ABaseWeapon::PostInitializeComponents()
 
 void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 {
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(false);
-	}
 	bPendingEquip = true;
 	DetermineWeaponState();
 	if (LastWeapon)
 	{
-		const float Duration = PlayWeaponAnimation(EWeaponAnimAction::Equip);
+		FAnimMontagePlayData PlayData;
+		PlayData.MontageToPlay = EquipAnim;
+		const float Duration = PlayWeaponAnimation(PlayData);
 		if (Duration <= 0.0f)
 		{
 			OnEquipFinished();
@@ -100,16 +118,11 @@ void ABaseWeapon::OnEquipFinished()
 
 void ABaseWeapon::OnUnEquip()
 {
-	if(GetWeaponMesh())
-	{
-		BlueprintEquip(false);
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
 	bIsEquipped = false;
 	StopFire();
 	if (bPendingReload)
 	{
-		StopWeaponAnimation(EWeaponAnimAction::Reload);
+		StopWeaponAnimation(ReloadAnim);
 		bPendingReload = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
@@ -118,7 +131,7 @@ void ABaseWeapon::OnUnEquip()
 
 	if (bPendingEquip)
 	{
-		StopWeaponAnimation(EWeaponAnimAction::Equip);
+		StopWeaponAnimation(EquipAnim);
 		bPendingEquip = false;
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
@@ -132,7 +145,9 @@ void ABaseWeapon::StartReload()
 	{
 		bPendingReload = true;
 		DetermineWeaponState();
-		float AnimDuration = PlayWeaponAnimation(EWeaponAnimAction::Reload);	
+		FAnimMontagePlayData PlayData;
+		PlayData.MontageToPlay = ReloadAnim;
+		float AnimDuration = PlayWeaponAnimation(PlayData);	
 		if (AnimDuration <= 0.0f)
 		{
 			AnimDuration = ReloadDurationIfNoAnim;
@@ -153,7 +168,7 @@ void ABaseWeapon::StopReload()
 	{
 		bPendingReload = false;
 		DetermineWeaponState();
-		StopWeaponAnimation(EWeaponAnimAction::Reload);
+		StopWeaponAnimation(ReloadAnim);
 		BroadcastAmmoUsage();
 	}
 }
@@ -196,11 +211,30 @@ void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
 
 UMeshComponent* ABaseWeapon::GetWeaponMesh() const
 {
-	if(WeaponSkeletalMesh && WeaponSkeletalMesh->SkeletalMesh != nullptr)
+	if(WeaponSkeletalMesh && WeaponSkeletalMesh->SkeletalMesh)
 	{
 		return WeaponSkeletalMesh;
 	}
-	return WeaponStaticMesh;
+	
+	if(WeaponStaticMesh && WeaponStaticMesh->GetStaticMesh())
+	{
+		return WeaponStaticMesh;
+	}
+	return nullptr;
+}
+
+UMeshComponent* ABaseWeapon::GetSecondaryWeaponMesh() const
+{
+	if(SecondaryWeaponSkeletalMesh && SecondaryWeaponSkeletalMesh->SkeletalMesh)
+	{
+		return SecondaryWeaponSkeletalMesh;
+	}
+	
+	if(SecondaryWeaponStaticMesh && SecondaryWeaponStaticMesh->GetStaticMesh())
+	{
+		return SecondaryWeaponStaticMesh;
+	}
+	return nullptr;
 }
 
 void ABaseWeapon::SetWeaponMesh(UMeshComponent* InMesh)
@@ -218,13 +252,8 @@ void ABaseWeapon::HandleFiring()
 {
 	if ((GetCurrentAmmoInClip() > 0 || HasInfiniteClip() || HasInfiniteAmmo()) && CanFire())
 	{
-		SimulateWeaponFire();
-		if (OwningPawn)
-		{
-			FireWeapon();
-			UseAmmo();
-			BurstCounter++;
-		}
+		float Duration = SimulateWeaponFire();
+		GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::HandlePostBlendInFiring, Duration, false);
 	}
 	else if (CanReload())
 	{
@@ -257,6 +286,16 @@ void ABaseWeapon::HandleFiring()
 	}
 
 	LastFireTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABaseWeapon::HandlePostBlendInFiring()
+{
+	if (OwningPawn)
+	{
+		FireWeapon();
+		UseAmmo();
+		BurstCounter++;
+	}
 }
 
 void ABaseWeapon::OnBurstStarted()
@@ -364,40 +403,32 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 	return AC;
 }
 
-float ABaseWeapon::PlayWeaponAnimation(EWeaponAnimAction WeaponAction) const
-{
+float ABaseWeapon::PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const
+{	
 	float Duration = 0.0f;
 	if (IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
 	{
-		Duration = AnimationOwner->PlayWeaponAnimation(WeaponArchetype, WeaponAction);
+		Duration = AnimationOwner->ForcePlayAnimMontage(PlayData);
 	}
 	return Duration;
 }
 
-void ABaseWeapon::StopWeaponAnimation(EWeaponAnimAction WeaponAction) const
+void ABaseWeapon::StopWeaponAnimation(UAnimMontage* AnimMontage) const
 {
 	if (IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
 	{
-		AnimationOwner->StopWeaponAnimation(WeaponArchetype, WeaponAction);
+		AnimationOwner->ForceStopAnimMontage(AnimMontage);
 	}
 }
 
 void ABaseWeapon::OnEnterInventory(ACharacter* NewOwner)
 {
 	SetOwningPawn(NewOwner);
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
 }
 
 void ABaseWeapon::OnLeaveInventory()
 {
 	SetOwningPawn(nullptr);
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
 }
 
 void ABaseWeapon::PlayCameraShake()

@@ -21,7 +21,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
-	virtual void SimulateWeaponFire() override;
+	virtual float SimulateWeaponFire() override;
 	virtual void StopSimulatingWeaponFire() override;
 	virtual void ReloadWeapon() override;
 	virtual void GiveAmmo(int AddAmount) override;
@@ -56,6 +56,8 @@ protected:
 	float FiringSpreadIncrement = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float FiringSpreadMax = 10.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bAkimbo = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteAmmo = true;
@@ -85,21 +87,32 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	bool bLoopedFireAnim = true;
+	UAnimMontage* CoverFireRightAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UAnimMontage* CoverFireLeftAnim;
 	
 private:
-
-	void Internal_DeactivateParticleSystem(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
+	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
+	UFUNCTION()
 	UFXSystemComponent* Internal_PlayNiagaraFireEffects();
-
+	UFUNCTION()
+	FAnimMontagePlayData Internal_GetPlayData() const;
+	UFUNCTION()
+	void Internal_RotateFiringMesh();
+	bool Internal_IsInCover() const;
+	bool Internal_HasRightInput() const;
+	
+	UPROPERTY(Transient)
+	bool bSecondaryWeaponsTurn;
+	UPROPERTY(Transient)
+	UAnimMontage* CurrentMontage;
 	UPROPERTY(Transient)
 	UFXSystemComponent* FireFXSystem;
 	UPROPERTY(Transient)
 	UParticleSystemComponent* ParticleFX;
 	UPROPERTY(Transient)
 	UNiagaraComponent* NiagaraFX;
-	
 	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
 	UPROPERTY(Transient)
@@ -109,8 +122,8 @@ private:
 	UPROPERTY(Transient)
 	int32 CurrentAmmoInClip;
 
-	UPROPERTY(Transient) 
-	bool bPlayingFireAnim;
+	UPROPERTY()
+	UMeshComponent* NextFiringMesh;
 
 public:
 	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return CurrentAmmo; }

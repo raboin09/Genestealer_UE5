@@ -26,17 +26,20 @@ public:
 	////////////////////////////
 	// ACharacter overrides
 	////////////////////////////
-	ABaseCharacter();
+	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
 	virtual void Tick(float DeltaSeconds) override;
 
 	////////////////////////////////
 	/// IAnimatable override
 	////////////////////////////////
-	virtual float PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) override;
-	virtual void StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) override;
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
-	// virtual void ChangeOverlayState(EALSOverlayState InOverlayState) override;
+	virtual void ForceStopAnimMontage(UAnimMontage* AnimMontage) override;
+	virtual bool IsAiming() const override { return GameplayTagContainer.HasTag(TAG_STATE_AIMING); }
+	virtual bool IsFiring() const override { return GameplayTagContainer.HasTag(TAG_STATE_FIRING); }
+	virtual bool IsInCover() const override { return GameplayTagContainer.HasTag(TAG_COVER_MIDDLE); }
+	virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
+	virtual bool HasRightInput() const override { return bHasRightInput; }
 	
 	////////////////////////////////
 	/// IAttackable override
@@ -58,14 +61,13 @@ public:
 	/// ABaseCharacter
 	////////////////////////////////
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
-	FORCEINLINE bool IsDying() const { return GameplayTagContainer.HasTag(GameplayTag::State::Dead); }
+	FORCEINLINE bool IsDying() const { return GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
-	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(GameplayTag::State::Dead); }
-	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
-	FORCEINLINE bool IsAiming() const { return !GameplayTagContainer.HasTag(GameplayTag::State::Aiming); }
+	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	UFUNCTION()
 	virtual void Die(FDeathEventPayload DeathEventPayload);
+	void SetCurrentCoverPoint(class ABaseCoverPoint* InCoverPoint) { CurrentCoverPoint = InCoverPoint; }
 
 	////////////////////////////////
 	/// ABaseCharacter Input
@@ -74,31 +76,21 @@ public:
 	void Input_RightMovement(float Value);
 	void Input_CameraUp(float Value);
 	void Input_CameraRight(float Value);
-	
-	////////////////////////////////
-	/// ABaseCharacter Animation
-	////////////////////////////////
+	void Input_Fire();
+	void Input_StopFiring();
+	void Input_CoverAction();
+	void Input_Aim();
+	void Input_StopAiming();
 
-	// TODO player facing right
-	bool bPlayerFacingRight;
-	// TODO true when firing
-	bool bFiring;
-	// TODO true when cover exit
-	bool bExitingCover;
-
-	float MovingSidewaysInput;
-	float MovingForwardInput;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
-	float SprintSpeed = 650.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
-	float JogMaxSpeed = 370.f;
-	
-	float CalculateAimOffsetYaw(const float CurrentAimYaw, const float Alpha) const;
-	float CalculateAimOffsetPitch(const float CurrentAimPitch) const;
-	float CalculateCurrentInputLocalAngle() const;
-	void CalculateMovementInputScale(float& MoveForwardScale, float& MoveRightScale) const;
-	float CalculateCurrentMovingLocalAngle(bool bLastFrame) const;
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_TryGetInCover();
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_VacateCover();
+	void SetAimOffset(EAGR_AimOffsets InOffset);	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_Aim();	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_StopAiming();
 	
 protected:
 	////////////////////////////
@@ -107,13 +99,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PreInitializeComponents() override;
 	virtual void PostInitializeComponents() override;
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	UAnimMontage* K2_GetWeaponFireAnimation(EWeaponAnimArchetype WeaponArchetype) const;
-	UFUNCTION(BlueprintImplementableEvent)
-	UAnimMontage* K2_GetWeaponReloadAnimation(EWeaponAnimArchetype WeaponArchetype) const;
-	UFUNCTION(BlueprintImplementableEvent)
-	UAnimMontage* K2_GetWeaponEquipAnimation(EWeaponAnimArchetype WeaponArchetype) const;
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	UAnimMontage* K2_GetHitReactAnimation(const FGameplayTag& HitReactDirection) const;
@@ -156,14 +141,15 @@ protected:
 	USoundCue* DeathSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
 	UAnimMontage* DeathAnimation;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ABaseCoverPoint* CurrentCoverPoint;
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayTagContainer GameplayTagContainer;
 	
 private:
-	UAnimMontage* Internal_GetWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) const;
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
 	void Internal_AddDefaultTagsToContainer();
@@ -178,8 +164,6 @@ private:
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
-	void Internal_TraceCameraAim();
-	float Internal_DotProductWithForwardAndRightVector(FVector InputVector) const;
 
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;
@@ -195,11 +179,8 @@ private:
 
 	UPROPERTY(Transient)
 	EHitReactType LastKnownHitReact;
+	UPROPERTY(Transient)
+	bool bHasRightInput;
 	
 	EAffiliation CurrentAffiliation;
-
-	///////////////////////////////
-	/// Animation Variables
-	///////////////////////////////
-	FVector CameraTraceEnd;
 };

@@ -6,26 +6,6 @@
 #include "UObject/Interface.h"
 #include "Animatable.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeaponAnimAction : uint8
-{
-	Fire,
-	Reload,
-	Equip
-};
-
-UENUM(BlueprintType)
-enum class EWeaponAnimArchetype : uint8
-{
-	Melee_1H,
-	Melee_2H,
-	Grenade,
-	Rifle,
-	Pistol_1H,
-	Pistol_2H,
-	Pistol_Akimbo
-};
-
 USTRUCT(BlueprintType)
 struct FAnimMontagePlayData
 {
@@ -54,9 +34,12 @@ class GENESTEALER_API IAnimatable
 	GENERATED_BODY()
 
 public:
-	virtual float PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation, return -1.f;)
-	virtual void StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) PURE_VIRTUAL(IAnimatable::PlayWeaponFireAnimation,)
-	
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::TryPlayAnimMontage, return -1.f;)
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) PURE_VIRTUAL(IAnimatable::ForcePlayAnimMontage, return -1.f;)
+	virtual void ForceStopAnimMontage(UAnimMontage* AnimMontage) PURE_VIRTUAL(IAnimatable::ForceStopAnimMontage, )
+	virtual UAnimMontage* GetCurrentPlayingMontage() const PURE_VIRTUAL(IAnimatable::GetCurrentPlayingMontage, return nullptr; )
+	virtual bool IsAiming() const PURE_VIRTUAL(IAnimatable::IsAiming, return false;)
+	virtual bool IsFiring() const PURE_VIRTUAL(IAnimatable::IsFiring, return false;)
+	virtual bool IsInCover() const PURE_VIRTUAL(IAnimatable::IsInCover, return false;)
+	virtual bool HasRightInput() const PURE_VIRTUAL(IAnimatable::HasRightInput, return false;)
 };

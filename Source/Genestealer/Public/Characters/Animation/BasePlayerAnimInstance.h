@@ -13,5 +13,4 @@ UCLASS()
 class GENESTEALER_API UBasePlayerAnimInstance : public UBaseAnimInstance
 {
 	GENERATED_BODY()
-	
 };

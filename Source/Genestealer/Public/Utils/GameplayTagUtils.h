@@ -7,43 +7,29 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GameplayTagUtils.generated.h"
 
-namespace GameplayTag
-{
-	namespace HitReact
-	{
-		const FGameplayTag Left = FGameplayTag::RequestGameplayTag("Animation.HitReact.Left");
-		const FGameplayTag Front = FGameplayTag::RequestGameplayTag("Animation.HitReact.Front");
-		const FGameplayTag Right = FGameplayTag::RequestGameplayTag("Animation.HitReact.Right");
-		const FGameplayTag Back = FGameplayTag::RequestGameplayTag("Animation.HitReact.Back");
-	}
-	
-	namespace ActorType
-	{
-		const FGameplayTag Player = FGameplayTag::RequestGameplayTag("ActorType.Player");
-		const FGameplayTag AI = FGameplayTag::RequestGameplayTag("ActorType.AI");
-		const FGameplayTag Destructible =  FGameplayTag::RequestGameplayTag("ActorType.Destructible");
-		const FGameplayTag Weapon =  FGameplayTag::RequestGameplayTag("ActorType.Weapon");
-		const FGameplayTag Cover =  FGameplayTag::RequestGameplayTag("ActorType.Cover");
-	}
 
-	namespace State
-	{
-		const FGameplayTag Stunned =  FGameplayTag::RequestGameplayTag("State.Stunned");	
-		const FGameplayTag Loading =  FGameplayTag::RequestGameplayTag("State.Loading");
-		const FGameplayTag Dead =  FGameplayTag::RequestGameplayTag("State.Dead");
-		const FGameplayTag Aiming =  FGameplayTag::RequestGameplayTag("State.Aiming");
-		const FGameplayTag InCover_Middle =  FGameplayTag::RequestGameplayTag("State.InCover.Middle");
-		const FGameplayTag InCover_LeftPeek =  FGameplayTag::RequestGameplayTag("State.InCover.LeftPeek");
-		const FGameplayTag InCover_LeftEdge =  FGameplayTag::RequestGameplayTag("State.InCover.LeftEdge");
-		const FGameplayTag InCover_RightPeek =  FGameplayTag::RequestGameplayTag("State.InCover.RightPeek");
-		const FGameplayTag InCover_RightEdge =  FGameplayTag::RequestGameplayTag("State.InCover.RightEdge");
-	}
+#define TAG_HITREACT_LEFT FGameplayTag::RequestGameplayTag("Animation.HitReact.Left")
+#define TAG_HITREACT_FRONT FGameplayTag::RequestGameplayTag("Animation.HitReact.Front")
+#define TAG_HITREACT_RIGHT FGameplayTag::RequestGameplayTag("Animation.HitReact.Right")
+#define TAG_HITREACT_BACK FGameplayTag::RequestGameplayTag("Animation.HitReact.Back")
 
-	namespace Attributes
-	{
-		
-	}
-}
+#define TAG_ACTOR_PLAYER FGameplayTag::RequestGameplayTag("ActorType.Player")
+#define TAG_ACTOR_AI FGameplayTag::RequestGameplayTag("ActorType.AI")
+#define TAG_ACTOR_DESTRUCTIBLE FGameplayTag::RequestGameplayTag("ActorType.Destructible")
+#define TAG_ACTOR_WEAPON FGameplayTag::RequestGameplayTag("ActorType.Weapon")
+#define TAG_ACTOR_COVER FGameplayTag::RequestGameplayTag("ActorType.Cover")
+
+#define TAG_STATE_STUNNED FGameplayTag::RequestGameplayTag("State.Stunned")
+#define TAG_STATE_LOADING FGameplayTag::RequestGameplayTag("State.Loading")
+#define TAG_STATE_DEAD FGameplayTag::RequestGameplayTag("State.Dead")
+#define TAG_STATE_AIMING FGameplayTag::RequestGameplayTag("State.Aiming")
+#define TAG_STATE_FIRING FGameplayTag::RequestGameplayTag("State.Firing")
+
+#define TAG_COVER_MIDDLE FGameplayTag::RequestGameplayTag("State.InCover.Middle")
+#define TAG_COVER_LEFTPEEK FGameplayTag::RequestGameplayTag("State.InCover.LeftPeek")
+#define TAG_COVER_LEFTEDGE FGameplayTag::RequestGameplayTag("State.InCover.LeftEdge")
+#define TAG_COVER_RIGHTPEEK FGameplayTag::RequestGameplayTag("State.InCover.RightPeek")
+#define TAG_COVER_RIGHTEDGE FGameplayTag::RequestGameplayTag("State.InCover.RightEdge")
 
 UCLASS()
 class GENESTEALER_API UGameplayTagUtils : public UBlueprintFunctionLibrary

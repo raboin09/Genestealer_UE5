@@ -5,7 +5,7 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 
-ABaseAICharacter::ABaseAICharacter()
+ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 
 }

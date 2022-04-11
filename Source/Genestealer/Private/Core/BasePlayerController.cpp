@@ -63,6 +63,14 @@ void ABasePlayerController::Internal_SetupInputs()
 	}
 }
 
+void ABasePlayerController::CoverAction(const FInputActionValue& Value)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->Input_CoverAction();
+	}
+}
+
 void ABasePlayerController::ForwardMovementAction(const FInputActionValue& Value)
 {
 	if (PlayerCharacter)

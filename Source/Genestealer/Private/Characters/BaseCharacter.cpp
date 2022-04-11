@@ -1,9 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Characters/BaseCharacter.h"
+
+#include "Actors/BaseCoverPoint.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
+#include "Characters/Animation/BaseAnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,7 +17,8 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
-ABaseCharacter::ABaseCharacter()
+
+ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
@@ -28,8 +32,12 @@ ABaseCharacter::ABaseCharacter()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->TargetArmLength = 200.f;
+	SpringArm->SocketOffset = FVector(0.f, 75.f, 85.f);
 	SpringArm->SetupAttachment(RootComponent);
 	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	ThirdPersonCamera->FieldOfView = 70.f;
 	ThirdPersonCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
@@ -67,34 +75,6 @@ void ABaseCharacter::InitAGRDefaults()
 void ABaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	Internal_TraceCameraAim();
-}
-
-float ABaseCharacter::PlayWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction)
-{
-	FAnimMontagePlayData PlayData;
-	PlayData.MontageToPlay = Internal_GetWeaponAnimation(WeaponArchetype, WeaponAction);
-	return Internal_PlayMontage(PlayData);
-}
-
-void ABaseCharacter::StopWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction)
-{
-	StopAnimMontage(Internal_GetWeaponAnimation(WeaponArchetype, WeaponAction));
-}
-
-UAnimMontage* ABaseCharacter::Internal_GetWeaponAnimation(EWeaponAnimArchetype WeaponArchetype, EWeaponAnimAction WeaponAction) const
-{
-	switch (WeaponAction)
-	{
-	case EWeaponAnimAction::Fire:
-		return K2_GetWeaponFireAnimation(WeaponArchetype);
-	case EWeaponAnimAction::Reload:
-		return K2_GetWeaponReloadAnimation(WeaponArchetype);
-	case EWeaponAnimAction::Equip:
-		return K2_GetWeaponEquipAnimation(WeaponArchetype);
-	default:
-		return nullptr;
-	}
 }
 
 void ABaseCharacter::BeginPlay()
@@ -176,8 +156,7 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 	{
 		return;
 	}
-	
-	GameplayTagContainer.AddTag(GameplayTag::State::Dead);
+	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent);
 }
@@ -205,6 +184,11 @@ float ABaseCharacter::ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMonta
 	UAnimMontage* CurrentMontage = GetCurrentMontage();
 	StopAnimMontage(CurrentMontage);
 	return Internal_PlayMontage(AnimMontageData);
+}
+
+void ABaseCharacter::ForceStopAnimMontage(UAnimMontage* AnimMontage)
+{
+	StopAnimMontage(AnimMontage);
 }
 
 float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData)
@@ -236,6 +220,7 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 {
 	if(IsDying())
 	{
+		Destroy();
 		return;
 	}
 	
@@ -275,24 +260,15 @@ FGameplayTag ABaseCharacter::Internal_GetHitDirectionTag(const FVector& Originat
 	{
 		if (DistanceToRightLeftPlane >= 0)
 		{
-			return GameplayTag::HitReact::Front;
+			return TAG_HITREACT_FRONT;
 		}
-		return GameplayTag::HitReact::Back;
+		return TAG_HITREACT_BACK;
 	}
 	if (DistanceToFrontBackPlane >= 0)
 	{
-		return GameplayTag::HitReact::Right;
+		return TAG_HITREACT_RIGHT;
 	}
-	return GameplayTag::HitReact::Left;
-}
-
-void ABaseCharacter::Internal_TraceCameraAim()
-{
-	const FVector Start = ThirdPersonCamera->K2_GetComponentLocation();
-	const FVector End = (ThirdPersonCamera->GetForwardVector() * 10000.f) + Start;
-	FHitResult Hit(ForceInit);
-	UKismetSystemLibrary::LineTraceSingle(this, Start, End,  UEngineTypes::ConvertToTraceType(ECC_Visibility), false, {}, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
-	CameraTraceEnd = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd; 
+	return TAG_HITREACT_LEFT;
 }
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()
@@ -302,12 +278,12 @@ void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 
 void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 {
-	if (GameplayTagContainer.HasTag(GameplayTag::State::Dead))
+	if (GameplayTagContainer.HasTag(TAG_STATE_DEAD))
 	{
 		return;
 	}
 	
-	GameplayTagContainer.AddTag(GameplayTag::State::Dead);
+	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	
 	if (DeathSound)
 	{
@@ -319,7 +295,6 @@ void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 		InventoryComponent->DestroyInventory();
 	}
 	
-	// ClearHeldObject();
 	Internal_StopAllAnimMontages();
 	GetMesh()->SetRenderCustomDepth(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -348,9 +323,17 @@ void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 
 void ABaseCharacter::Input_ForwardMovement(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if(Value == 0.f)
 	{
-		MovingForwardInput = Value;
+		return;
+	}	
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_COVER_MIDDLE}))
+	{
+		return;
+	}
+	
+	if (Controller != nullptr)
+	{
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
 	}
@@ -358,9 +341,30 @@ void ABaseCharacter::Input_ForwardMovement(float Value)
 
 void ABaseCharacter::Input_RightMovement(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if(Value == 0.f)
 	{
-		MovingSidewaysInput = Value;
+		return;
+	}
+	
+	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_RIGHTEDGE))
+	{
+		return;
+	}
+	
+	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_LEFTEDGE))
+	{
+		return;
+	}
+	
+	if (Controller != nullptr)
+	{
+		if(Value > 0.f)
+		{
+			bHasRightInput = true;
+		} else if(Value < 0.f)
+		{
+			bHasRightInput = false;
+		}
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}
@@ -376,49 +380,53 @@ void ABaseCharacter::Input_CameraRight(float Value)
 	AddControllerYawInput(Value * BaseLookupRate * UGameplayStatics::GetWorldDeltaSeconds(this));
 }
 
-float ABaseCharacter::CalculateAimOffsetYaw(const float CurrentAimYaw, const float Alpha) const
+void ABaseCharacter::Input_Fire()
 {
-	const FVector ControlRotation = UKismetMathLibrary::Normal(UKismetMathLibrary::GetForwardVector(GetControlRotation()));
-	const FVector ForwardVector = UKismetMathLibrary::Normal(GetActorForwardVector());
-	const FVector RightVector = UKismetMathLibrary::Normal(GetActorRightVector());
-	const float NextAimYaw = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(ControlRotation, ForwardVector)) * UKismetMathLibrary::SignOfFloat(UKismetMathLibrary::Dot_VectorVector(ControlRotation, RightVector));
-	return UKismetMathLibrary::Lerp(NextAimYaw, CurrentAimYaw, Alpha);
+	if(InventoryComponent)
+	{
+		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
+		InventoryComponent->StartFiring();
+	}
 }
 
-float ABaseCharacter::CalculateAimOffsetPitch(const float CurrentAimPitch) const
+void ABaseCharacter::Input_StopFiring()
 {
-	const float NextAimPitch = UKismetMathLibrary::FindLookAtRotation(GetMesh()->GetSocketLocation("head"), CameraTraceEnd).Pitch;
-	return UKismetMathLibrary::FInterpEaseInOut(CurrentAimPitch, NextAimPitch, .2f, .4f);
+	if(InventoryComponent)
+	{
+		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
+		InventoryComponent->StopFiring();
+	}
 }
 
-void ABaseCharacter::CalculateMovementInputScale(float& MoveForwardScale, float& MoveRightScale) const
+void ABaseCharacter::Input_CoverAction()
 {
-	const FVector CurrentVelocity = GetVelocity();
-	const float Factor = CurrentVelocity.Length() / (GetCharacterMovement()->MaxWalkSpeed * .01f) * .01f;
-	MoveForwardScale = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(CurrentVelocity, .0001f), GetActorForwardVector()) * Factor;
-	MoveRightScale = UKismetMathLibrary::Dot_VectorVector(UKismetMathLibrary::Normal(CurrentVelocity, .0001f), GetActorRightVector()) * Factor;
+	if(!CurrentCoverPoint)
+	{
+		K2_TryGetInCover();
+	} else
+	{
+		K2_VacateCover();
+		CurrentCoverPoint->VacateCover(this);		
+	}
 }
 
-float ABaseCharacter::CalculateCurrentInputLocalAngle() const
+void ABaseCharacter::SetAimOffset(EAGR_AimOffsets InOffset)
 {
-	const FVector LastInputVector = GetLastMovementInputVector();
-	return Internal_DotProductWithForwardAndRightVector(LastInputVector);
+	if(!AnimComponent)
+	{
+		return;
+	}
+	AnimComponent->SetupAimOffset(InOffset);
 }
 
-float ABaseCharacter::CalculateCurrentMovingLocalAngle(bool bLastFrame) const
+void ABaseCharacter::Input_Aim()
 {
-	const FVector SelectedVelocity = bLastFrame ? GetCharacterMovement()->GetLastUpdateVelocity() : GetVelocity();
-	return Internal_DotProductWithForwardAndRightVector(SelectedVelocity);
+	GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+	K2_Aim();
 }
 
-float ABaseCharacter::Internal_DotProductWithForwardAndRightVector(FVector InputVector) const
+void ABaseCharacter::Input_StopAiming()
 {
-	const FVector Dot1_A = UKismetMathLibrary::Normal({ InputVector.X, InputVector.Y, 0.f }, .0001f);
-	const FVector ActorForward = GetActorForwardVector();
-	const FVector Dot1_B = UKismetMathLibrary::Normal({ ActorForward.X, ActorForward.Y, 0.f}, .0001f);
-	const float Op_1 = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(Dot1_A, Dot1_B));
-	const FVector ActorRight = GetActorRightVector();
-	const FVector Dot2_B = UKismetMathLibrary::Normal({ ActorRight.X, ActorRight.Y, 0.f}, .0001f);
-	const float Op_2 = UKismetMathLibrary::SignOfFloat(UKismetMathLibrary::Dot_VectorVector(Dot1_A, Dot2_B));
-	return Op_1 * Op_2;
+	GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+	K2_StopAiming();
 }

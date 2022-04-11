@@ -15,5 +15,5 @@ class GENESTEALER_API ABaseAICharacter : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
-	ABaseAICharacter();
+	ABaseAICharacter(const FObjectInitializer& ObjectInitializer);
 };

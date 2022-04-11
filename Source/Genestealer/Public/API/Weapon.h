@@ -69,6 +69,7 @@ public:
 	virtual bool HasInfiniteClip() PURE_VIRTUAL(IWeapon::HasInfiniteClip, return false;);
 
 	virtual UMeshComponent* GetWeaponMesh() const PURE_VIRTUAL(IWeapon::GetWeaponMesh, return nullptr;);
+	virtual UMeshComponent* GetSecondaryWeaponMesh() const PURE_VIRTUAL(IWeapon::GetSecondaryWeaponMesh, return nullptr;);
 	virtual USceneComponent* GetWeaponRoot() const PURE_VIRTUAL(IWeapon::GetWeaponRoot, return nullptr;);
 	virtual void SetWeaponMesh(UMeshComponent* IncomingCharacter)PURE_VIRTUAL(IWeapon::SetWeaponMesh,);
 	UFUNCTION(BlueprintCallable)

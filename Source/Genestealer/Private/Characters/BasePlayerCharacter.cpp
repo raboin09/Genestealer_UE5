@@ -3,9 +3,7 @@
 
 #include "Characters/BasePlayerCharacter.h"
 
-#include "GameFramework/CharacterMovementComponent.h"
-
-ABasePlayerCharacter::ABasePlayerCharacter()
+ABasePlayerCharacter::ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	
 }

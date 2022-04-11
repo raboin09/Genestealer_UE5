@@ -25,6 +25,8 @@ public:
 
 protected:
 	UFUNCTION()
+	void CoverAction(const FInputActionValue& Value);
+	UFUNCTION()
 	void ForwardMovementAction(const FInputActionValue& Value);
 	UFUNCTION()
 	void RightMovementAction(const FInputActionValue& Value);

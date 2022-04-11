@@ -3,9 +3,9 @@
 #include "Data/AGR_Attack_NotifyState.h"
 #include "Components/AGR_CombatManager.h"
 
-void UAGR_Attack_NotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const float TotalDuration)
+void UAGR_Attack_NotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
-	Super::NotifyBegin(MeshComp, Animation, TotalDuration);
+	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
 	if (MeshComp)
 	{
@@ -23,9 +23,9 @@ void UAGR_Attack_NotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 	}
 }
 
-void UAGR_Attack_NotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAGR_Attack_NotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	Super::NotifyEnd(MeshComp, Animation);
+	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
 	if (MeshComp)
 	{

@@ -142,7 +142,7 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 		}
 		return 0.f;
 	}
-	
+
 	const FWound OldWound = WoundContainer.GetCurrentWound();
 	const float Delta = CalculateDamage(RawDamage);
 	WoundContainer.TakeDamage(Delta);
