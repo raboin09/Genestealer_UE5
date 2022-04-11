@@ -48,7 +48,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 
 	BaseLookupRate = 45.f;
 	BaseTurnRate = 45.f;
-
+	
 	InitAGRDefaults();
 }
 
@@ -276,6 +276,24 @@ void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
 }
 
+void ABaseCharacter::Internal_CoverAnimState() const
+{
+	AnimComponent->SetupAimOffset(EAGR_AimOffsets::NONE, EAGR_AimOffsetClamp::Left, 90.f, true);
+	AnimComponent->SetupRotation(EAGR_RotationMethod::NONE, 180.f, 90.f, 5.f);
+}
+
+void ABaseCharacter::Internal_AimingAnimState() const
+{
+	AnimComponent->SetupAimOffset(EAGR_AimOffsets::Aim, EAGR_AimOffsetClamp::Nearest, 90.f, false);
+	AnimComponent->SetupRotation(EAGR_RotationMethod::DesiredAtAngle, 360.f, 90.f, 5.f);
+}
+
+void ABaseCharacter::Internal_NormalAnimState() const
+{
+	AnimComponent->SetupAimOffset(EAGR_AimOffsets::Look, EAGR_AimOffsetClamp::Left, 90.f, true);
+	AnimComponent->SetupRotation(EAGR_RotationMethod::RotateToVelocity, 180.f, 90.f, 5.f);
+}
+
 void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
 {
 	if (GameplayTagContainer.HasTag(TAG_STATE_DEAD))
@@ -365,7 +383,9 @@ void ABaseCharacter::Input_RightMovement(float Value)
 		{
 			bHasRightInput = false;
 		}
+		UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(Value));
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+		UKismetSystemLibrary::PrintString(this, GetControlRotation().ToString());
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}
 }
@@ -402,11 +422,30 @@ void ABaseCharacter::Input_CoverAction()
 {
 	if(!CurrentCoverPoint)
 	{
-		K2_TryGetInCover();
+		const FVector StartTrace = ThirdPersonCamera->GetComponentLocation();
+		const FVector EndTrace = StartTrace + (ThirdPersonCamera->GetForwardVector() * 800.f);
+		const TArray<AActor*> IgnoreActors;
+		FHitResult HitResult;
+		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
+		if(!HitResult.bBlockingHit)
+		{
+			return;
+		}
+
+		if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
+		{
+			CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
+			Internal_CoverAnimState();
+			TScriptInterface<ICoverPoint> NewCover;
+			NewCover.SetObject(HitResult.GetActor());
+			NewCover.SetInterface(CoverPoint);
+			CurrentCoverPoint = NewCover;
+		}
 	} else
 	{
-		K2_VacateCover();
-		CurrentCoverPoint->VacateCover(this);		
+		CurrentCoverPoint->VacateCover(this);
+		CurrentCoverPoint = nullptr;
+		Internal_NormalAnimState();
 	}
 }
 

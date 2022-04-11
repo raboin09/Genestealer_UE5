@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseActor.h"
-#include "Characters/BaseCharacter.h"
+#include "API/CoverPoint.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "BaseCoverPoint.generated.h"
@@ -13,17 +13,15 @@
  * 
  */
 UCLASS()
-class GENESTEALER_API ABaseCoverPoint : public ABaseActor
+class GENESTEALER_API ABaseCoverPoint : public ABaseActor, public ICoverPoint
 {
 	GENERATED_BODY()
 
 public:
 	ABaseCoverPoint();
-
-	UFUNCTION(BlueprintCallable)
-	void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal);
-	UFUNCTION(BlueprintCallable)
-	void VacateCover(ABaseCharacter* InActor);
+	
+	virtual void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal) override;
+	virtual void VacateCover(ABaseCharacter* InActor) override;
 
 protected:
 	virtual void BeginPlay() override;

@@ -3,6 +3,7 @@
 
 #include "Actors/BaseCoverPoint.h"
 
+#include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -22,7 +23,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	// MiddleCoverWall->GetStaticMesh()->SetMaterial(0, ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'")).Object);
 	MiddleCoverWall->SetHiddenInGame(true);
 	MiddleCoverWall->AddLocalOffset(FVector(0.f, -130.f, 50.f));
-	MiddleCoverWall->SetRelativeScale3D(FVector(4.f, .1f, 1.3f));
+	MiddleCoverWall->SetWorldScale3D(FVector(4.f, .1f, 1.3f));
 	MiddleCoverWall->SetCollisionResponseToAllChannels(ECR_Ignore);
 	MiddleCoverWall->SetCollisionResponseToChannel(TRACE_COVER_WALL, ECR_Block);
 	bMiddleCoverEnabled = true;
@@ -33,7 +34,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	LeftCoverPeekBox->SetupAttachment(RootComponent);
 	LeftCoverPeekBox->AreaClass = UNavArea_Obstacle::StaticClass();
 	LeftCoverPeekBox->AddLocalOffset(FVector(-44.f, 250.f, 30.f));
-	LeftCoverPeekBox->SetRelativeScale3D(FVector(.25f, 10.f, 1.f));
+	LeftCoverPeekBox->SetWorldScale3D(FVector(.25f, 10.f, 1.f));
 	LeftCoverPeekBox->SetupAttachment(MiddleCoverWall);
 	LeftCoverPeekBox->SetCollisionObjectType(ECC_WorldDynamic);
 	LeftCoverPeekBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -48,7 +49,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	LeftCoverEdgeBox->SetupAttachment(RootComponent);
 	LeftCoverEdgeBox->AreaClass = UNavArea_Obstacle::StaticClass();
 	LeftCoverEdgeBox->AddLocalOffset(FVector(-50.f, 250.f, 30.f));
-	LeftCoverEdgeBox->SetRelativeScale3D(FVector(.05f, 10.f, 1.f));
+	LeftCoverEdgeBox->SetWorldScale3D(FVector(.05f, 10.f, 1.f));
 	LeftCoverEdgeBox->SetupAttachment(MiddleCoverWall);
 	LeftCoverEdgeBox->SetCollisionObjectType(ECC_WorldDynamic);
 	LeftCoverEdgeBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -62,7 +63,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	RightCoverPeekBox->SetupAttachment(RootComponent);
 	RightCoverPeekBox->AreaClass = UNavArea_Obstacle::StaticClass();
 	RightCoverPeekBox->AddLocalOffset(FVector(44.f, 250.f, 30.f));
-	RightCoverPeekBox->SetRelativeScale3D(FVector(.25f, 10.f, 1.f));
+	RightCoverPeekBox->SetWorldScale3D(FVector(.25f, 10.f, 1.f));
 	RightCoverPeekBox->SetupAttachment(MiddleCoverWall);
 	RightCoverPeekBox->SetCollisionObjectType(ECC_WorldDynamic);
 	RightCoverPeekBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -77,7 +78,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	RightCoverEdgeBox->SetupAttachment(RootComponent);
 	RightCoverEdgeBox->AreaClass = UNavArea_Obstacle::StaticClass();
 	RightCoverEdgeBox->AddLocalOffset(FVector(50.f, 250.f, 30.f));
-	RightCoverEdgeBox->SetRelativeScale3D(FVector(.05f, 10.f, 1.f));
+	RightCoverEdgeBox->SetWorldScale3D(FVector(.05f, 10.f, 1.f));
 	RightCoverEdgeBox->SetupAttachment(MiddleCoverWall);
 	RightCoverEdgeBox->SetCollisionObjectType(ECC_WorldDynamic);
 	RightCoverEdgeBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -123,11 +124,8 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	
 	OccupiedActor = InActor;
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_MIDDLE);
-	OccupiedActor->SetAimOffset(EAGR_AimOffsets::NONE);
-	OccupiedActor->SetCurrentCoverPoint(this);
-	OccupiedActor->AddActorLocalRotation({0.f, 180.f, 0.f});
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
-	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal); 
+	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1); 
 
 	Internal_ActivateOverlapBoxes(true);	
 	Internal_StartCoverTransition();
@@ -148,8 +146,6 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_COVER_MIDDLE,
 		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
 		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
-	OccupiedActor->SetAimOffset(EAGR_AimOffsets::Aim);
-	OccupiedActor->SetCurrentCoverPoint(nullptr);
 	OccupiedActor = nullptr;
 	Internal_ActivateOverlapBoxes(false);	
 }

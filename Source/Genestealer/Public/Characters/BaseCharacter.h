@@ -7,6 +7,7 @@
 #include "InventoryComponent.h"
 #include "API/Animatable.h"
 #include "API/Attackable.h"
+#include "API/CoverPoint.h"
 #include "API/Effectible.h"
 #include "API/Taggable.h"
 #include "Components/AGRAnimMasterComponent.h"
@@ -67,7 +68,6 @@ public:
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	UFUNCTION()
 	virtual void Die(FDeathEventPayload DeathEventPayload);
-	void SetCurrentCoverPoint(class ABaseCoverPoint* InCoverPoint) { CurrentCoverPoint = InCoverPoint; }
 
 	////////////////////////////////
 	/// ABaseCharacter Input
@@ -82,10 +82,6 @@ public:
 	void Input_Aim();
 	void Input_StopAiming();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_TryGetInCover();
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_VacateCover();
 	void SetAimOffset(EAGR_AimOffsets InOffset);	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Aim();	
@@ -141,9 +137,7 @@ protected:
 	USoundCue* DeathSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
 	UAnimMontage* DeathAnimation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	ABaseCoverPoint* CurrentCoverPoint;
+	
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
 	UPROPERTY(BlueprintReadOnly)
@@ -153,6 +147,10 @@ private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
 	void Internal_AddDefaultTagsToContainer();
+
+	void Internal_CoverAnimState() const;
+	void Internal_AimingAnimState() const;
+	void Internal_NormalAnimState() const;
 
 	void InitAGRDefaults();
 
@@ -181,6 +179,8 @@ private:
 	EHitReactType LastKnownHitReact;
 	UPROPERTY(Transient)
 	bool bHasRightInput;
+	UPROPERTY(Transient)
+	TScriptInterface<ICoverPoint> CurrentCoverPoint;
 	
 	EAffiliation CurrentAffiliation;
 };
