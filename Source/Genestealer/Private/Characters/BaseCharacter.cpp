@@ -383,9 +383,7 @@ void ABaseCharacter::Input_RightMovement(float Value)
 		{
 			bHasRightInput = false;
 		}
-		UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(Value));
 		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-		UKismetSystemLibrary::PrintString(this, GetControlRotation().ToString());
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}
 }
