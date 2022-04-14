@@ -36,7 +36,7 @@ void ABaseRangedWeapon::BeginPlay()
 float ABaseRangedWeapon::SimulateWeaponFire()
 {
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
-	Internal_RotateFiringMesh();
+	Internal_AlternateFiringMesh();
 	if (FireFXClass)
 	{
 		if (!bLoopedMuzzleFX || !FireFXSystem)
@@ -119,7 +119,7 @@ FAnimMontagePlayData ABaseRangedWeapon::Internal_GetPlayData() const
 	return PlayData;
 }
 
-void ABaseRangedWeapon::Internal_RotateFiringMesh()
+void ABaseRangedWeapon::Internal_AlternateFiringMesh()
 {
 	if(bAkimbo)
 	{

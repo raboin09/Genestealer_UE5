@@ -99,7 +99,7 @@ private:
 	UFUNCTION()
 	FAnimMontagePlayData Internal_GetPlayData() const;
 	UFUNCTION()
-	void Internal_RotateFiringMesh();
+	void Internal_AlternateFiringMesh();
 	bool Internal_IsInCover() const;
 	bool Internal_HasRightInput() const;
 	
