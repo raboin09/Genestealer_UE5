@@ -123,7 +123,7 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	}
 	
 	OccupiedActor = InActor;
-	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_MIDDLE);
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_STATE_IN_COVER);
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
 	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1); 
 
@@ -143,7 +143,7 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
 	
-	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_COVER_MIDDLE,
+	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_STATE_IN_COVER,
 		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
 		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
 	OccupiedActor = nullptr;

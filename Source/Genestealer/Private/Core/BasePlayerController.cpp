@@ -63,6 +63,22 @@ void ABasePlayerController::Internal_SetupInputs()
 	}
 }
 
+void ABasePlayerController::FireAction(const FInputActionValue& Value)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->Input_Fire();
+	}
+}
+
+void ABasePlayerController::AimAction(const FInputActionValue& Value)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->Input_Aim();
+	}
+}
+
 void ABasePlayerController::CoverAction(const FInputActionValue& Value)
 {
 	if (PlayerCharacter)

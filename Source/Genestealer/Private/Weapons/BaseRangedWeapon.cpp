@@ -87,7 +87,7 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 {
 	ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	return ParticleFX;
-}
+} 
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
 {

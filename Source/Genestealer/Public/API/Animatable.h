@@ -40,6 +40,8 @@ public:
 	virtual UAnimMontage* GetCurrentPlayingMontage() const PURE_VIRTUAL(IAnimatable::GetCurrentPlayingMontage, return nullptr; )
 	virtual bool IsAiming() const PURE_VIRTUAL(IAnimatable::IsAiming, return false;)
 	virtual bool IsFiring() const PURE_VIRTUAL(IAnimatable::IsFiring, return false;)
+	virtual bool IsReady() const PURE_VIRTUAL(IAnimatable::IsReady, return false;)
 	virtual bool IsInCover() const PURE_VIRTUAL(IAnimatable::IsInCover, return false;)
+	virtual bool IsRagdoll() const PURE_VIRTUAL(IAnimatable::IsRagdoll, return false;)
 	virtual bool HasRightInput() const PURE_VIRTUAL(IAnimatable::HasRightInput, return false;)
 };

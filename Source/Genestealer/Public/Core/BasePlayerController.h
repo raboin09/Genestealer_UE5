@@ -25,6 +25,10 @@ public:
 
 protected:
 	UFUNCTION()
+	void FireAction(const FInputActionValue& Value);
+	UFUNCTION()
+	void AimAction(const FInputActionValue& Value);
+	UFUNCTION()
 	void CoverAction(const FInputActionValue& Value);
 	UFUNCTION()
 	void ForwardMovementAction(const FInputActionValue& Value);

@@ -22,7 +22,11 @@ protected:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
+	bool bAiming = false;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
 	bool bFiring = false;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
 	bool bIsInCover = false;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
+	bool bReady = false;
 };

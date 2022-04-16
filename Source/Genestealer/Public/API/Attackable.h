@@ -32,6 +32,8 @@ class GENESTEALER_API IAttackable
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Attackable")
-	virtual EAffiliation GetAffiliation() PURE_VIRTUAL(IPlayableCharacter::GetAffiliation, return EAffiliation::Neutral;)
-	virtual UHealthComponent* GetHealthComponent() = 0;
+	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAttackable::GetAffiliation, return EAffiliation::Neutral;)
+	virtual UHealthComponent* GetHealthComponent() const PURE_VIRTUAL(IAttackable::GetHealthComponent, return nullptr;)
+	virtual FVector GetHeadLocation() const PURE_VIRTUAL(IAttackable::GetHeadLocation, return FVector::ZeroVector;)
+	virtual FVector GetChestLocation() const PURE_VIRTUAL(IAttackable::GetChestLocation, return FVector::ZeroVector;)
 };

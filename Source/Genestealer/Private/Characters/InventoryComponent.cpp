@@ -82,15 +82,6 @@ void UInventoryComponent::DestroyInventory()
 	CurrentWeapon = nullptr;
 }
 
-EWeaponState UInventoryComponent::GetCurrentWeaponState() const
-{
-	if(CurrentWeapon)
-	{
-		return CurrentWeapon->GetWeaponState();
-	}
-	return EWeaponState::Idle;
-}
-
 TSubclassOf<AActor> UInventoryComponent::GetPistolClass() const
 {
 	if(PistolWeapon && PistolWeapon.GetObject() && PistolWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))

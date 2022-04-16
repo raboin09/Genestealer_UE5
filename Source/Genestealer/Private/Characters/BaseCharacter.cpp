@@ -20,15 +20,10 @@
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	InitCapsuleCollisionDefaults();
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 	
-	GetMesh()->SetCollisionObjectType(ECC_Pawn);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionResponseToChannels(ECR_Block);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	InitMeshCollisionDefaults();
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -70,11 +65,34 @@ void ABaseCharacter::InitAGRDefaults()
 	MeshComponent->bEnableUpdateRateOptimizations = true;
 	MeshComponent->bPropagateCurvesToSlaves = true;
 	MeshComponent->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	AnimComponent->SetupBasePose(TAG_BASEPOSE_MOCAP_UNARMED);
+}
+
+void ABaseCharacter::InitCapsuleCollisionDefaults() const
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+}
+
+void ABaseCharacter::InitMeshCollisionDefaults() const
+{
+	GetMesh()->SetCollisionObjectType(ECC_Pawn);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionResponseToChannels(ECR_Block); 
 }
 
 void ABaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if(IsRagdoll())
+	{
+		const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity("root");
+		LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
+								  ? NewRagdollVel
+								  : LastRagdollVelocity / 2;
+	}
 }
 
 void ABaseCharacter::BeginPlay()
@@ -135,19 +153,8 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 {
 	if(!NewWeapon)
 		return;
-	
-	// if(NewWeapon->GetWeaponMesh() == nullptr)
-	// {
-	// 	// TODO handle bare handed weapon
-	// } else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
-	// {
-	// 	AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
-	// } else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
-	// {
-	// 	AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
-	// }
-	// NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	// SetOverlayState(NewWeapon->GetWeaponOverlay());
+
+	AnimComponent->SetupBasePose(NewWeapon->GetWeaponBasePose());
 }
 
 void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
@@ -158,7 +165,9 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 	}
 	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
+	DetachFromControllerPendingDestroy();
 	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent);
+	SetLifeSpan(5.f);
 }
 
 void ABaseCharacter::Internal_StopAllAnimMontages() const
@@ -203,7 +212,7 @@ float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMonta
 
 void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration)
 {
-	// RagdollStart();
+	Internal_StartRagdoll();
 	GetMesh()->AddImpulse(Impulse * ImpulseScale, BoneName, bVelocityChange);
 	GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, KnockdownDuration, false);
 }
@@ -217,21 +226,15 @@ void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEv
 }
 
 void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
-{
-	if(IsDying())
+{	
+	if (LastRagdollVelocity.Size() > 100)
 	{
-		Destroy();
-		return;
+		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
 	}
-	
-	// if (LastRagdollVelocity.Size() > 100)
-	// {
-	// 	GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
-	// }
-	// else
-	// {
-	// 	RagdollEnd();
-	// }
+	else
+	{
+		Internal_EndRagdoll();
+	}
 }
 
 void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent)
@@ -294,49 +297,46 @@ void ABaseCharacter::Internal_NormalAnimState() const
 	AnimComponent->SetupRotation(EAGR_RotationMethod::RotateToVelocity, 180.f, 90.f, 5.f);
 }
 
-void ABaseCharacter::Die(FDeathEventPayload DeathEventPayload)
+void ABaseCharacter::Internal_RemoveReadyState()
 {
-	if (GameplayTagContainer.HasTag(TAG_STATE_DEAD))
+	GameplayTagContainer.RemoveTag(TAG_STATE_READY);
+}
+
+void ABaseCharacter::Internal_StartRagdoll()
+{
+	/* Disable all collision on capsule */
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
 	{
-		return;
-	}
-	
-	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
-	
-	if (DeathSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	}
 
-	if(InventoryComponent)
-	{
-		InventoryComponent->DestroyInventory();
-	}
-	
-	Internal_StopAllAnimMontages();
-	GetMesh()->SetRenderCustomDepth(false);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	SetActorEnableCollision(true);
 
-	if(DeathAnimation)
+	if (!IsRagdoll())
 	{
-		const float DeathAnimDuration = PlayAnimMontage(DeathAnimation);
-		if (DeathAnimDuration > 0.f)
+		// Ragdoll
+		GetMesh()->SetAllBodiesSimulatePhysics(true);
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->WakeAllRigidBodies();
+		GetMesh()->bBlendPhysics = true;
+
+		if (UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent()))
 		{
-			const float TriggerRagdollTime = DeathAnimDuration - .3f;
-			GetMesh()->bBlendPhysics = true;
-			// GetWorldTimerManager().SetTimer(TimerHandle_DeathRagoll, this, &ABaseCharacter::RagdollStart, FMath::Max(0.1f, TriggerRagdollTime), false);
-			SetLifeSpan(10.f);
+			CharacterComp->StopMovementImmediately();
+			CharacterComp->DisableMovement();
+			CharacterComp->SetComponentTickEnabled(false);
 		}
-		else
-		{
-			// RagdollStart();
-			SetLifeSpan(10.f);
-		}
-	} else
-	{
-		// RagdollStart();
-		SetLifeSpan(10.f);
-	}
+		GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
+	}	
+}
+
+void ABaseCharacter::Internal_EndRagdoll()
+{
+	InitCapsuleCollisionDefaults();
+	InitMeshCollisionDefaults();
+	GetMesh()->SetAllBodiesSimulatePhysics(false);
 }
 
 void ABaseCharacter::Input_ForwardMovement(float Value)
@@ -345,7 +345,7 @@ void ABaseCharacter::Input_ForwardMovement(float Value)
 	{
 		return;
 	}	
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_COVER_MIDDLE}))
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
 	{
 		return;
 	}
@@ -400,18 +400,19 @@ void ABaseCharacter::Input_CameraRight(float Value)
 
 void ABaseCharacter::Input_Fire()
 {
-	if(InventoryComponent)
+	if(!InventoryComponent)
+	{
+		return;
+	}
+
+	if(!GameplayTagContainer.HasTag(TAG_STATE_FIRING))
 	{
 		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
 		InventoryComponent->StartFiring();
-	}
-}
-
-void ABaseCharacter::Input_StopFiring()
-{
-	if(InventoryComponent)
+	} else
 	{
 		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
+		GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_RemoveReadyState, 2.f, false);
 		InventoryComponent->StopFiring();
 	}
 }
@@ -458,12 +459,13 @@ void ABaseCharacter::SetAimOffset(EAGR_AimOffsets InOffset)
 
 void ABaseCharacter::Input_Aim()
 {
-	GameplayTagContainer.AddTag(TAG_STATE_AIMING);
-	K2_Aim();
-}
-
-void ABaseCharacter::Input_StopAiming()
-{
-	GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
-	K2_StopAiming();
+	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
+	{
+		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+		K2_StopAiming();
+	} else
+	{
+		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+		K2_Aim();
+	}
 }

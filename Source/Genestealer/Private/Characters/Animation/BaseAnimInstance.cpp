@@ -4,6 +4,7 @@
 #include "Characters/Animation/BaseAnimInstance.h"
 
 #include "API/Animatable.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UBaseAnimInstance::UBaseAnimInstance()
 {
@@ -21,5 +22,7 @@ void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		bFiring = AnimOwner->IsFiring();
 		bIsInCover = AnimOwner->IsInCover();
+		bAiming = AnimOwner->IsAiming();
+		bReady = AnimOwner->IsReady();
 	}
 }

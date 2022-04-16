@@ -123,14 +123,14 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 	}	
 	const FEffectImpactVFX& OutRow = *FoundRow;
 	
-	if (bIsValidHeadshot && OutRow.FleshHeadshotFX)
+	if (bIsValidHeadshot && (OutRow.FleshHeadshotFX || OutRow.NurgleFleshHeadshotFX))
 	{
-		return OutRow.FleshHeadshotFX;
+		return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotFX ? OutRow.NurgleFleshHeadshotFX : OutRow.FleshHeadshotFX;
 	}
 	
 	if(!IsValid(SurfaceMaterial))
 	{
-		return OutRow.DefaultFX;
+		return OutRow.DefaultFX;  
 	}
 
 	UNiagaraSystem* SelectedParticle;
@@ -153,6 +153,8 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 	case GENESTEALER_SURFACE_Glass: SelectedParticle = OutRow.GlassFX;
 		break;
 	case GENESTEALER_SURFACE_Flesh: SelectedParticle = OutRow.FleshFX;
+		break;
+	case GENESTEALER_SURFACE_NurgleFlesh: SelectedParticle = OutRow.NurgleFleshFX;
 		break;
 	case GENESTEALER_SURFACE_Plastic: SelectedParticle = OutRow.PlasticFX;
 		break;
@@ -179,9 +181,9 @@ USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle
 	}
 	
 	const FEffectImpactSFX& OutRow = *FoundRow;	
-	if (bIsValidHeadshot && OutRow.FleshHeadshotSound)
+	if (bIsValidHeadshot && (OutRow.FleshHeadshotSound || OutRow.NurgleFleshHeadshotSound))
 	{
-		return OutRow.FleshHeadshotSound;
+		return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotSound ? OutRow.NurgleFleshHeadshotSound : OutRow.FleshHeadshotSound;
 	}
 
 	if(!IsValid(SurfaceMaterial))
@@ -207,6 +209,8 @@ USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle
 	case GENESTEALER_SURFACE_Glass: SelectedSound = OutRow.GlassSound;
 		break;
 	case GENESTEALER_SURFACE_Flesh: SelectedSound = OutRow.FleshSound;
+		break;
+	case GENESTEALER_SURFACE_NurgleFlesh: SelectedSound = OutRow.NurgleFleshSound;
 		break;
 	case GENESTEALER_SURFACE_Plastic: SelectedSound = OutRow.PlasticSound;
 		break;

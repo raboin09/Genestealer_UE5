@@ -36,17 +36,21 @@ public:
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual void ForceStopAnimMontage(UAnimMontage* AnimMontage) override;
-	virtual bool IsAiming() const override { return GameplayTagContainer.HasTag(TAG_STATE_AIMING); }
-	virtual bool IsFiring() const override { return GameplayTagContainer.HasTag(TAG_STATE_FIRING); }
-	virtual bool IsInCover() const override { return GameplayTagContainer.HasTag(TAG_COVER_MIDDLE); }
-	virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
-	virtual bool HasRightInput() const override { return bHasRightInput; }
+	FORCEINLINE virtual bool IsAiming() const override { return GameplayTagContainer.HasTag(TAG_STATE_AIMING); }
+	FORCEINLINE virtual bool IsFiring() const override { return GameplayTagContainer.HasTag(TAG_STATE_FIRING); }
+	FORCEINLINE virtual bool IsReady() const override { return GameplayTagContainer.HasTag(TAG_STATE_READY); }
+	FORCEINLINE virtual bool IsInCover() const override { return GameplayTagContainer.HasTag(TAG_STATE_IN_COVER); }
+	FORCEINLINE virtual bool IsRagdoll() const override { return GameplayTagContainer.HasTag(TAG_STATE_RAGDOLL); }
+	FORCEINLINE virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
+	FORCEINLINE virtual bool HasRightInput() const override { return bHasRightInput; }
 	
 	////////////////////////////////
 	/// IAttackable override
 	////////////////////////////////
-	FORCEINLINE virtual EAffiliation GetAffiliation() override { return CurrentAffiliation; }
-	FORCEINLINE virtual UHealthComponent* GetHealthComponent() override { return HealthComponent; }
+	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return CurrentAffiliation; }
+	FORCEINLINE virtual UHealthComponent* GetHealthComponent() const override { return HealthComponent; }
+	FORCEINLINE virtual FVector GetHeadLocation() const override { return GetMesh()->GetSocketLocation("head"); }
+	FORCEINLINE virtual FVector GetChestLocation() const override { return GetMesh()->GetSocketLocation("spine_02");}
 
 	////////////////////////////////
 	/// ITaggable override
@@ -66,8 +70,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
 	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-	UFUNCTION()
-	virtual void Die(FDeathEventPayload DeathEventPayload);
 
 	////////////////////////////////
 	/// ABaseCharacter Input
@@ -77,10 +79,8 @@ public:
 	void Input_CameraUp(float Value);
 	void Input_CameraRight(float Value);
 	void Input_Fire();
-	void Input_StopFiring();
 	void Input_CoverAction();
 	void Input_Aim();
-	void Input_StopAiming();
 
 	void SetAimOffset(EAGR_AimOffsets InOffset);	
 	UFUNCTION(BlueprintImplementableEvent)
@@ -146,29 +146,40 @@ protected:
 private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
+	
 	void Internal_AddDefaultTagsToContainer();
-
+	
 	void Internal_CoverAnimState() const;
 	void Internal_AimingAnimState() const;
 	void Internal_NormalAnimState() const;
-
+	void Internal_RemoveReadyState();
+	
 	void InitAGRDefaults();
+	void InitCapsuleCollisionDefaults() const;
+	void InitMeshCollisionDefaults() const;
+	
 
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
 	////////////////////////////////
+	void Internal_StartRagdoll();
+	void Internal_EndRagdoll();
 	void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration);
 	void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent);
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 
+	
+private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;
 	FTimerHandle TimerHandle_DeathRagoll;
 	FTimerHandle TimerHandle_Ragdoll;
 	
 	FPlayerInCombatChanged PlayerInCombatChanged;
+
+	FVector LastRagdollVelocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* SpringArm;

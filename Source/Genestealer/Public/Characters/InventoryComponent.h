@@ -24,7 +24,6 @@ public:
 	
 	void SpawnInventoryActors(TSubclassOf<AActor> PistolClass, TSubclassOf<AActor> RifleClass, TSubclassOf<AActor> MeleeClass);
 	void DestroyInventory();
-	EWeaponState GetCurrentWeaponState() const;
 
 	TSubclassOf<AActor> GetPistolClass() const;
 	TSubclassOf<AActor> GetRifleClass() const;

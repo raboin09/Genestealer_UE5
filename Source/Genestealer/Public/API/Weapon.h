@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
 #include "Weapon.generated.h"
 
@@ -41,8 +42,9 @@ public:
 	virtual FAmmoAmountChanged& OnAmmoAmountChanged() = 0;
 	virtual void BroadcastAmmoUsage() = 0;
 
+	virtual FGameplayTag GetWeaponBasePose() const PURE_VIRTUAL(IWeapon::GetWeaponBasePose, return FGameplayTag(););
+
 	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentWeapon, return EWeaponState::Idle; );
-	virtual EWeaponSlot GetWeaponSlot() const PURE_VIRTUAL(IWeapon::GetWeaponSlot, return EWeaponSlot::Pistol; );
 	
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
 	virtual void OnLeaveInventory() PURE_VIRTUAL(IWeapon::OnLeaveInventory,);
@@ -70,10 +72,6 @@ public:
 
 	virtual UMeshComponent* GetWeaponMesh() const PURE_VIRTUAL(IWeapon::GetWeaponMesh, return nullptr;);
 	virtual UMeshComponent* GetSecondaryWeaponMesh() const PURE_VIRTUAL(IWeapon::GetSecondaryWeaponMesh, return nullptr;);
-	virtual USceneComponent* GetWeaponRoot() const PURE_VIRTUAL(IWeapon::GetWeaponRoot, return nullptr;);
-	virtual void SetWeaponMesh(UMeshComponent* IncomingCharacter)PURE_VIRTUAL(IWeapon::SetWeaponMesh,);
-	UFUNCTION(BlueprintCallable)
-	virtual EWeaponState GetWeaponState() PURE_VIRTUAL(IWeapon::GetWeaponState, return EWeaponState::Idle;)
 	
 	virtual ACharacter* GetOwningPawn() const PURE_VIRTUAL(IWeapon::GetOwningPawn, return nullptr;);
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) PURE_VIRTUAL(IWeapon::SetOwningPawn,);

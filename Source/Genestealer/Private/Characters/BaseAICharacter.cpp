@@ -4,10 +4,14 @@
 #include "Characters/BaseAICharacter.h"
 
 #include "AI/BaseAIController.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AIControllerClass = ABaseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+}
+
+void ABaseAICharacter::FireWeapon(bool bStartFiring)
+{
+	Input_Fire();
 }

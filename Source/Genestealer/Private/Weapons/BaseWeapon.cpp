@@ -237,17 +237,6 @@ UMeshComponent* ABaseWeapon::GetSecondaryWeaponMesh() const
 	return nullptr;
 }
 
-void ABaseWeapon::SetWeaponMesh(UMeshComponent* InMesh)
-{
-	if(UStaticMeshComponent* StaticMesh = Cast<UStaticMeshComponent>(InMesh))
-	{
-		WeaponStaticMesh = StaticMesh;
-	} else if(USkeletalMeshComponent* SkelMesh = Cast<USkeletalMeshComponent>(InMesh))
-	{
-		WeaponSkeletalMesh = SkelMesh;	
-	}
-}
-
 void ABaseWeapon::HandleFiring()
 {
 	if ((GetCurrentAmmoInClip() > 0 || HasInfiniteClip() || HasInfiniteAmmo()) && CanFire())

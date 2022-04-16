@@ -16,6 +16,7 @@
 #define GENESTEALER_SURFACE_Grass		SurfaceType6
 #define GENESTEALER_SURFACE_Glass		SurfaceType7
 #define GENESTEALER_SURFACE_Flesh		SurfaceType8
+#define GENESTEALER_SURFACE_NurgleFlesh		SurfaceType9
 #define GENESTEALER_SURFACE_Plastic		SurfaceType12
 #define GENESTEALER_SURFACE_Sand		SurfaceType13
 #define GENESTEALER_SURFACE_Ice		SurfaceType14

@@ -59,6 +59,8 @@ struct FEffectImpactVFX : public FTableRowBase
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
 	UNiagaraSystem* FleshFX;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
+	UNiagaraSystem* NurgleFleshFX;
+	UPROPERTY(EditDefaultsOnly, Category=Visual)
 	UNiagaraSystem* SandFX;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
 	UNiagaraSystem* PlasticFX;
@@ -66,6 +68,8 @@ struct FEffectImpactVFX : public FTableRowBase
 	UNiagaraSystem* IceFX;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
 	UNiagaraSystem* FleshHeadshotFX;
+	UPROPERTY(EditDefaultsOnly, Category=Visual)
+	UNiagaraSystem* NurgleFleshHeadshotFX;
 };
 
 USTRUCT(BlueprintType)
@@ -92,6 +96,8 @@ struct FEffectImpactSFX : public FTableRowBase
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
 	USoundCue* FleshSound;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	USoundCue* NurgleFleshSound;
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
 	USoundCue* SandSound;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
 	USoundCue* PlasticSound;
@@ -99,6 +105,8 @@ struct FEffectImpactSFX : public FTableRowBase
 	USoundCue* IceSound;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
 	USoundCue* FleshHeadshotSound;
+	UPROPERTY(EditDefaultsOnly, Category=Sound)
+	USoundCue* NurgleFleshHeadshotSound;
 };
 
 UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), hideCategories = ("Material Parameters", "Optimization", "Skeletal Mesh", "HLOD", "Mobile", "Asset User Data", "Virtual Texture", "Compilation", "Clothing", "Master Post Component", "Skin Weights", "Clothing Simulation", "Override Parameters", "Activation", "Lighting", "Attachment", "Navigation", "Component Tick", "Physics", "Tags", "Component Replication", "Variable", "Parameters", "Randomness", "Rendering", "Replication", "Input", "Actor", "Actor Tick", "Collision", "Transform", "LOD", "Cooking"))

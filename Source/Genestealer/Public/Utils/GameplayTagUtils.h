@@ -24,12 +24,19 @@
 #define TAG_STATE_DEAD FGameplayTag::RequestGameplayTag("State.Dead")
 #define TAG_STATE_AIMING FGameplayTag::RequestGameplayTag("State.Aiming")
 #define TAG_STATE_FIRING FGameplayTag::RequestGameplayTag("State.Firing")
+#define TAG_STATE_READY FGameplayTag::RequestGameplayTag("State.Ready")
+#define TAG_STATE_RAGDOLL FGameplayTag::RequestGameplayTag("State.Ragdoll")
+#define TAG_STATE_IN_COVER FGameplayTag::RequestGameplayTag("State.InCover")
 
-#define TAG_COVER_MIDDLE FGameplayTag::RequestGameplayTag("State.InCover.Middle")
 #define TAG_COVER_LEFTPEEK FGameplayTag::RequestGameplayTag("State.InCover.LeftPeek")
 #define TAG_COVER_LEFTEDGE FGameplayTag::RequestGameplayTag("State.InCover.LeftEdge")
 #define TAG_COVER_RIGHTPEEK FGameplayTag::RequestGameplayTag("State.InCover.RightPeek")
 #define TAG_COVER_RIGHTEDGE FGameplayTag::RequestGameplayTag("State.InCover.RightEdge")
+
+#define TAG_BASEPOSE_MOCAP_UNARMED FGameplayTag::RequestGameplayTag("Animation.BasePose.MocapUnarmed")
+#define TAG_BASEPOSE_RIFLE_STANDING FGameplayTag::RequestGameplayTag("Animation.BasePose.RifleStanding")
+
+#define TAG_OVERLAYPOSE_2H_PISTOL FGameplayTag::RequestGameplayTag("Animation.Overlay.2H_Pistol")
 
 UCLASS()
 class GENESTEALER_API UGameplayTagUtils : public UBlueprintFunctionLibrary
