@@ -166,7 +166,7 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
-	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent);
+	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
 	SetLifeSpan(5.f);
 }
 
@@ -210,19 +210,22 @@ float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMonta
 	return PlayAnimMontage(AnimMontagePlayData.MontageToPlay, AnimMontagePlayData.PlayRate, AnimMontagePlayData.MontageSection);
 }
 
-void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration)
+void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange)
 {
 	Internal_StartRagdoll();
 	GetMesh()->AddImpulse(Impulse * ImpulseScale, BoneName, bVelocityChange);
-	GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, KnockdownDuration, false);
 }
 
-void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent)
+void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback)
 {	
 	const float ImpulseValue = UCombatUtils::GetHitImpulseValue(HitReactEvent.HitReactType);
 	const float KnockdownDuration = UCombatUtils::GetKnockbackRecoveryTime(HitReactEvent.HitReactType);
 	const FName HitBoneName = HitReactEvent.HitResult.BoneName;
-	Internal_ApplyCharacterKnockback(HitReactEvent.HitDirection, ImpulseValue, HitBoneName, false, KnockdownDuration);	
+	Internal_ApplyCharacterKnockback(HitReactEvent.HitDirection, ImpulseValue, HitBoneName, false);
+	if(bShouldRecoverFromKnockback)
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, KnockdownDuration, false);	
+	}
 }
 
 void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
@@ -462,10 +465,12 @@ void ABaseCharacter::Input_Aim()
 	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
 	{
 		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+		Internal_NormalAnimState();
 		K2_StopAiming();
 	} else
 	{
 		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+		Internal_AimingAnimState();
 		K2_Aim();
 	}
 }

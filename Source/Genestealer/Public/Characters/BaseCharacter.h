@@ -119,12 +119,12 @@ protected:
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<TSubclassOf<AActor>> DefaultEffects;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
-	TSubclassOf<ABaseWeapon> StartingPistolClass;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
-	TSubclassOf<ABaseWeapon> StartingRifleClass;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
-	TSubclassOf<ABaseWeapon> StartingMeleeClass;
+	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
+	TSubclassOf<AActor> StartingPistolClass;
+	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
+	TSubclassOf<AActor> StartingRifleClass;
+	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
+	TSubclassOf<AActor> StartingMeleeClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
 
@@ -164,8 +164,8 @@ private:
 	////////////////////////////////
 	void Internal_StartRagdoll();
 	void Internal_EndRagdoll();
-	void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange, float KnockdownDuration);
-	void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent);
+	void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange);
+	void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback = true);
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
