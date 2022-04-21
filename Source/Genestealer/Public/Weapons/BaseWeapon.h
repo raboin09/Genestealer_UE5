@@ -39,6 +39,7 @@ public:
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	FORCEINLINE virtual FGameplayTag GetWeaponBasePose() const override { return WeaponBasePose; }
+	FORCEINLINE virtual FGameplayTag GetWeaponOverlayPose() const override { return WeaponBasePose; }
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
@@ -121,6 +122,8 @@ protected:
 	bool bLoopedFireAnim = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	FGameplayTag WeaponBasePose;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	FGameplayTag WeaponOverlayPose;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float AI_UseRange = 500.f;

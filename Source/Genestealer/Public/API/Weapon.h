@@ -43,7 +43,7 @@ public:
 	virtual void BroadcastAmmoUsage() = 0;
 
 	virtual FGameplayTag GetWeaponBasePose() const PURE_VIRTUAL(IWeapon::GetWeaponBasePose, return FGameplayTag(););
-
+	virtual FGameplayTag GetWeaponOverlayPose() const PURE_VIRTUAL(IWeapon::GetWeaponOverlayPose, return FGameplayTag(););
 	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentWeapon, return EWeaponState::Idle; );
 	
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
