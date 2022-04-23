@@ -70,8 +70,9 @@ void ABaseCharacter::InitAGRDefaults()
 
 void ABaseCharacter::InitCapsuleCollisionDefaults() const
 {
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_Pawn);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetCapsuleComponent()->SetCollisionResponseToChannels(ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 }
@@ -88,11 +89,41 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if(IsRagdoll())
 	{
-		const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity("root");
-		LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
-								  ? NewRagdollVel
-								  : LastRagdollVelocity / 2;
+		SetActorLocationDuringRagdoll();
 	}
+}
+
+void ABaseCharacter::SetActorLocationDuringRagdoll()
+{
+	const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity("root");
+	LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
+							  ? NewRagdollVel
+							  : LastRagdollVelocity / 2;
+
+	const UE::Math::TVector2 First = {0.0, 1000.0};
+	const UE::Math::TVector2 Second = {0.0, 25000.0};
+	const float SpringValue = FMath::GetMappedRangeValueClamped(First, Second, LastRagdollVelocity.Size());
+	GetMesh()->SetAllMotorsAngularDriveParams(SpringValue, 0.0f, 0.0f, false);
+	const bool bEnableGrav = LastRagdollVelocity.Z > -4000.0f;
+	GetMesh()->SetEnableGravity(bEnableGrav);
+	TargetRagdollLocation = GetMesh()->GetSocketLocation("pelvis");
+	const FRotator PelvisRot = GetMesh()->GetSocketRotation("pelvis");
+
+	bool bRagdollFaceUp = PelvisRot.Roll < 0.0f;
+	const FRotator TargetRagdollRotation(0.0f, bRagdollFaceUp ? PelvisRot.Yaw - 180.0f : PelvisRot.Yaw, 0.0f);
+	const FVector TraceVect(TargetRagdollLocation.X, TargetRagdollLocation.Y,TargetRagdollLocation.Z - GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+
+	UWorld* World = GetWorld();
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FHitResult HitResult;
+	World->LineTraceSingleByChannel(HitResult, TargetRagdollLocation, TraceVect,ECC_Visibility, Params);
+	bool bRagdollOnGround = HitResult.IsValidBlockingHit();
+	FVector NewRagdollLoc = TargetRagdollLocation;
+	const float ImpactDistZ = FMath::Abs(HitResult.ImpactPoint.Z - HitResult.TraceStart.Z);
+	NewRagdollLoc.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - ImpactDistZ + 2.0f;
+	SetActorLocationAndRotation(bRagdollOnGround ? NewRagdollLoc : TargetRagdollLocation, TargetRagdollRotation);
 }
 
 void ABaseCharacter::BeginPlay()
@@ -229,8 +260,8 @@ void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEv
 }
 
 void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
-{	
-	if (GetVelocity().Size() > 100)
+{
+	if (LastRagdollVelocity.Size() > 100)
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
 	}
@@ -307,39 +338,27 @@ void ABaseCharacter::Internal_RemoveReadyState()
 
 void ABaseCharacter::Internal_StartRagdoll()
 {
-	/* Disable all collision on capsule */
-	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
-	{
-		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	}
-
-	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-	SetActorEnableCollision(true);
-
-	if (!IsRagdoll())
-	{
-		// Ragdoll
-		GetMesh()->SetAllBodiesSimulatePhysics(true);
-		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->WakeAllRigidBodies();
-		GetMesh()->bBlendPhysics = true;
-
-		if (UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent()))
-		{
-			CharacterComp->StopMovementImmediately();
-			CharacterComp->DisableMovement();
-			CharacterComp->SetComponentTickEnabled(false);
-		}
-		GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
-	}	
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetAllBodiesBelowSimulatePhysics("pelvis", true, true);
+	GetMesh()->bOnlyAllowAutonomousTickPose = true;
+	GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
 }
 
 void ABaseCharacter::Internal_EndRagdoll()
 {
-	InitCapsuleCollisionDefaults();
-	InitMeshCollisionDefaults();
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	GetMesh()->bOnlyAllowAutonomousTickPose = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionObjectType(ECC_Pawn);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetAllBodiesSimulatePhysics(false);
+	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	GameplayTagContainer.RemoveTag(TAG_STATE_RAGDOLL);
 }
 
 void ABaseCharacter::Input_ForwardMovement(float Value)

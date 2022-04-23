@@ -160,6 +160,7 @@ private:
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
 	
+	void SetActorLocationDuringRagdoll();
 
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
@@ -181,6 +182,7 @@ private:
 	
 	FPlayerInCombatChanged PlayerInCombatChanged;
 
+	FVector TargetRagdollLocation;
 	FVector LastRagdollVelocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
