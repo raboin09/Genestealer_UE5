@@ -23,6 +23,7 @@ public:
 	////////////////////////////////
 	FORCEINLINE virtual UBehaviorTree* GetAIBehavior() const override { return InstancedBehaviorTree ? InstancedBehaviorTree : DefaultBehaviorTree; }
 	virtual void FireWeapon(bool bStartFiring) override;
+	virtual void Aim(bool bStartAiming) override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")

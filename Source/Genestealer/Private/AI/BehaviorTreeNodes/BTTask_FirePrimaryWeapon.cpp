@@ -10,6 +10,7 @@ EBTNodeResult::Type UBTTask_FireSelectedWeapon::ExecuteTask(UBehaviorTreeCompone
 {
 	if(IAIPawn* AIPawn = Cast<IAIPawn>(OwnerComp.GetAIOwner()->GetPawn()))
 	{
+		AIPawn->Aim(true);
 		AIPawn->FireWeapon(true);
 		return EBTNodeResult::Succeeded;
 	}

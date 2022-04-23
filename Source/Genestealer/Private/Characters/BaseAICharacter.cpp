@@ -15,3 +15,8 @@ void ABaseAICharacter::FireWeapon(bool bStartFiring)
 {
 	Input_Fire();
 }
+
+void ABaseAICharacter::Aim(bool bStartAiming)
+{
+	Input_Aim();
+}

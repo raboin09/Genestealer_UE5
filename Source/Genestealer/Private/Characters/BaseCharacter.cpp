@@ -230,7 +230,7 @@ void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEv
 
 void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 {	
-	if (LastRagdollVelocity.Size() > 100)
+	if (GetVelocity().Size() > 100)
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
 	}

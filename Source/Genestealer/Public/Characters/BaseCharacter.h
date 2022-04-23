@@ -119,6 +119,8 @@ protected:
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<TSubclassOf<AActor>> DefaultEffects;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
+	EAffiliation CurrentAffiliation;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
 	TSubclassOf<AActor> StartingPistolClass;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
@@ -192,6 +194,4 @@ private:
 	bool bHasRightInput;
 	UPROPERTY(Transient)
 	TScriptInterface<ICoverPoint> CurrentCoverPoint;
-	
-	EAffiliation CurrentAffiliation;
 };
