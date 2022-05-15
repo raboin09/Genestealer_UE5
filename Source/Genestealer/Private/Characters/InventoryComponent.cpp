@@ -242,6 +242,15 @@ void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 A
 	}
 }
 
+EWeaponState UInventoryComponent::GetCurrentWeaponState() const
+{
+	if(CurrentWeapon)
+	{
+		return CurrentWeapon->GetCurrentState();
+	}
+	return EWeaponState::Idle;
+}
+
 void UInventoryComponent::Internal_RemoveWeapon(TScriptInterface<IWeapon> Weapon, EWeaponSlot Slot)
 {
 	if (Weapon)

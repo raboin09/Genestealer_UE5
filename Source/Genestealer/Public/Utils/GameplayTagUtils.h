@@ -27,6 +27,7 @@
 #define TAG_STATE_READY FGameplayTag::RequestGameplayTag("State.Ready")
 #define TAG_STATE_RAGDOLL FGameplayTag::RequestGameplayTag("State.Ragdoll")
 #define TAG_STATE_IN_COVER FGameplayTag::RequestGameplayTag("State.InCover")
+#define TAG_STATE_IN_COMBAT FGameplayTag::RequestGameplayTag("State.InCombat")
 #define TAG_STATE_ATTACK_COMMITTED FGameplayTag::RequestGameplayTag("State.AttackCommitted")
 
 #define TAG_STATE_COMBO_WINDOW_ENABLED FGameplayTag::RequestGameplayTag("State.ComboWindowEnabled")

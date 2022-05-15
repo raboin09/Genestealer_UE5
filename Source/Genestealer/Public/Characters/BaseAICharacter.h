@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "API/AIPawn.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "Characters/BaseCharacter.h"
 #include "BaseAICharacter.generated.h"
 
@@ -21,9 +22,13 @@ public:
 	////////////////////////////////
 	/// IAIPawn override
 	////////////////////////////////
+	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return CurrentAffiliation; }
 	FORCEINLINE virtual UBehaviorTree* GetAIBehavior() const override { return InstancedBehaviorTree ? InstancedBehaviorTree : DefaultBehaviorTree; }
+	FORCEINLINE virtual FPlayerInCombatChanged& OnCombatStateChanged() override { return PlayerInCombatChanged; }
+	
 	virtual void FireWeapon(bool bStartFiring) override;
 	virtual void Aim(bool bStartAiming) override;
+	virtual float GetWeaponRange() const override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")

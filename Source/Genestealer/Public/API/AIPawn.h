@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Attackable.h"
+#include "Characters/BaseCharacter.h"
 #include "UObject/Interface.h"
 #include "AIPawn.generated.h"
 
@@ -24,4 +26,7 @@ public:
 	virtual class UBehaviorTree* GetAIBehavior() const PURE_VIRTUAL(IAIPawn::GetAIBehavior, return nullptr;)
 	virtual void FireWeapon(bool bStartFiring) PURE_VIRTUAL(IAIPawn::FireWeapon, )
 	virtual void Aim(bool bStartAiming) PURE_VIRTUAL(IAIPawn::Aim, )
+	virtual float GetWeaponRange() const PURE_VIRTUAL(IAIPawn::GetWeaponRange, return 0.f; )
+	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAIPawn::GetAffiliation, return EAffiliation::Neutral; )
+	virtual FPlayerInCombatChanged& OnCombatStateChanged() = 0;
 };

@@ -43,6 +43,7 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 
 	BaseLookupRate = 45.f;
 	BaseTurnRate = 45.f;
+	InCombatTime = 5.f;
 	
 	InitAGRDefaults();
 }
@@ -87,43 +88,6 @@ void ABaseCharacter::InitMeshCollisionDefaults() const
 void ABaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(IsRagdoll())
-	{
-		SetActorLocationDuringRagdoll();
-	}
-}
-
-void ABaseCharacter::SetActorLocationDuringRagdoll()
-{
-	const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity("root");
-	LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
-							  ? NewRagdollVel
-							  : LastRagdollVelocity / 2;
-
-	const UE::Math::TVector2 First = {0.0, 1000.0};
-	const UE::Math::TVector2 Second = {0.0, 25000.0};
-	const float SpringValue = FMath::GetMappedRangeValueClamped(First, Second, LastRagdollVelocity.Size());
-	GetMesh()->SetAllMotorsAngularDriveParams(SpringValue, 0.0f, 0.0f, false);
-	const bool bEnableGrav = LastRagdollVelocity.Z > -4000.0f;
-	GetMesh()->SetEnableGravity(bEnableGrav);
-	TargetRagdollLocation = GetMesh()->GetSocketLocation("pelvis");
-	const FRotator PelvisRot = GetMesh()->GetSocketRotation("pelvis");
-
-	bool bRagdollFaceUp = PelvisRot.Roll < 0.0f;
-	const FRotator TargetRagdollRotation(0.0f, bRagdollFaceUp ? PelvisRot.Yaw - 180.0f : PelvisRot.Yaw, 0.0f);
-	const FVector TraceVect(TargetRagdollLocation.X, TargetRagdollLocation.Y,TargetRagdollLocation.Z - GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-
-	UWorld* World = GetWorld();
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	FHitResult HitResult;
-	World->LineTraceSingleByChannel(HitResult, TargetRagdollLocation, TraceVect,ECC_Visibility, Params);
-	bool bRagdollOnGround = HitResult.IsValidBlockingHit();
-	FVector NewRagdollLoc = TargetRagdollLocation;
-	const float ImpactDistZ = FMath::Abs(HitResult.ImpactPoint.Z - HitResult.TraceStart.Z);
-	NewRagdollLoc.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - ImpactDistZ + 2.0f;
-	SetActorLocationAndRotation(bRagdollOnGround ? NewRagdollLoc : TargetRagdollLocation, TargetRagdollRotation);
 }
 
 void ABaseCharacter::BeginPlay()
@@ -170,6 +134,10 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		return;
 	}
 
+	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
+	SetInCombat(true, EventPayload.InstigatingActor);
+	GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
+	
 	LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
@@ -194,6 +162,12 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 	{
 		return;
 	}
+	
+	if(InventoryComponent)
+	{
+		InventoryComponent->StopFiring();
+	}
+	
 	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
@@ -336,6 +310,11 @@ void ABaseCharacter::Internal_RemoveReadyState()
 	GameplayTagContainer.RemoveTag(TAG_STATE_READY);
 }
 
+void ABaseCharacter::Internal_SetOutOfCombat()
+{
+	GameplayTagContainer.RemoveTag(TAG_STATE_IN_COMBAT);
+}
+
 void ABaseCharacter::Internal_StartRagdoll()
 {
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
@@ -359,6 +338,33 @@ void ABaseCharacter::Internal_EndRagdoll()
 	GetMesh()->SetAllBodiesSimulatePhysics(false);
 	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
 	GameplayTagContainer.RemoveTag(TAG_STATE_RAGDOLL);
+}
+
+bool ABaseCharacter::IsInCombat()
+{
+	bool bWeaponIsActive = false;
+	if(InventoryComponent)
+	{
+		const EWeaponState CurrWeaponState = InventoryComponent->GetCurrentWeaponState();
+		bWeaponIsActive = CurrWeaponState == EWeaponState::Firing || CurrWeaponState == EWeaponState::Reloading;
+	}
+	return bWeaponIsActive || GetTagContainer().HasTag(TAG_STATE_IN_COMBAT);
+}
+
+void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
+{
+	if(bInNewState)
+	{
+		GetTagContainer().AddTag(TAG_STATE_IN_COMBAT);
+	} else
+	{
+		GetTagContainer().RemoveTag(TAG_STATE_IN_COMBAT);
+	}
+	
+	if(IsAlive())
+	{
+		PlayerInCombatChanged.Broadcast(bInNewState, DamageCauser);
+	}
 }
 
 void ABaseCharacter::Input_ForwardMovement(float Value)
@@ -431,11 +437,20 @@ void ABaseCharacter::Input_Fire()
 	{
 		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
 		InventoryComponent->StartFiring();
+		GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
+		if(!GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
+		{
+			SetInCombat(true, nullptr);
+		}
 	} else
 	{
 		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
 		GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_RemoveReadyState, 2.f, false);
 		InventoryComponent->StopFiring();
+		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
+		}
 	}
 }
 

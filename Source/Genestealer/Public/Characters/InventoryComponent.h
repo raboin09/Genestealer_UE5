@@ -47,6 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FORCEINLINE TScriptInterface<IWeapon> GetEquippedWeapon() const{ return CurrentWeapon; }
+	EWeaponState GetCurrentWeaponState() const;
 	
 	FORCEINLINE FCurrentWeaponChanged& OnCurrentWeaponChanged() { return CurrentWeaponChanged; }
 	FORCEINLINE FNewWeaponAdded& OnNewWeaponAdded() { return NewWeaponAdded; }

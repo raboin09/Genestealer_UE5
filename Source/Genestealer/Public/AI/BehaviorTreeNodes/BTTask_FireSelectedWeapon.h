@@ -16,4 +16,7 @@ class GENESTEALER_API UBTTask_FireSelectedWeapon : public UBTTaskNode
 
 public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
+	FBlackboardKeySelector TargetActorKey;
 };

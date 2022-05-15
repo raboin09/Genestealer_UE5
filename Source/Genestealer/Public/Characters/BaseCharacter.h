@@ -10,8 +10,8 @@
 #include "API/CoverPoint.h"
 #include "API/Effectible.h"
 #include "API/Taggable.h"
+#include "Character/ALSCharacter.h"
 #include "Components/AGRAnimMasterComponent.h"
-#include "GameFramework/Character.h"
 #include "Utils/GameplayTagUtils.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
@@ -19,7 +19,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerInCombatChanged, bool, bIsInCombat, AActor*, DamageCauser);
 
 UCLASS(Abstract, NotBlueprintable, config=Game)
-class GENESTEALER_API ABaseCharacter : public ACharacter, public IAttackable, public ITaggable, public IEffectible, public IAnimatable
+class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IEffectible, public IAnimatable
 {
 	GENERATED_BODY()
 	
@@ -70,6 +70,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
 	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+	bool IsInCombat();
+	void SetInCombat(bool bInNewState, AActor* DamageCauser);
 
 	////////////////////////////////
 	/// ABaseCharacter Input
@@ -118,6 +120,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
+	float InCombatTime;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<TSubclassOf<AActor>> DefaultEffects;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	EAffiliation CurrentAffiliation;
@@ -144,6 +148,8 @@ protected:
 	UEffectContainerComponent* EffectContainerComponent;
 	UPROPERTY(BlueprintReadOnly)
 	FGameplayTagContainer GameplayTagContainer;
+
+	FPlayerInCombatChanged PlayerInCombatChanged;
 	
 private:
 	void Internal_StopAllAnimMontages() const;
@@ -155,12 +161,11 @@ private:
 	void Internal_AimingAnimState() const;
 	void Internal_NormalAnimState() const;
 	void Internal_RemoveReadyState();
+	void Internal_SetOutOfCombat();
 	
 	void InitAGRDefaults();
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
-	
-	void SetActorLocationDuringRagdoll();
 
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
@@ -179,8 +184,6 @@ private:
 	FTimerHandle TimerHandle_Destroy;
 	FTimerHandle TimerHandle_DeathRagoll;
 	FTimerHandle TimerHandle_Ragdoll;
-	
-	FPlayerInCombatChanged PlayerInCombatChanged;
 
 	FVector TargetRagdollLocation;
 	FVector LastRagdollVelocity;

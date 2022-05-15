@@ -20,7 +20,7 @@ ABaseWeapon::ABaseWeapon()
 	WeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	WeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	WeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	WeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
 
 	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
@@ -30,7 +30,7 @@ ABaseWeapon::ABaseWeapon()
 	WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	WeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	WeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	WeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	WeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
 	SecondaryWeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SecondaryWeaponSkeletalMesh"));
@@ -40,7 +40,7 @@ ABaseWeapon::ABaseWeapon()
 	SecondaryWeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SecondaryWeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	SecondaryWeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
 
 	SecondaryWeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondaryWeaponStaticMesh"));
@@ -50,7 +50,7 @@ ABaseWeapon::ABaseWeapon()
 	SecondaryWeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SecondaryWeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	SecondaryWeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
 	DefaultGameplayTags.Add(TAG_ACTOR_WEAPON);
