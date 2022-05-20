@@ -27,6 +27,7 @@ public:
 	virtual void FireWeapon(bool bStartFiring) PURE_VIRTUAL(IAIPawn::FireWeapon, )
 	virtual void Aim(bool bStartAiming) PURE_VIRTUAL(IAIPawn::Aim, )
 	virtual float GetWeaponRange() const PURE_VIRTUAL(IAIPawn::GetWeaponRange, return 0.f; )
+	virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const PURE_VIRTUAL(IAIPawn::GetWeaponMuzzleSocketLocation, return FVector::ZeroVector; )
 	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAIPawn::GetAffiliation, return EAffiliation::Neutral; )
 	virtual FPlayerInCombatChanged& OnCombatStateChanged() = 0;
 };

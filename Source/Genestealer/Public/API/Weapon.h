@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Library/ALSCharacterEnumLibrary.h"
 #include "UObject/Interface.h"
 #include "Weapon.generated.h"
 
@@ -42,8 +43,7 @@ public:
 	virtual FAmmoAmountChanged& OnAmmoAmountChanged() = 0;
 	virtual void BroadcastAmmoUsage() = 0;
 
-	virtual FGameplayTag GetWeaponBasePose() const PURE_VIRTUAL(IWeapon::GetWeaponBasePose, return FGameplayTag(););
-	virtual FGameplayTag GetWeaponOverlayPose() const PURE_VIRTUAL(IWeapon::GetWeaponOverlayPose, return FGameplayTag(););
+	virtual EALSOverlayState GetWeaponOverlay() PURE_VIRTUAL(IWeapon::GetWeaponOverlay, return EALSOverlayState::Default;);
 	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentWeapon, return EWeaponState::Idle; );
 	
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
@@ -76,7 +76,8 @@ public:
 	virtual ACharacter* GetOwningPawn() const PURE_VIRTUAL(IWeapon::GetOwningPawn, return nullptr;);
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) PURE_VIRTUAL(IWeapon::SetOwningPawn,);
 
-	virtual void DestroyWeapon() PURE_VIRTUAL(IWeapon::Destroy,);
+	virtual void StartWeaponRagdoll() PURE_VIRTUAL(IWeapon::StartWeaponRagdoll,);
+	virtual void DestroyWeapon() PURE_VIRTUAL(IWeapon::DestroyWeapon,);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetWeaponRange() PURE_VIRTUAL(IWeapon::GetWeaponRange, return 0.f;)  

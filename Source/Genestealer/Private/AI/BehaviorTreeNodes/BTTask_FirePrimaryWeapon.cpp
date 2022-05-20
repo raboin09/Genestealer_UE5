@@ -20,9 +20,9 @@ EBTNodeResult::Type UBTTask_FireSelectedWeapon::ExecuteTask(UBehaviorTreeCompone
 	
 	if(IAIPawn* AIPawn = Cast<IAIPawn>(CurrPawn))
 	{
-		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(CurrPawn->GetActorLocation(), SelectedActor->GetActorLocation());
-		CurrPawn->SetActorRotation({SelectedActor->GetActorRotation().Pitch, Rot.Yaw, SelectedActor->GetActorRotation().Roll});
-		AIPawn->Aim(true);
+		// FRotator Rot = UKismetMathLibrary::FindLookAtRotation(CurrPawn->GetActorLocation(), SelectedActor->GetActorLocation());
+		// CurrPawn->SetActorRotation({SelectedActor->GetActorRotation().Pitch, Rot.Yaw, SelectedActor->GetActorRotation().Roll});
+		// AIPawn->Aim(true);
 		AIPawn->FireWeapon(true);
 		return EBTNodeResult::Succeeded;
 	}

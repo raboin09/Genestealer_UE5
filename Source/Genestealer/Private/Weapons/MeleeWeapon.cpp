@@ -113,7 +113,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 	{
 		return;
 	}
-
+	
 	TArray<FString> Keys;
 	Sockets.GetKeys(Keys);
 	for(const FString& Key : Keys)
@@ -122,7 +122,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		TraceParams.bReturnPhysicalMaterial = true;
 		FHitResult Hit(ForceInit);
 		TArray<AActor*> IgnoreActors = { GetInstigator(), this, GetOwner() };
-		UKismetSystemLibrary::LineTraceSingle(this, *Sockets.Find(Key), MeshComponentRef->GetSocketLocation(FName(Key)), UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+		UKismetSystemLibrary::LineTraceSingle(this, *Sockets.Find(Key), MeshComponentRef->GetSocketLocation(FName(Key)), UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(Hit.bBlockingHit && bIsActive && !HitActors.Contains(Hit.GetActor()))
 		{
 			HitActors.Add(Hit.GetActor());
@@ -152,6 +152,7 @@ void AMeleeWeapon::Internal_StartAttack()
 {
 	GetTagContainer().AddTag(TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
+	UKismetSystemLibrary::PrintString(this, "playing montage");
 	PlayWeaponAnimation(PlayData);
 	PlayWeaponSound(FireSound);
 }

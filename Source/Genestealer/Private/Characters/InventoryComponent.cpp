@@ -279,27 +279,35 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 
 	CurrentWeapon = NewWeapon;
 
-	if (NewWeapon)
+
+	if(NewWeapon)
 	{
 		if(ACharacter* CastedChar = Cast<ACharacter>(GetOwner()))
 		{
 			NewWeapon->SetOwningPawn(CastedChar);
-			NewWeapon->OnEquip(LastWeapon);
-			if(USkeletalMeshComponent* MeshComponent = CastedChar->GetMesh())
-			{
-				if(NewWeapon->GetWeaponMesh())
-				{
-					NewWeapon->GetWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
-				}
-				
-				// Attach dual wield if exists
-				if(NewWeapon->GetSecondaryWeaponMesh())
-				{
-					NewWeapon->GetSecondaryWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("LeftHandSocket"));
-				}
-			}
+			NewWeapon->OnEquip(LastWeapon);		
 		}
 	}
+
+	// if (NewWeapon)
+	// {
+	// 	if(ACharacter* CastedChar = Cast<ACharacter>(GetOwner()))
+	// 	{
+	// 		if(USkeletalMeshComponent* MeshComponent = CastedChar->GetMesh())
+	// 		{
+	// 			if(NewWeapon->GetWeaponMesh())
+	// 			{
+	// 				NewWeapon->GetWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
+	// 			}
+	// 			
+	// 			// Attach dual wield if exists
+	// 			if(NewWeapon->GetSecondaryWeaponMesh())
+	// 			{
+	// 				NewWeapon->GetSecondaryWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("LeftHandSocket"));
+	// 			}
+	// 		}
+	// 	}
+	// }
 	CurrentWeaponChanged.Broadcast(NewWeapon, LastWeapon);
 	
 	// Needed to catch this for the first BeginPlay loop

@@ -71,10 +71,18 @@ void ABaseWeapon::BeginPlay()
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	if(GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(true);
+	}
 }
 
 void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 {
+	if(GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(false);
+	}
 	bPendingEquip = true;
 	DetermineWeaponState();
 	if (LastWeapon)
@@ -118,6 +126,10 @@ void ABaseWeapon::OnEquipFinished()
 
 void ABaseWeapon::OnUnEquip()
 {
+	if(GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(true);
+	}
 	bIsEquipped = false;
 	StopFire();
 	if (bPendingReload)
@@ -207,6 +219,14 @@ void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
 		SetOwner(IncomingCharacter);
 		OwningInventory = UCoreUtils::GetInventoryComponentFromActor(IncomingCharacter);
 	}
+}
+
+void ABaseWeapon::StartWeaponRagdoll()
+{
+	Internal_StartMeshRagdoll(WeaponSkeletalMesh);
+	Internal_StartMeshRagdoll(WeaponStaticMesh);
+	Internal_StartMeshRagdoll(SecondaryWeaponStaticMesh);
+	Internal_StartMeshRagdoll(SecondaryWeaponSkeletalMesh);
 }
 
 UMeshComponent* ABaseWeapon::GetWeaponMesh() const
@@ -325,6 +345,18 @@ void ABaseWeapon::PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bS
 	}	
 }
 
+void ABaseWeapon::Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const
+{
+	if(!InMeshComp)
+	{
+		return;
+	}
+	// InMeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+	InMeshComp->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	InMeshComp->SetCollisionProfileName("BlockAll");
+	InMeshComp->SetSimulatePhysics(true);
+}
+
 void ABaseWeapon::ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit)
 {
 	if(!Impact.GetActor())
@@ -418,11 +450,19 @@ void ABaseWeapon::StopWeaponAnimation(UAnimMontage* AnimMontage) const
 void ABaseWeapon::OnEnterInventory(ACharacter* NewOwner)
 {
 	SetOwningPawn(NewOwner);
+	if(GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(true);
+	}
 }
 
 void ABaseWeapon::OnLeaveInventory()
 {
 	SetOwningPawn(nullptr);
+	if(GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(true);
+	}
 }
 
 void ABaseWeapon::PlayCameraShake()

@@ -21,7 +21,7 @@ public:
 	ABaseAIController();
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
-
+	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn = true) override;
 	
 	void SetEnemy(ACharacter* InEnemy);
 	ACharacter* GetEnemy() const;
@@ -35,6 +35,9 @@ private:
 	virtual void Internal_OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
 	void InitAIComponents();
 	void InitPerceptionComponents();
+
+	virtual FVector GetUpdatedFocalPoint();
+	virtual FVector GetUpdatedSourcePoint();
 	
 	UPROPERTY(Transient, VisibleDefaultsOnly)
 	UAISenseConfig_Sight* Sight;

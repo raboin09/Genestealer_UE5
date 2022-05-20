@@ -7,14 +7,15 @@
 
 float UCombatUtils::GetHitImpulseValue(EHitReactType InHit)
 {
+	const float Multiplier = 30000.f;
 	switch (InHit)
 	{
-	case EHitReactType::Knockback_VeryLight: return 25000.f;
-	case EHitReactType::Knockback_Light: return 50000.f;
-	case EHitReactType::Knockback_Medium: return 75000.f;
-	case EHitReactType::Knockback_Heavy: return 100000.f;
-	case EHitReactType::Knockback_VeryHeavy: return 125000.f;
-	case EHitReactType::Knockback_Huge: return 150000.f;
+	case EHitReactType::Knockback_VeryLight: return .5f * Multiplier;
+	case EHitReactType::Knockback_Light: return .7f * Multiplier;
+	case EHitReactType::Knockback_Medium: return .85f * Multiplier;
+	case EHitReactType::Knockback_Heavy: return 1.f * Multiplier;
+	case EHitReactType::Knockback_VeryHeavy: return 1.15f * Multiplier;
+	case EHitReactType::Knockback_Huge: return 2.f * Multiplier;
 	default: return 0.f;
 	}
 }
@@ -42,17 +43,17 @@ float UCombatUtils::GetKnockbackRecoveryTime(EHitReactType InHit)
 	switch (InHit)
 	{
 	case EHitReactType::Knockback_VeryLight:
-		return 1.2f;
+		return 1.f;
 	case EHitReactType::Knockback_Light:
 		return 1.15f;
 	case EHitReactType::Knockback_Medium:
-		return 1.1f;
+		return 1.3f;
 	case EHitReactType::Knockback_Heavy:
-		return 1.f;
+		return 1.5f;
 	case EHitReactType::Knockback_VeryHeavy:
-		return .95f;
+		return 1.75f;
 	case EHitReactType::Knockback_Huge:
-		return .9f;
+		return 2.f;
 	case EHitReactType::HitReact_Light:
 	default:
 		return 0.f;

@@ -38,8 +38,8 @@ public:
 	virtual void StopFire() override;
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
-	FORCEINLINE virtual FGameplayTag GetWeaponBasePose() const override { return WeaponBasePose; }
-	FORCEINLINE virtual FGameplayTag GetWeaponOverlayPose() const override { return WeaponBasePose; }
+	virtual void StartWeaponRagdoll() override;
+	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; }
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
@@ -121,9 +121,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	bool bLoopedFireAnim = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	FGameplayTag WeaponBasePose;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	FGameplayTag WeaponOverlayPose;
+	EALSOverlayState WeaponOverlayState;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float AI_UseRange = 500.f;
@@ -152,6 +150,8 @@ private:
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 
 private:
+	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
+	
 	UPROPERTY()
 	UInventoryComponent* OwningInventory;
 	UPROPERTY()

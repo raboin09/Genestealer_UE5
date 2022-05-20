@@ -39,6 +39,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Read Only Data|Character Information")
 	bool bAiming = false;
 
+	// Genestealer added
+	
+	// Genestealer end
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Read Only Data|Character Information")
 	EALSGait Gait;
 

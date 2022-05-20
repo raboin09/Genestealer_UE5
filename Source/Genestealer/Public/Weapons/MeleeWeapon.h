@@ -72,10 +72,11 @@ private:
 	void Internal_StartAttack();
 	void Internal_StopAttack();
 	void Internal_ResetComboCounter();
+	void Internal_AttemptRaycast(const FHitResult& HitResult, FVector StartLocation, FVector EndLocation);
 	
 	TMap<FString, FVector> Sockets;
 	FTimerHandle Timer_Raycasting;
-
+	
 	int32 ComboSectionIncrement;
 	
 	UPROPERTY()

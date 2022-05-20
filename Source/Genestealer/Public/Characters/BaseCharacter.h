@@ -31,6 +31,14 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	////////////////////////////////
+	/// ALSCharacter overrides
+	////////////////////////////////
+	virtual void PlayerForwardMovementInput(float Value);
+	virtual void PlayerRightMovementInput(float Value);
+	virtual void RagdollEnd();
+	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
+	
+	////////////////////////////////
 	/// IAnimatable override
 	////////////////////////////////
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
@@ -78,13 +86,10 @@ public:
 	////////////////////////////////
 	void Input_ForwardMovement(float Value);
 	void Input_RightMovement(float Value);
-	void Input_CameraUp(float Value);
-	void Input_CameraRight(float Value);
 	void Input_Fire();
 	void Input_CoverAction();
 	void Input_Aim();
-
-	void SetAimOffset(EAGR_AimOffsets InOffset);	
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Aim();	
 	UFUNCTION(BlueprintImplementableEvent)
@@ -115,8 +120,6 @@ protected:
 	UHealthComponent* HealthComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	UInventoryComponent* InventoryComponent;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	UAGRAnimMasterComponent* AnimComponent;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
@@ -133,11 +136,6 @@ protected:
 	TSubclassOf<AActor> StartingMeleeClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
-
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
-	float BaseTurnRate;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
-	float BaseLookupRate;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds") 
 	USoundCue* DeathSound;
@@ -157,13 +155,8 @@ private:
 	
 	void Internal_AddDefaultTagsToContainer();
 	
-	void Internal_CoverAnimState() const;
-	void Internal_AimingAnimState() const;
-	void Internal_NormalAnimState() const;
-	void Internal_RemoveReadyState();
 	void Internal_SetOutOfCombat();
 	
-	void InitAGRDefaults();
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
 
@@ -177,21 +170,19 @@ private:
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
-
+protected:
+	
+	virtual bool GL_IsForwardMovementAllowed(float Value) override;
+	virtual bool GL_IsRightMovementAllowed(float Value) override;
+	virtual bool GL_IsJumpAllowed(bool bValue) override;
+	virtual void GL_HandleFireAction(bool bValue) override;
+	virtual void GL_HandleCoverDodgeAction() override;
 	
 private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;
 	FTimerHandle TimerHandle_DeathRagoll;
 	FTimerHandle TimerHandle_Ragdoll;
-
-	FVector TargetRagdollLocation;
-	FVector LastRagdollVelocity;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* SpringArm;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* ThirdPersonCamera;
 
 	UPROPERTY(Transient)
 	EHitReactType LastKnownHitReact;

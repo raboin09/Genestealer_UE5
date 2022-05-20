@@ -20,53 +20,32 @@
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	MovementModel.RowName = "Responsive";
+	
 	InitCapsuleCollisionDefaults();
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
 	InitMeshCollisionDefaults();
 	GetMesh()->SetGenerateOverlapEvents(true);
 
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->TargetArmLength = 200.f;
-	SpringArm->SocketOffset = FVector(0.f, 75.f, 85.f);
-	SpringArm->SetupAttachment(RootComponent);
-	ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
-	ThirdPersonCamera->FieldOfView = 70.f;
-	ThirdPersonCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	// SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	// SpringArm->bUsePawnControlRotation = true;
+	// SpringArm->TargetArmLength = 200.f;
+	// SpringArm->SocketOffset = FVector(0.f, 75.f, 85.f);
+	// SpringArm->SetupAttachment(RootComponent);
+	// ThirdPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	// ThirdPersonCamera->FieldOfView = 70.f;
+	// ThirdPersonCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+
+	StaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	SkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	EffectContainerComponent = CreateDefaultSubobject<UEffectContainerComponent>(TEXT("EffectContainer"));
-	AnimComponent = CreateDefaultSubobject<UAGRAnimMasterComponent>(TEXT("AnimationComponent"));
 	CurrentAffiliation = EAffiliation::Neutral;
 
-	BaseLookupRate = 45.f;
-	BaseTurnRate = 45.f;
 	InCombatTime = 5.f;
-	
-	InitAGRDefaults();
-}
-
-void ABaseCharacter::InitAGRDefaults()
-{
-	// AGR Defaults
-	bUseControllerRotationYaw = false;
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-	NetPriority = 4.0f;
-	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
-	CharacterMovementComponent->PerchRadiusThreshold = 40.0f;
-	CharacterMovementComponent->PerchAdditionalHeight = 25.0f;
-	CharacterMovementComponent->NavAgentProps.bCanFly = true;
-	CharacterMovementComponent->NavAgentProps.bCanCrouch = true;
-	CharacterMovementComponent->bCanWalkOffLedgesWhenCrouching = true;
-	USkeletalMeshComponent* MeshComponent = GetMesh();
-	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -88.0f));
-	MeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	MeshComponent->bEnableUpdateRateOptimizations = true;
-	MeshComponent->bPropagateCurvesToSlaves = true;
-	MeshComponent->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-	AnimComponent->SetupBasePose(TAG_BASEPOSE_MOCAP_UNARMED);
 }
 
 void ABaseCharacter::InitCapsuleCollisionDefaults() const
@@ -88,6 +67,34 @@ void ABaseCharacter::InitMeshCollisionDefaults() const
 void ABaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+}
+
+void ABaseCharacter::PlayerForwardMovementInput(float Value)
+{
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
+	{
+		return;
+	}
+	ForwardMovementAction(Value);
+}
+
+void ABaseCharacter::PlayerRightMovementInput(float Value)
+{
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
+	{
+		return;
+	}
+	RightMovementAction(Value);
+}
+
+void ABaseCharacter::RagdollEnd()
+{
+	Super::RagdollEnd();
+}
+
+void ABaseCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
+{
+	Super::OnOverlayStateChanged(PreviousState);
 }
 
 void ABaseCharacter::BeginPlay()
@@ -152,8 +159,21 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 {
 	if(!NewWeapon)
 		return;
-
-	AnimComponent->SetupBasePose(NewWeapon->GetWeaponBasePose());
+	
+	if(NewWeapon->GetWeaponMesh() == nullptr)
+	{
+		// TODO handle bare handed weapon
+	} else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
+	{
+		AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
+		StaticMesh->SetVisibility(false);		
+	} else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
+	{
+		AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
+		SkeletalMesh->SetVisibility(false);
+	}
+	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	SetOverlayState(NewWeapon->GetWeaponOverlay());
 }
 
 void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
@@ -162,16 +182,22 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 	{
 		return;
 	}
-	
+
 	if(InventoryComponent)
 	{
 		InventoryComponent->StopFiring();
+		if(const TScriptInterface<IWeapon> CurrWeapon = InventoryComponent->GetEquippedWeapon().GetObject())
+		{
+			CurrWeapon->StartWeaponRagdoll();
+		}
 	}
+	ClearHeldObject();
 	
 	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
 	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetLifeSpan(5.f);
 }
 
@@ -222,8 +248,12 @@ void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, co
 }
 
 void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback)
-{	
-	const float ImpulseValue = UCombatUtils::GetHitImpulseValue(HitReactEvent.HitReactType);
+{
+	float ImpulseValue = UCombatUtils::GetHitImpulseValue(HitReactEvent.HitReactType);
+	if(ImpulseValue == 0.f)
+	{
+		ImpulseValue = UCombatUtils::GetHitImpulseValue(EHitReactType::Knockback_VeryLight);
+	}
 	const float KnockdownDuration = UCombatUtils::GetKnockbackRecoveryTime(HitReactEvent.HitReactType);
 	const FName HitBoneName = HitReactEvent.HitResult.BoneName;
 	Internal_ApplyCharacterKnockback(HitReactEvent.HitDirection, ImpulseValue, HitBoneName, false);
@@ -237,10 +267,12 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 {
 	if (LastRagdollVelocity.Size() > 100)
 	{
+		UKismetSystemLibrary::PrintString(this, "Resetting recover " + LastRagdollVelocity.ToString());
 		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
 	}
 	else
 	{
+		UKismetSystemLibrary::PrintString(this, "Trying again");
 		Internal_EndRagdoll();
 	}
 }
@@ -282,32 +314,85 @@ FGameplayTag ABaseCharacter::Internal_GetHitDirectionTag(const FVector& Originat
 	return TAG_HITREACT_LEFT;
 }
 
+bool ABaseCharacter::GL_IsForwardMovementAllowed(float Value)
+{
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER, TAG_STATE_STUNNED}, true))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
+{
+	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_STUNNED}, true))
+	{
+		return false;
+	}
+	
+	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_RIGHTEDGE))
+	{
+		return false;
+	}
+ 	
+	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_LEFTEDGE))
+	{
+		return false;
+	}
+	
+	if(Value > 0.f)
+	{
+		bHasRightInput = true;
+	} else if(Value < 0.f)
+	{
+		bHasRightInput = false;
+	}
+	
+	return true;
+}
+
+bool ABaseCharacter::GL_IsJumpAllowed(bool bValue)
+{
+	return true;
+}
+
+void ABaseCharacter::GL_HandleFireAction(bool bValue)
+{
+	if(!InventoryComponent)
+	{
+		return;
+	}
+
+	if(bValue)
+	{
+		SetRotationMode(EALSRotationMode::Aiming, true, false);
+		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
+		InventoryComponent->StartFiring();
+		GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
+		if(!GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
+		{
+			SetInCombat(true, nullptr);
+		}
+	} else
+	{
+		SetRotationMode(EALSRotationMode::LookingDirection, true, true);
+		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
+		InventoryComponent->StopFiring();
+		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
+		}
+	}
+}
+
+void ABaseCharacter::GL_HandleCoverDodgeAction()
+{
+	
+}
+
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 {
 	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
-}
-
-void ABaseCharacter::Internal_CoverAnimState() const
-{
-	AnimComponent->SetupAimOffset(EAGR_AimOffsets::NONE, EAGR_AimOffsetClamp::Left, 90.f, true);
-	AnimComponent->SetupRotation(EAGR_RotationMethod::NONE, 180.f, 90.f, 5.f);
-}
-
-void ABaseCharacter::Internal_AimingAnimState() const
-{
-	AnimComponent->SetupAimOffset(EAGR_AimOffsets::Aim, EAGR_AimOffsetClamp::Nearest, 90.f, false);
-	AnimComponent->SetupRotation(EAGR_RotationMethod::DesiredAtAngle, 360.f, 90.f, 5.f);
-}
-
-void ABaseCharacter::Internal_NormalAnimState() const
-{
-	AnimComponent->SetupAimOffset(EAGR_AimOffsets::Look, EAGR_AimOffsetClamp::Left, 90.f, true);
-	AnimComponent->SetupRotation(EAGR_RotationMethod::RotateToVelocity, 180.f, 90.f, 5.f);
-}
-
-void ABaseCharacter::Internal_RemoveReadyState()
-{
-	GameplayTagContainer.RemoveTag(TAG_STATE_READY);
 }
 
 void ABaseCharacter::Internal_SetOutOfCombat()
@@ -317,26 +402,28 @@ void ABaseCharacter::Internal_SetOutOfCombat()
 
 void ABaseCharacter::Internal_StartRagdoll()
 {
-	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-	GetCharacterMovement()->SetMovementMode(MOVE_None);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetAllBodiesBelowSimulatePhysics("pelvis", true, true);
-	GetMesh()->bOnlyAllowAutonomousTickPose = true;
+	// GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	// GetCharacterMovement()->SetMovementMode(MOVE_None);
+	// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
+	// GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// GetMesh()->SetAllBodiesBelowSimulatePhysics("pelvis", true, true);
+	// GetMesh()->bOnlyAllowAutonomousTickPose = true;
+	RagdollStart();
 	GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
 }
 
 void ABaseCharacter::Internal_EndRagdoll()
 {
-	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
-	GetMesh()->bOnlyAllowAutonomousTickPose = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionObjectType(ECC_Pawn);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMesh()->SetAllBodiesSimulatePhysics(false);
-	GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	// GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	// GetMesh()->bOnlyAllowAutonomousTickPose = false;
+	// GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// GetMesh()->SetCollisionObjectType(ECC_Pawn);
+	// GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	// GetMesh()->SetAllBodiesSimulatePhysics(false);
+	// GetCapsuleComponent()->SetWorldLocation(GetMesh()->GetComponentLocation());
+	RagdollEnd();
 	GameplayTagContainer.RemoveTag(TAG_STATE_RAGDOLL);
 }
 
@@ -367,144 +454,49 @@ void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
 	}
 }
 
-void ABaseCharacter::Input_ForwardMovement(float Value)
-{
-	if(Value == 0.f)
-	{
-		return;
-	}	
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
-	{
-		return;
-	}
-	
-	if (Controller != nullptr)
-	{
-		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
-	}
-}
+ void ABaseCharacter::Input_Fire()
+ {
 
-void ABaseCharacter::Input_RightMovement(float Value)
-{
-	if(Value == 0.f)
-	{
-		return;
-	}
-	
-	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_RIGHTEDGE))
-	{
-		return;
-	}
-	
-	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_LEFTEDGE))
-	{
-		return;
-	}
-	
-	if (Controller != nullptr)
-	{
-		if(Value > 0.f)
-		{
-			bHasRightInput = true;
-		} else if(Value < 0.f)
-		{
-			bHasRightInput = false;
-		}
-		const FRotator DirRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
-	}
-}
+ }
 
-void ABaseCharacter::Input_CameraUp(float Value)
-{
-	AddControllerPitchInput(Value * BaseTurnRate * UGameplayStatics::GetWorldDeltaSeconds(this));
-}
+ void ABaseCharacter::Input_CoverAction()
+ {
+ 	// if(!CurrentCoverPoint)
+ 	// {
+ 	// 	const FVector StartTrace = ThirdPersonCamera->GetComponentLocation();
+ 	// 	const FVector EndTrace = StartTrace + (ThirdPersonCamera->GetForwardVector() * 800.f);
+ 	// 	const TArray<AActor*> IgnoreActors;
+ 	// 	FHitResult HitResult;
+ 	// 	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
+ 	// 	if(!HitResult.bBlockingHit)
+ 	// 	{
+ 	// 		return;
+ 	// 	}
+	 //
+ 	// 	if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
+ 	// 	{
+ 	// 		CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
+ 	// 		TScriptInterface<ICoverPoint> NewCover;
+ 	// 		NewCover.SetObject(HitResult.GetActor());
+ 	// 		NewCover.SetInterface(CoverPoint);
+ 	// 		CurrentCoverPoint = NewCover;
+ 	// 	}
+ 	// } else
+ 	// {
+ 	// 	CurrentCoverPoint->VacateCover(this);
+ 	// 	CurrentCoverPoint = nullptr;
+ 	// }
+ }
 
-void ABaseCharacter::Input_CameraRight(float Value)
-{
-	AddControllerYawInput(Value * BaseLookupRate * UGameplayStatics::GetWorldDeltaSeconds(this));
-}
-
-void ABaseCharacter::Input_Fire()
-{
-	if(!InventoryComponent)
-	{
-		return;
-	}
-
-	if(!GameplayTagContainer.HasTag(TAG_STATE_FIRING))
-	{
-		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
-		InventoryComponent->StartFiring();
-		GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
-		if(!GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
-		{
-			SetInCombat(true, nullptr);
-		}
-	} else
-	{
-		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
-		GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_RemoveReadyState, 2.f, false);
-		InventoryComponent->StopFiring();
-		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
-		{
-			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
-		}
-	}
-}
-
-void ABaseCharacter::Input_CoverAction()
-{
-	if(!CurrentCoverPoint)
-	{
-		const FVector StartTrace = ThirdPersonCamera->GetComponentLocation();
-		const FVector EndTrace = StartTrace + (ThirdPersonCamera->GetForwardVector() * 800.f);
-		const TArray<AActor*> IgnoreActors;
-		FHitResult HitResult;
-		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
-		if(!HitResult.bBlockingHit)
-		{
-			return;
-		}
-
-		if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
-		{
-			CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
-			Internal_CoverAnimState();
-			TScriptInterface<ICoverPoint> NewCover;
-			NewCover.SetObject(HitResult.GetActor());
-			NewCover.SetInterface(CoverPoint);
-			CurrentCoverPoint = NewCover;
-		}
-	} else
-	{
-		CurrentCoverPoint->VacateCover(this);
-		CurrentCoverPoint = nullptr;
-		Internal_NormalAnimState();
-	}
-}
-
-void ABaseCharacter::SetAimOffset(EAGR_AimOffsets InOffset)
-{
-	if(!AnimComponent)
-	{
-		return;
-	}
-	AnimComponent->SetupAimOffset(InOffset);
-}
-
-void ABaseCharacter::Input_Aim()
-{
-	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
-	{
-		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
-		Internal_NormalAnimState();
-		K2_StopAiming();
-	} else
-	{
-		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
-		Internal_AimingAnimState();
-		K2_Aim();
-	}
+ void ABaseCharacter::Input_Aim()
+ {
+ 	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
+ 	{
+ 		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+ 		K2_StopAiming();
+ 	} else
+ 	{
+ 		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+ 		K2_Aim();
+ 	}
 }

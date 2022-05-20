@@ -29,7 +29,6 @@ void UGameplayTagUtils::AddTagToActor(AActor* InActor, const FGameplayTag& InTag
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
-		UKismetSystemLibrary::PrintString(InActor, "Adding " + InTag.ToString() + " to " + InActor->GetName());
 		CastedActor->GetTagContainer().AddTag(InTag);
 	}
 }

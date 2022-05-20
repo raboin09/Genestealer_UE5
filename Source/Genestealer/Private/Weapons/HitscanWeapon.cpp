@@ -34,15 +34,24 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 	if(!Impact.GetActor())
 	{
 		return;
-	}	
+	}
+	
+	// if(const IWeapon* CastedActorWeapon = Cast<IWeapon>(Impact.GetActor()))
+	// {
+	// 	FHitResult AdjustHitResult = Impact;
+	// 	AdjustHitResult.HitObjectHandle = FActorInstanceHandle(CastedActorWeapon->GetOwningPawn());
+	// 	UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(AdjustHitResult), GetInstigator());
+	// } else
+	// {
 	const UClass* HitActorClass = Impact.GetActor()->GetClass();
 	if(!HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
 	{
 		Internal_PlayWeaponMissEffectFX(Impact);
 	} else
 	{
-		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());	
-	}
+		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());
+	}	
+	// }
 }
 
 void AHitscanWeapon::Internal_SpawnTrailEffect(const FVector& EndPoint)

@@ -334,10 +334,11 @@ void AALSBaseCharacter::Server_SetDesiredRotationMode_Implementation(EALSRotatio
 	SetDesiredRotationMode(NewRotMode);
 }
 
-void AALSBaseCharacter::SetRotationMode(const EALSRotationMode NewRotationMode, bool bForce)
+void AALSBaseCharacter::SetRotationMode(const EALSRotationMode NewRotationMode, bool bForce, bool bInShouldRotationModeAffectCamera)
 {
 	if (bForce || RotationMode != NewRotationMode)
 	{
+		bShouldRotationModeAffectCamera = bInShouldRotationModeAffectCamera;
 		const EALSRotationMode Prev = RotationMode;
 		RotationMode = NewRotationMode;
 		OnRotationModeChanged(Prev);
@@ -653,23 +654,23 @@ void AALSBaseCharacter::GetCameraParameters(float& TPFOVOut, float& FPFOVOut, bo
 void AALSBaseCharacter::RagdollUpdate(float DeltaTime)
 {
 	GetMesh()->bOnlyAllowAutonomousTickPose = false;
-
+	
 	// Set the Last Ragdoll Velocity.
 	const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity(NAME_root);
 	LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
 		                      ? NewRagdollVel
 		                      : LastRagdollVelocity / 2;
-
+	
 	// Use the Ragdoll Velocity to scale the ragdoll's joint strength for physical animation.
 	const float SpringValue = FMath::GetMappedRangeValueClamped<float, float>({0.0f, 1000.0f}, {0.0f, 25000.0f},
 	                                                            LastRagdollVelocity.Size());
 	GetMesh()->SetAllMotorsAngularDriveParams(SpringValue, 0.0f, 0.0f, false);
-
+	
 	// Disable Gravity if falling faster than -4000 to prevent continual acceleration.
 	// This also prevents the ragdoll from going through the floor.
 	const bool bEnableGrav = LastRagdollVelocity.Z > -4000.0f;
 	GetMesh()->SetEnableGravity(bEnableGrav);
-
+	
 	// Update the Actor location to follow the ragdoll.
 	SetActorLocationDuringRagdoll(DeltaTime);
 }
@@ -740,9 +741,9 @@ void AALSBaseCharacter::SetActorLocationDuringRagdoll(float DeltaTime)
 		ServerRagdollPull = FMath::FInterpTo(ServerRagdollPull, 750.0f, DeltaTime, 0.6f);
 		float RagdollSpeed = FVector(LastRagdollVelocity.X, LastRagdollVelocity.Y, 0).Size();
 		FName RagdollSocketPullName = RagdollSpeed > 300 ? NAME_spine_03 : NAME_pelvis;
-		GetMesh()->AddForce(
-			(TargetRagdollLocation - GetMesh()->GetSocketLocation(RagdollSocketPullName)) * ServerRagdollPull,
-			RagdollSocketPullName, true);
+		// GetMesh()->AddForce(
+		// 	(TargetRagdollLocation - GetMesh()->GetSocketLocation(RagdollSocketPullName)) * ServerRagdollPull,
+		// 	RagdollSocketPullName, true);
 	}
 	SetActorLocationAndTargetRotation(bRagdollOnGround ? NewRagdollLoc : TargetRagdollLocation, TargetRagdollRotation);
 }
@@ -836,7 +837,7 @@ void AALSBaseCharacter::OnRotationModeChanged(EALSRotationMode PreviousRotationM
 		SetViewMode(EALSViewMode::ThirdPerson);
 	}
 
-	if (CameraBehavior)
+	if (CameraBehavior && bShouldRotationModeAffectCamera)
 	{
 		CameraBehavior->SetRotationMode(RotationMode);
 	}
@@ -1203,8 +1204,28 @@ void AALSBaseCharacter::LimitRotation(float AimYawMin, float AimYawMax, float In
 	}
 }
 
+void AALSBaseCharacter::FireAction_Implementation(bool bValue)
+{
+	GL_HandleFireAction(bValue);
+}
+
+void AALSBaseCharacter::CoverDodgeAction_Implementation()
+{
+	GL_HandleCoverDodgeAction();
+}
+
 void AALSBaseCharacter::ForwardMovementAction_Implementation(float Value)
 {
+	if(Value == 0.f)
+	{
+		return;
+	}
+
+	if(!GL_IsForwardMovementAllowed(Value))
+	{
+		return;
+	}
+	
 	if (MovementState == EALSMovementState::Grounded || MovementState == EALSMovementState::InAir)
 	{
 		// Default camera relative movement behavior
@@ -1215,6 +1236,16 @@ void AALSBaseCharacter::ForwardMovementAction_Implementation(float Value)
 
 void AALSBaseCharacter::RightMovementAction_Implementation(float Value)
 {
+	if(Value == 0.f)
+	{
+		return;
+	}
+
+	if(!GL_IsRightMovementAllowed(Value))
+	{
+		return;
+	}
+	
 	if (MovementState == EALSMovementState::Grounded || MovementState == EALSMovementState::InAir)
 	{
 		// Default camera relative movement behavior
@@ -1237,6 +1268,11 @@ void AALSBaseCharacter::JumpAction_Implementation(bool bValue)
 {
 	if (bValue)
 	{
+		if(!GL_IsJumpAllowed(bValue))
+		{
+			return;
+		}
+		
 		// Jump Action: Press "Jump Action" to end the ragdoll if ragdolling, stand up if crouching, or jump if standing.
 		if (JumpPressedDelegate.IsBound())
 		{

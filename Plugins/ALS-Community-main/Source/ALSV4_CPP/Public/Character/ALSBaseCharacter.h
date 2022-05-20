@@ -102,7 +102,7 @@ public:
 	EALSGait GetDesiredGait() const { return DesiredGait; }
 
 	UFUNCTION(BlueprintCallable, Category = "ALS|Character States")
-	void SetRotationMode(EALSRotationMode NewRotationMode, bool bForce = false);
+	void SetRotationMode(EALSRotationMode NewRotationMode, bool bForce = false, bool bInShouldRotationModeAffectCamera = true);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "ALS|Character States")
 	void Server_SetRotationMode(EALSRotationMode NewRotationMode, bool bForce);
@@ -347,7 +347,23 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
 	void LookingDirectionAction();
 
+	// Genestealer Inputs
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	void FireAction(bool bValue);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	void CoverDodgeAction();
+
 protected:
+	// Genestealer virtuals
+
+	virtual bool GL_IsForwardMovementAllowed(float Value) { return false; };
+	virtual bool GL_IsRightMovementAllowed(float Value) { return false; }
+	virtual bool GL_IsJumpAllowed(bool bValue) { return false; }
+	virtual void GL_HandleFireAction(bool bValue) {};
+	virtual void GL_HandleCoverDodgeAction() {};
+	
 	/** Ragdoll System */
 
 	void RagdollUpdate(float DeltaTime);
@@ -617,6 +633,9 @@ protected:
 
 	/** We won't use curve based movement and a few other features on networked games */
 	bool bEnableNetworkOptimizations = false;
+
+	// Genestealer
+	bool bShouldRotationModeAffectCamera = false;
 
 private:
 	UPROPERTY()

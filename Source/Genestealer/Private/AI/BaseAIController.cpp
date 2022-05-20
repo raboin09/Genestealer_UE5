@@ -52,6 +52,47 @@ void ABaseAIController::OnUnPossess()
 	Super::OnUnPossess();
 }
 
+void ABaseAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
+{
+	const FVector FocalPoint = GetUpdatedFocalPoint();
+	const FVector SourcePoint = GetUpdatedSourcePoint();
+	// Look toward focus
+	if (!FocalPoint.IsZero())
+	{			
+		const FVector Direction = FocalPoint - SourcePoint;
+		FRotator NewControlRotation = Direction.Rotation();
+
+		NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
+		SetControlRotation(NewControlRotation);
+
+		APawn* const MyPawn = GetPawn();
+		if (bUpdatePawn)
+		{
+			// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);
+			MyPawn->FaceRotation(NewControlRotation, DeltaTime);
+		}
+
+	}
+}
+
+FVector ABaseAIController::GetUpdatedFocalPoint()
+{
+	if (GetEnemy())
+	{
+		return GetEnemy()->GetMesh()->GetSocketLocation("spine_03");
+	}
+	return GetFocalPoint();
+}
+
+FVector ABaseAIController::GetUpdatedSourcePoint()
+{
+	if(!AIPawn)
+	{
+		return FVector::ZeroVector;
+	}
+	return AIPawn->GetSocketLocation("Muzzle", true);
+}
+
 void ABaseAIController::SetEnemy(ACharacter* InEnemy)
 {
 	if (BlackboardComponent)

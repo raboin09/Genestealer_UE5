@@ -34,25 +34,25 @@ protected:
 	void SetupCamera();
 
 	UFUNCTION()
-	void ForwardMovementAction(const FInputActionValue& Value);
+	virtual void ForwardMovementAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void RightMovementAction(const FInputActionValue& Value);
+	virtual void RightMovementAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void CameraUpAction(const FInputActionValue& Value);
+	virtual void CameraUpAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void CameraRightAction(const FInputActionValue& Value);
+	virtual void CameraRightAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void JumpAction(const FInputActionValue& Value);
+	virtual void JumpAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void SprintAction(const FInputActionValue& Value);
+	virtual void SprintAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void AimAction(const FInputActionValue& Value);
+	virtual void AimAction(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void CameraTapAction(const FInputActionValue& Value);
@@ -74,6 +74,11 @@ protected:
 
 	UFUNCTION()
 	void LookingDirectionAction(const FInputActionValue& Value);
+
+	// Genestealer Inputs
+
+	UFUNCTION()
+	void FireAction(const FInputActionValue& Value);
 
 	// Debug actions
 	UFUNCTION()

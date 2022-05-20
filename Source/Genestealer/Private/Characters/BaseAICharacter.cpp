@@ -11,9 +11,28 @@ ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
+FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) const
+{
+	if(bWeaponMesh)
+	{
+		if(!InventoryComponent || !InventoryComponent->GetEquippedWeapon()
+			|| !InventoryComponent->GetEquippedWeapon()->GetWeaponMesh()
+			|| !InventoryComponent->GetEquippedWeapon()->GetWeaponMesh()->DoesSocketExist(SocketName))
+		{
+			return GetMesh()->GetSocketLocation("head");
+		}
+		return InventoryComponent->GetEquippedWeapon()->GetWeaponMesh()->GetSocketLocation(SocketName);
+	}
+	return GetMesh()->GetSocketLocation(SocketName);
+}
+
 void ABaseAICharacter::FireWeapon(bool bStartFiring)
 {
-	Input_Fire();
+	if(bStartFiring)
+	{
+		GL_HandleFireAction(false);	
+	}
+	GL_HandleFireAction(bStartFiring);
 }
 
 void ABaseAICharacter::Aim(bool bStartAiming)

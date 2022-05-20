@@ -7,7 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GameplayTagUtils.generated.h"
 
-
+#define TAG_ANIMATION_MONTAGE_PLAYING FGameplayTag::RequestGameplayTag("Animation.MontagePlaying")
 #define TAG_HITREACT_LEFT FGameplayTag::RequestGameplayTag("Animation.HitReact.Left")
 #define TAG_HITREACT_FRONT FGameplayTag::RequestGameplayTag("Animation.HitReact.Front")
 #define TAG_HITREACT_RIGHT FGameplayTag::RequestGameplayTag("Animation.HitReact.Right")
