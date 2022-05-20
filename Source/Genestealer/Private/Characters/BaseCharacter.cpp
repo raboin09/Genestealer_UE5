@@ -2,7 +2,6 @@
 
 #include "Characters/BaseCharacter.h"
 
-#include "Actors/BaseCoverPoint.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
@@ -148,7 +147,10 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
-		Internal_TryStartCharacterKnockback(EventPayload.DamageHitReactEvent); 
+		if(!GetTagContainer().HasTag(TAG_STATE_IMMOVABLE))
+		{
+			Internal_TryStartCharacterKnockback(EventPayload.DamageHitReactEvent);
+		}
 	} else
 	{
 		Internal_TryPlayHitReact(EventPayload.DamageHitReactEvent);
@@ -191,13 +193,14 @@ void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayloa
 			CurrWeapon->StartWeaponRagdoll();
 		}
 	}
+	
 	ClearHeldObject();
 	
 	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
 	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	K2_OnDeath();
 	SetLifeSpan(5.f);
 }
 
@@ -267,12 +270,10 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 {
 	if (LastRagdollVelocity.Size() > 100)
 	{
-		UKismetSystemLibrary::PrintString(this, "Resetting recover " + LastRagdollVelocity.ToString());
 		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, 1.f, false);
 	}
 	else
 	{
-		UKismetSystemLibrary::PrintString(this, "Trying again");
 		Internal_EndRagdoll();
 	}
 }
@@ -493,10 +494,12 @@ void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
  	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
  	{
  		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+ 		SetDesiredRotationMode(EALSRotationMode::Aiming);
  		K2_StopAiming();
  	} else
  	{
  		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+ 		SetDesiredRotationMode(EALSRotationMode::LookingDirection);
  		K2_Aim();
  	}
 }

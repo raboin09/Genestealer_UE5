@@ -89,7 +89,9 @@ public:
 	void Input_Fire();
 	void Input_CoverAction();
 	void Input_Aim();
-	
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnDeath();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Aim();	
 	UFUNCTION(BlueprintImplementableEvent)

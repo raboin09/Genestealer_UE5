@@ -152,7 +152,6 @@ void AMeleeWeapon::Internal_StartAttack()
 {
 	GetTagContainer().AddTag(TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
-	UKismetSystemLibrary::PrintString(this, "playing montage");
 	PlayWeaponAnimation(PlayData);
 	PlayWeaponSound(FireSound);
 }

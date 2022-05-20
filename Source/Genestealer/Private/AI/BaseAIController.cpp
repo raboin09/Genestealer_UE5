@@ -9,6 +9,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CombatUtils.h"
@@ -56,16 +57,21 @@ void ABaseAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
 {
 	const FVector FocalPoint = GetUpdatedFocalPoint();
 	const FVector SourcePoint = GetUpdatedSourcePoint();
+	APawn* const MyPawn = GetPawn();
 	// Look toward focus
-	if (!FocalPoint.IsZero())
-	{			
+	if (!FocalPoint.IsZero() && MyPawn)
+	{
+		if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 150)
+		{
+			return;
+		}
+		
 		const FVector Direction = FocalPoint - SourcePoint;
 		FRotator NewControlRotation = Direction.Rotation();
 
 		NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
 		SetControlRotation(NewControlRotation);
 
-		APawn* const MyPawn = GetPawn();
 		if (bUpdatePawn)
 		{
 			// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);

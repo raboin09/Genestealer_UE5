@@ -20,6 +20,7 @@
 #define TAG_ACTOR_COVER FGameplayTag::RequestGameplayTag("ActorType.Cover")
 
 #define TAG_STATE_STUNNED FGameplayTag::RequestGameplayTag("State.Stunned")
+#define TAG_STATE_IMMOVABLE FGameplayTag::RequestGameplayTag("State.Immovable")
 #define TAG_STATE_LOADING FGameplayTag::RequestGameplayTag("State.Loading")
 #define TAG_STATE_DEAD FGameplayTag::RequestGameplayTag("State.Dead")
 #define TAG_STATE_AIMING FGameplayTag::RequestGameplayTag("State.Aiming")

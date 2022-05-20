@@ -24,6 +24,7 @@ public:
 	static bool IsBoneNameHead(FName InBone);
 	static FRotator GetRotationFromComponentHit(const FHitResult& Impact);
 	static bool AreActorsAllies(AActor* FirstActor, AActor* SecondActor);
+	UFUNCTION(BlueprintCallable)
 	static bool AreActorsEnemies(AActor* FirstActor, AActor* SecondActor);
 	static bool IsActorNeutral(AActor* FirstActor);
 	static int32 GetOutlineIntFromColor(const EOutlineColor InColor);
