@@ -70,6 +70,72 @@ bool UCombatUtils::IsBoneNameHead(FName InBone)
 	return ValidBones.Contains(InBone);
 }
 
+FName UCombatUtils::GetNearestValidBoneForImpact(FName InBone)
+{
+	const TArray<FName> LeftArmBones = {
+		"upperarm_l",
+		"lowerarm_l",
+		"hand_l",
+		"index_01_l",
+		"index_02_l",
+		"index_03_l",
+		"middle_01_l",
+		"middle_02_l",
+		"middle_03_l",
+		"pinky_01_l",
+		"pinky_02_l",
+		"pinky_03_l",
+		"ring_01_l",
+		"ring_02_l",
+		"ring_03_l",
+		"thumb_01_l",
+		"thumb_02_l",
+		"thumb_03_l"
+	};
+
+	const TArray<FName> RightArmBones = {
+		"upperarm_r",
+		"lowerarm_r",
+		"hand_r",
+		"index_01_r",
+		"index_02_r",
+		"index_03_r",
+		"middle_01_r",
+		"middle_02_r",
+		"middle_03_r",
+		"pinky_01_r",
+		"pinky_02_r",
+		"pinky_03_r",
+		"ring_01_r",
+		"ring_02_r",
+		"ring_03_r",
+		"thumb_01_r",
+		"thumb_02_r",
+		"thumb_03_r"
+	};
+	
+	if(LeftArmBones.Contains(InBone))
+	{
+		return "clavicle_l";
+	}
+
+	if(RightArmBones.Contains(InBone)){
+		return "clavicle_r";
+	}
+
+	if(InBone.IsEqual("foot_l"))
+	{
+		return "calf_l";
+	}
+	
+	if(InBone.IsEqual("foot_r"))
+	{
+		return "calf_r";
+	}
+
+	return InBone;
+}
+
 FRotator UCombatUtils::GetRotationFromComponentHit(const FHitResult& Impact)
 {
 	if(!Impact.Component.Get() || !Impact.Component.IsValid())

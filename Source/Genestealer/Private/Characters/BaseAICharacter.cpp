@@ -37,7 +37,7 @@ void ABaseAICharacter::FireWeapon(bool bStartFiring)
 
 void ABaseAICharacter::Aim(bool bStartAiming)
 {
-	Input_Aim();
+	AimAction(bStartAiming);
 }
 
 float ABaseAICharacter::GetWeaponRange() const

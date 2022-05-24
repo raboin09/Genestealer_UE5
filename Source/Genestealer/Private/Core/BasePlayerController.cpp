@@ -4,7 +4,18 @@
 #include "Core/BasePlayerController.h"
 
 #include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputMappingContext.h"
 #include "Characters/BasePlayerCharacter.h"
-#include "Kismet/KismetSystemLibrary.h"
+
+void ABasePlayerController::CoverAction(const FInputActionValue& Value)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->CoverDodgeAction();
+	}
+}
+
+void ABasePlayerController::OnPossess(APawn* NewPawn)
+{
+	Super::OnPossess(NewPawn);
+	PlayerCharacter = Cast<ABasePlayerCharacter>(NewPawn);
+}

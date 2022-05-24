@@ -123,10 +123,12 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	}
 	
 	OccupiedActor = InActor;
+	OccupiedActor->SetStance(EALSStance::Crouching);
+	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection, true, true);
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_STATE_IN_COVER);
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
 	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1); 
-
+	
 	Internal_ActivateOverlapBoxes(true);	
 	Internal_StartCoverTransition();
 }
@@ -143,9 +145,13 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
 	
+	
 	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_STATE_IN_COVER,
 		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
 		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
+	OccupiedActor->SetStance(EALSStance::Standing);
+	OccupiedActor->SetRotationMode(EALSRotationMode::LookingDirection, true, true);
+	OccupiedActor->SetRightShoulder(true);
 	OccupiedActor = nullptr;
 	Internal_ActivateOverlapBoxes(false);	
 }
@@ -203,9 +209,17 @@ void ABaseCoverPoint::Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AAct
 	
 	if(bLeftCoverPoint)
 	{
+		if(OccupiedActor)
+		{
+			OccupiedActor->SetRightShoulder(false);
+		}
 		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_LEFTPEEK);
 	} else
 	{
+		if(OccupiedActor)
+		{
+			OccupiedActor->SetRightShoulder(true);
+		}
 		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_RIGHTPEEK);
 	}
 }

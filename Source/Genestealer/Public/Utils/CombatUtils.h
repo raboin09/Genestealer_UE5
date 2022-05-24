@@ -22,6 +22,7 @@ public:
 	static bool ShouldHitKnockback(EHitReactType InHit);
 	static float GetKnockbackRecoveryTime(EHitReactType InHit);
 	static bool IsBoneNameHead(FName InBone);
+	static FName GetNearestValidBoneForImpact(FName InBone);
 	static FRotator GetRotationFromComponentHit(const FHitResult& Impact);
 	static bool AreActorsAllies(AActor* FirstActor, AActor* SecondActor);
 	UFUNCTION(BlueprintCallable)

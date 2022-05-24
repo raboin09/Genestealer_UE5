@@ -65,6 +65,7 @@ protected:
 	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	virtual void OnLeaveInventory() override;
 	virtual void PlayCameraShake();
+	virtual bool IsWeaponOnCooldown() const;
 	
 	UFUNCTION()
 	virtual void BroadcastAmmoUsage() override PURE_VIRTUAL(ABaseWeapon::BroadcastAmmoUsage,) 
@@ -141,6 +142,10 @@ protected:
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera")
 	float CameraShakeScale = 1.f;
+
+	UPROPERTY(Transient)
+	float LastFireTime;
+	
 private:
 	void HandleFiring();
 	void HandlePostBlendInFiring();
@@ -167,9 +172,6 @@ private:
 	bool bIsEquipped;
 	UPROPERTY(Transient)
 	bool bWantsToFire;
-	
-	UPROPERTY(Transient)
-	float LastFireTime;
 	
 	UPROPERTY(Transient)
 	int32 BurstCounter;

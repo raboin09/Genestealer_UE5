@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "InputMappingContext.h"
 #include "Character/ALSPlayerController.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "BasePlayerController.generated.h"
@@ -22,4 +21,8 @@ public:
 	
 	UPROPERTY()
 	ABasePlayerCharacter* PlayerCharacter;
+
+	UFUNCTION()
+	void CoverAction(const FInputActionValue& Value);
+	virtual void OnPossess(APawn* NewPawn) override;
 };

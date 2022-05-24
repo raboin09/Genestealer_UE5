@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
+#include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
 ABaseWeapon::ABaseWeapon()
@@ -205,7 +206,14 @@ void ABaseWeapon::StopFire()
 
 bool ABaseWeapon::CanFire() const
 {
-	const bool bCanFire = OwningPawn != nullptr;
+	bool bCanFire = false;
+	if(ITaggable* OwnerTag = Cast<ITaggable>(OwningPawn))
+	{
+		FGameplayTagContainer TagContainer = FGameplayTagContainer();
+		TagContainer.AddTag(TAG_STATE_RAGDOLL);
+		TagContainer.AddTag(TAG_STATE_DEAD);
+		bCanFire = !OwnerTag->GetTagContainer().HasAny(TagContainer);
+	}
 	const bool bStateOKToFire = ( ( CurrentState ==  EWeaponState::Idle ) || ( CurrentState == EWeaponState::Firing) );	
 	return (( bCanFire == true ) && ( bStateOKToFire == true ) && ( bPendingReload == false ));
 }
@@ -304,18 +312,15 @@ void ABaseWeapon::HandleFiring()
 
 void ABaseWeapon::HandlePostBlendInFiring()
 {
-	if (OwningPawn)
-	{
-		FireWeapon();
-		UseAmmo();
-		BurstCounter++;
-	}
+	FireWeapon();
+	UseAmmo();
+	BurstCounter++;
 }
 
 void ABaseWeapon::OnBurstStarted()
 {
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && TimeBetweenShots > 0.0f && LastFireTime + TimeBetweenShots > GameTime)
+	if (IsWeaponOnCooldown())
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, LastFireTime + TimeBetweenShots - GameTime, false);
 	}
@@ -395,7 +400,7 @@ void ABaseWeapon::DetermineWeaponState()
 	EWeaponState NewState = EWeaponState::Idle;
 	if (bIsEquipped)
 	{
-		if( bPendingReload  )
+		if(bPendingReload)
 		{
 			if(CanReload() == false )
 			{
@@ -467,15 +472,21 @@ void ABaseWeapon::OnLeaveInventory()
 
 void ABaseWeapon::PlayCameraShake()
 {
-	if(!GetOwningPawn())
+	if(!GetOwningPawn() || !UFeedbackUtils::ShouldCameraShake())
 		return;
+	
 	if(ABasePlayerController* CurrCon = Cast<ABasePlayerController>(GetOwningPawn()->GetController()))
 	{
-		
-		if(CurrCon && FireCameraShake)
-		{
-			CurrCon->ClientStartCameraShake(FireCameraShake, CameraShakeScale);
-		}
-		
+		CurrCon->ClientStartCameraShake(FireCameraShake, CameraShakeScale);		
 	}
+}
+
+bool ABaseWeapon::IsWeaponOnCooldown() const
+{
+	const float GameTime = GetWorld()->GetTimeSeconds();
+	if (LastFireTime > 0 && TimeBetweenShots > 0.0f && LastFireTime + TimeBetweenShots > GameTime)
+	{
+		return true;
+	}
+	return false;
 }

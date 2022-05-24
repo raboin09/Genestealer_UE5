@@ -33,6 +33,7 @@ public:
 	////////////////////////////////
 	/// ALSCharacter overrides
 	////////////////////////////////
+	virtual void AimAction_Implementation(bool bValue) override;
 	virtual void PlayerForwardMovementInput(float Value);
 	virtual void PlayerRightMovementInput(float Value);
 	virtual void RagdollEnd();
@@ -84,11 +85,7 @@ public:
 	////////////////////////////////
 	/// ABaseCharacter Input
 	////////////////////////////////
-	void Input_ForwardMovement(float Value);
-	void Input_RightMovement(float Value);
-	void Input_Fire();
 	void Input_CoverAction();
-	void Input_Aim();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnDeath();
@@ -155,12 +152,14 @@ private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
 	
-	void Internal_AddDefaultTagsToContainer();
-	
+	void Internal_AddDefaultTagsToContainer();	
 	void Internal_SetOutOfCombat();
 	
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
+
+	void Internal_CoverDodgeTryStart();
+	void Internal_CoverDodgeTryEnd();
 
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
@@ -184,6 +183,7 @@ private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;
 	FTimerHandle TimerHandle_DeathRagoll;
+	FTimerHandle TimerHandle_StartFiringDelay;
 	FTimerHandle TimerHandle_Ragdoll;
 
 	UPROPERTY(Transient)

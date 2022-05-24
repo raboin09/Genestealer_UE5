@@ -40,7 +40,12 @@ void AMeleeWeapon::DisableComboWindow()
 }
 
 void AMeleeWeapon::StartFire()
-{
+{	
+	if (IsWeaponOnCooldown())
+	{
+		return;
+	}
+	
 	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED))
 	{
 		Internal_StartAttack();
@@ -154,6 +159,7 @@ void AMeleeWeapon::Internal_StartAttack()
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);
 	PlayWeaponSound(FireSound);
+	LastFireTime = GetWorld()->GetTimeSeconds();
 }
 
 void AMeleeWeapon::Internal_StopAttack()

@@ -68,6 +68,21 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+void ABaseCharacter::AimAction_Implementation(bool bValue)
+{
+	if(bValue)
+	{
+		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+		SetRotationMode(EALSRotationMode::Aiming);
+		K2_Aim();
+	} else
+	{
+		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+		SetRotationMode(EALSRotationMode::LookingDirection);
+		K2_StopAiming();
+	}
+}
+
 void ABaseCharacter::PlayerForwardMovementInput(float Value)
 {
 	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
@@ -246,6 +261,10 @@ float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMonta
 
 void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange)
 {
+	if(IsInCover())
+	{
+		Internal_CoverDodgeTryEnd();
+	}
 	Internal_StartRagdoll();
 	GetMesh()->AddImpulse(Impulse * ImpulseScale, BoneName, bVelocityChange);
 }
@@ -258,7 +277,7 @@ void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEv
 		ImpulseValue = UCombatUtils::GetHitImpulseValue(EHitReactType::Knockback_VeryLight);
 	}
 	const float KnockdownDuration = UCombatUtils::GetKnockbackRecoveryTime(HitReactEvent.HitReactType);
-	const FName HitBoneName = HitReactEvent.HitResult.BoneName;
+	const FName HitBoneName = UCombatUtils::GetNearestValidBoneForImpact(HitReactEvent.HitResult.BoneName);
 	Internal_ApplyCharacterKnockback(HitReactEvent.HitDirection, ImpulseValue, HitBoneName, false);
 	if(bShouldRecoverFromKnockback)
 	{
@@ -326,21 +345,6 @@ bool ABaseCharacter::GL_IsForwardMovementAllowed(float Value)
 
 bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 {
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_STUNNED}, true))
-	{
-		return false;
-	}
-	
-	if(Value > 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_RIGHTEDGE))
-	{
-		return false;
-	}
- 	
-	if(Value < 0.f && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_LEFTEDGE))
-	{
-		return false;
-	}
-	
 	if(Value > 0.f)
 	{
 		bHasRightInput = true;
@@ -349,6 +353,24 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 		bHasRightInput = false;
 	}
 	
+	if(GetTagContainer().HasTag(TAG_STATE_STUNNED))
+	{
+		return false;
+	}
+	
+	if(bHasRightInput && GetTagContainer().HasTag(TAG_COVER_RIGHTEDGE))
+	{
+		UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(Value) +  " R Edge");
+		return false;
+	}
+ 	
+	if(!bHasRightInput && GetTagContainer().HasTag(TAG_COVER_LEFTEDGE))
+	{
+		UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(Value) +  " L Edge");
+		return false;
+	}
+	
+	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(Value) +  " No Edge");
 	return true;
 }
 
@@ -366,9 +388,21 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 
 	if(bValue)
 	{
+		if(IsRagdoll())
+		{
+			return;
+		}
 		SetRotationMode(EALSRotationMode::Aiming, true, false);
+		if(IsInCover())
+		{
+			SetStance(EALSStance::Standing);
+			GetWorldTimerManager().SetTimer(TimerHandle_StartFiringDelay, InventoryComponent, &UInventoryComponent::StartFiring, .6f, false);
+		} else
+		{
+			InventoryComponent->StartFiring();
+		}
+		
 		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
-		InventoryComponent->StartFiring();
 		GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 		if(!GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
 		{
@@ -376,8 +410,19 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 		}
 	} else
 	{
-		SetRotationMode(EALSRotationMode::LookingDirection, true, true);
+		if(!IsAiming())
+		{
+			const EALSRotationMode NewRotationMode = IsInCover() ? EALSRotationMode::VelocityDirection : EALSRotationMode::LookingDirection;
+			SetRotationMode(NewRotationMode, true, true);
+		}
+		
+		if(IsInCover())
+		{
+			SetStance(EALSStance::Crouching);
+		}
+		
 		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
+		GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 		InventoryComponent->StopFiring();
 		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
 		{
@@ -388,7 +433,45 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 
 void ABaseCharacter::GL_HandleCoverDodgeAction()
 {
+	if(!CurrentCoverPoint)
+	{
+		Internal_CoverDodgeTryStart();
+	} else
+	{
+		Internal_CoverDodgeTryEnd();
+	}
+}
+
+
+void ABaseCharacter::Internal_CoverDodgeTryStart()
+{
+	FVector CamLoc;
+	FRotator CamRot;
+	GetActorEyesViewPoint(CamLoc, CamRot);
+	const FVector StartTrace = CamLoc;
+	const FVector EndTrace = StartTrace + (CamRot.Vector() * 800.f);
+	const TArray<AActor*> IgnoreActors;
+	FHitResult HitResult;
+	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::ForDuration, HitResult, true);
+	if(!HitResult.bBlockingHit)
+	{
+		return;
+	}
 	
+	if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
+	{
+		CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
+		TScriptInterface<ICoverPoint> NewCover;
+		NewCover.SetObject(HitResult.GetActor());
+		NewCover.SetInterface(CoverPoint);
+		CurrentCoverPoint = NewCover;
+	}	
+}
+
+void ABaseCharacter::Internal_CoverDodgeTryEnd()
+{
+	CurrentCoverPoint->VacateCover(this);
+	CurrentCoverPoint = nullptr;
 }
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()
@@ -453,53 +536,4 @@ void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
 	{
 		PlayerInCombatChanged.Broadcast(bInNewState, DamageCauser);
 	}
-}
-
- void ABaseCharacter::Input_Fire()
- {
-
- }
-
- void ABaseCharacter::Input_CoverAction()
- {
- 	// if(!CurrentCoverPoint)
- 	// {
- 	// 	const FVector StartTrace = ThirdPersonCamera->GetComponentLocation();
- 	// 	const FVector EndTrace = StartTrace + (ThirdPersonCamera->GetForwardVector() * 800.f);
- 	// 	const TArray<AActor*> IgnoreActors;
- 	// 	FHitResult HitResult;
- 	// 	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
- 	// 	if(!HitResult.bBlockingHit)
- 	// 	{
- 	// 		return;
- 	// 	}
-	 //
- 	// 	if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
- 	// 	{
- 	// 		CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
- 	// 		TScriptInterface<ICoverPoint> NewCover;
- 	// 		NewCover.SetObject(HitResult.GetActor());
- 	// 		NewCover.SetInterface(CoverPoint);
- 	// 		CurrentCoverPoint = NewCover;
- 	// 	}
- 	// } else
- 	// {
- 	// 	CurrentCoverPoint->VacateCover(this);
- 	// 	CurrentCoverPoint = nullptr;
- 	// }
- }
-
- void ABaseCharacter::Input_Aim()
- {
- 	if(GameplayTagContainer.HasTag(TAG_STATE_AIMING))
- 	{
- 		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
- 		SetDesiredRotationMode(EALSRotationMode::Aiming);
- 		K2_StopAiming();
- 	} else
- 	{
- 		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
- 		SetDesiredRotationMode(EALSRotationMode::LookingDirection);
- 		K2_Aim();
- 	}
 }
