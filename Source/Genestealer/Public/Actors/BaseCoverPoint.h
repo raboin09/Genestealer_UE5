@@ -7,6 +7,7 @@
 #include "API/CoverPoint.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Utils/GameplayTagUtils.h"
 #include "BaseCoverPoint.generated.h"
 
 /**
@@ -23,6 +24,10 @@ public:
 	virtual void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal) override;
 	virtual void VacateCover(ABaseCharacter* InActor) override;
 
+	virtual void StartCoverFire() override;
+	virtual void StopCoverFire() override;
+	virtual void StartCoverAim() override;
+	virtual void StopCoverAim() override;
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
@@ -33,7 +38,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float CoverWallOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	bool bCantMoveInThisCoverPoint;
+	float DelayBeforeTagsApply = .1f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	float DelayBeforePeekShoot = .2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	float DelayBeforeCrouchToStandShoot = .4f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	bool bCrouchingCover;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UStaticMeshComponent* MiddleCoverWall;
@@ -55,15 +66,34 @@ protected:
 	bool bRightCoverEnabled;
 
 private:
-	void Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor);
-	void Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor);
-	void Internal_ActivateOverlapBoxes(bool bActivate);
+	void Internal_StartPeekFire();
+	void Internal_StopPeekFire() const;
+	
+	static void Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor);
+	static void Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor);
+	void Internal_ActivateOverlapBoxes(bool bActivate) const;
+	void Internal_ApplyLeftEdgeTagToActor();
+	void Internal_ApplyRightEdgeTagToActor();
 
-	void Internal_StartCoverTransition();
+	void Internal_ResetCharacterValuesOnCoverExit() const;
+	void Internal_SetCoverNormalRotationValues() const;
+	void Internal_SetCoverAimingRotationValues(bool bRightShoulder) const;
+
+	void Internal_TryPeekRolloutAndFire(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder);
+	void Internal_StartPeekRollout(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder);
+	void Internal_StartPeekRollback();
+
+	void Internal_StartCoverTransition() const;
 	UFUNCTION()
 	void Internal_CoverTransitionUpdate(float Alpha);
 	UFUNCTION()
 	void Internal_CoverTransitionFinished();
+
+	bool ActorInLeftEdge() const;
+	bool ActorInLeftPeek() const;
+	bool ActorInRightEdge() const;
+	bool ActorInRightPeek() const;
+	bool ActorAiming() const;
 	
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
@@ -72,7 +102,12 @@ private:
 	UCurveFloat* CoverTransitionCurve;
 	UPROPERTY()
 	UTimelineComponent* CoverTransitionTimeline;
-
+	
+	FTransform CachedTransform;
+	
 	FVector TargetCoverLocation;
 	FRotator TargetCoverRotation;
+
+	FTimerHandle TimerHandle_AddTags;
+	FTimerHandle TimerHandle_StartFiringDelay;
 };

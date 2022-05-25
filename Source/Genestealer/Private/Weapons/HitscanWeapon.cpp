@@ -36,13 +36,6 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 		return;
 	}
 	
-	// if(const IWeapon* CastedActorWeapon = Cast<IWeapon>(Impact.GetActor()))
-	// {
-	// 	FHitResult AdjustHitResult = Impact;
-	// 	AdjustHitResult.HitObjectHandle = FActorInstanceHandle(CastedActorWeapon->GetOwningPawn());
-	// 	UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(AdjustHitResult), GetInstigator());
-	// } else
-	// {
 	const UClass* HitActorClass = Impact.GetActor()->GetClass();
 	if(!HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
 	{
@@ -50,8 +43,7 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 	} else
 	{
 		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());
-	}	
-	// }
+	}
 }
 
 void AHitscanWeapon::Internal_SpawnTrailEffect(const FVector& EndPoint)
@@ -102,8 +94,7 @@ void AHitscanWeapon::Internal_PlayWeaponMissEffectFX(const FHitResult& Impact)
 {
 	for(const TSubclassOf<AActor> CurrEffectClass : WeaponEffects)
 	{
-		TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, GetInstigator());
-		if(TempEffect)
+		if(const TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, GetInstigator()))
 		{
 			TempEffect->PlayEffectFX();
 			TempEffect->DestroyEffect();

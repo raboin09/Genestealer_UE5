@@ -33,11 +33,15 @@ public:
 	////////////////////////////////
 	/// ALSCharacter overrides
 	////////////////////////////////
+	virtual void SprintAction_Implementation(bool bValue) override;
 	virtual void AimAction_Implementation(bool bValue) override;
 	virtual void PlayerForwardMovementInput(float Value);
 	virtual void PlayerRightMovementInput(float Value);
-	virtual void RagdollEnd();
+	virtual void RagdollEnd() override;
+	virtual void RagdollStart() override;
 	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
+	virtual bool CanSprint() const override;
+	virtual EALSGait GetAllowedGait() const override;
 	
 	////////////////////////////////
 	/// IAnimatable override
@@ -164,8 +168,6 @@ private:
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
 	////////////////////////////////
-	void Internal_StartRagdoll();
-	void Internal_EndRagdoll();
 	void Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange);
 	void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback = true);
 	void Internal_TryCharacterKnockbackRecovery();
@@ -183,7 +185,6 @@ private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;
 	FTimerHandle TimerHandle_DeathRagoll;
-	FTimerHandle TimerHandle_StartFiringDelay;
 	FTimerHandle TimerHandle_Ragdoll;
 
 	UPROPERTY(Transient)

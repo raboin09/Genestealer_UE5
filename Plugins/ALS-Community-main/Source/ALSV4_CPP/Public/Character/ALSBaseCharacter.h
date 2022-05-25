@@ -224,13 +224,13 @@ public:
 	FALSMovementSettings GetTargetMovementSettings() const;
 
 	UFUNCTION(BlueprintCallable, Category = "ALS|Movement System")
-	EALSGait GetAllowedGait() const;
+	virtual EALSGait GetAllowedGait() const;
 
 	UFUNCTION(BlueprintCallable, Category = "ALS|Movement System")
 	EALSGait GetActualGait(EALSGait AllowedGait) const;
 
 	UFUNCTION(BlueprintCallable, Category = "ALS|Movement System")
-	bool CanSprint() const;
+	virtual bool CanSprint() const;
 
 	/** BP implementable function that called when Breakfall starts */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Movement System")

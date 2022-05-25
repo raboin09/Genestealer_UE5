@@ -397,7 +397,6 @@ FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirect
 		PlayerController->GetPlayerViewPoint(OutStartTrace, UnusedRot);
 		OutStartTrace = OutStartTrace + AimDirection * ((GetInstigator()->GetActorLocation() - OutStartTrace) | AimDirection);
 	}
-
 	else if (AIPC)
 	{
 		OutStartTrace = GetRaycastOriginLocation();

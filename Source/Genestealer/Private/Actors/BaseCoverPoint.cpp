@@ -16,7 +16,6 @@ ABaseCoverPoint::ABaseCoverPoint()
 	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
 
 	CoverWallOffset = 40.f;
-	bCantMoveInThisCoverPoint = false;
 
 	MiddleCoverWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiddleCoverWall"));
 	// MiddleCoverWall->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object);
@@ -124,10 +123,12 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	
 	OccupiedActor = InActor;
 	OccupiedActor->SetStance(EALSStance::Crouching);
-	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection, true, true);
+	Internal_SetCoverNormalRotationValues();
+	OccupiedActor->SetDesiredGait(EALSGait::Walking);
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_STATE_IN_COVER);
+	
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
-	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1); 
+	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1);
 	
 	Internal_ActivateOverlapBoxes(true);	
 	Internal_StartCoverTransition();
@@ -145,24 +146,134 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
 	
-	
 	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_STATE_IN_COVER,
 		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
 		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
-	OccupiedActor->SetStance(EALSStance::Standing);
-	OccupiedActor->SetRotationMode(EALSRotationMode::LookingDirection, true, true);
-	OccupiedActor->SetRightShoulder(true);
+	Internal_ResetCharacterValuesOnCoverExit();
+	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 	OccupiedActor = nullptr;
 	Internal_ActivateOverlapBoxes(false);	
 }
 
-void ABaseCoverPoint::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseCoverPoint::StartCoverFire()
 {
-	if(!OverlappedComp || !OtherActor || OtherActor != OccupiedActor || !OtherActor->IsA(ABaseCharacter::StaticClass()))
+	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
 	{
 		return;
 	}
 
+	if(ActorInLeftEdge())
+	{
+		if(ActorInLeftPeek())
+		{
+			OccupiedActor->GetInventoryComponent()->StartFiring();
+		} else
+		{
+			Internal_TryPeekRolloutAndFire(LeftCoverPeekBox, false);	
+		}
+	} else if(ActorInRightEdge())
+	{
+		if(ActorInRightPeek())
+		{
+			OccupiedActor->GetInventoryComponent()->StartFiring();
+		} else
+		{
+			Internal_TryPeekRolloutAndFire(RightCoverPeekBox, true);	
+		}
+	} else
+	{
+		if(ActorAiming())
+		{
+			OccupiedActor->GetInventoryComponent()->StartFiring();
+		} else
+		{
+			if(bCrouchingCover)
+			{
+				OccupiedActor->SetStance(EALSStance::Standing);
+			}
+			Internal_SetCoverAimingRotationValues(true);
+			GetWorldTimerManager().SetTimer(TimerHandle_StartFiringDelay, OccupiedActor->GetInventoryComponent(), &UInventoryComponent::StartFiring, DelayBeforeCrouchToStandShoot, false);
+		}
+	}
+}
+
+void ABaseCoverPoint::StopCoverFire()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
+	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
+	{
+		return;
+	}
+	
+	if(ActorInLeftEdge() || ActorInRightEdge())
+	{
+		if(!ActorAiming())
+		{
+			Internal_StartPeekRollback();	
+		}
+		Internal_StopPeekFire();
+	} else
+	{
+		if(!ActorAiming())
+		{
+			Internal_SetCoverNormalRotationValues();
+		}
+		OccupiedActor->GetInventoryComponent()->StopFiring();
+	}
+	
+	if(bCrouchingCover)
+	{
+		OccupiedActor->SetStance(EALSStance::Crouching);
+	}
+}
+
+void ABaseCoverPoint::StartCoverAim()
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}
+
+	if(ActorInLeftEdge())
+	{
+		Internal_StartPeekRollout(LeftCoverPeekBox, false);
+	} else if(ActorInRightEdge())
+	{
+		Internal_StartPeekRollout(RightCoverPeekBox, true);
+	} else if(bCrouchingCover)
+	{
+		OccupiedActor->SetStance(EALSStance::Standing, true);
+	}
+	OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+}
+
+void ABaseCoverPoint::StopCoverAim()
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}
+
+	if(ActorInLeftEdge())
+	{
+		Internal_StartPeekRollback();
+	} else if(ActorInRightEdge())
+	{
+		Internal_StartPeekRollback();
+	} else if(bCrouchingCover)
+	{
+		OccupiedActor->SetStance(EALSStance::Crouching, true);
+	}
+	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection);
+}
+
+void ABaseCoverPoint::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(!OverlappedComp || !OtherActor || OtherActor != OccupiedActor || !OtherActor->IsA(ABaseCharacter::StaticClass()) || !OtherComp || OtherComp->IsA(UMeshComponent::StaticClass()))
+	{
+		return;
+	}
+	
 	if(OverlappedComp == LeftCoverPeekBox)
 	{
 		Internal_HandlePeekCoverOverlap(true, OtherActor);
@@ -171,16 +282,16 @@ void ABaseCoverPoint::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		Internal_HandlePeekCoverOverlap(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_LEFTEDGE);
+		GetWorldTimerManager().SetTimer(TimerHandle_AddTags, this, &ABaseCoverPoint::Internal_ApplyLeftEdgeTagToActor, DelayBeforeTagsApply, false);
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
-		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_RIGHTEDGE);
+		GetWorldTimerManager().SetTimer(TimerHandle_AddTags, this, &ABaseCoverPoint::Internal_ApplyRightEdgeTagToActor, DelayBeforeTagsApply, false);
 	}
 }
 
 void ABaseCoverPoint::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if(!OverlappedComp || !OtherActor || OtherActor != OccupiedActor || !OtherActor->IsA(ABaseCharacter::StaticClass()))
+	if(!OverlappedComp || !OtherActor || OtherActor != OccupiedActor || !OtherActor->IsA(ABaseCharacter::StaticClass()) || !OtherComp || OtherComp->IsA(UMeshComponent::StaticClass()))
 	{
 		return;
 	}
@@ -200,37 +311,52 @@ void ABaseCoverPoint::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActo
 	}
 }
 
-void ABaseCoverPoint::Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor)
+void ABaseCoverPoint::Internal_StartPeekRollout(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder)
 {
-	if(bCantMoveInThisCoverPoint)
+	Internal_SetCoverAimingRotationValues(bRightCameraShoulder);
+	TargetCoverLocation = TargetPeekBox->GetComponentLocation();
+	Internal_StartCoverTransition();
+}
+
+void ABaseCoverPoint::Internal_StartPeekRollback()
+{
+	TargetCoverLocation = CachedTransform.GetLocation();
+	TargetCoverRotation = CachedTransform.Rotator();
+	Internal_SetCoverNormalRotationValues();
+	Internal_StartCoverTransition();
+}
+
+void ABaseCoverPoint::Internal_StartPeekFire()
+{
+	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
 	{
 		return;
 	}
-	
+	GetWorldTimerManager().SetTimer(TimerHandle_StartFiringDelay, OccupiedActor->GetInventoryComponent(), &UInventoryComponent::StartFiring, DelayBeforePeekShoot, false);
+}
+
+void ABaseCoverPoint::Internal_StopPeekFire() const
+{
+	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
+	{
+		return;
+	}
+	OccupiedActor->GetInventoryComponent()->StopFiring();
+}
+
+void ABaseCoverPoint::Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor)
+{	
 	if(bLeftCoverPoint)
 	{
-		if(OccupiedActor)
-		{
-			OccupiedActor->SetRightShoulder(false);
-		}
 		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_LEFTPEEK);
 	} else
 	{
-		if(OccupiedActor)
-		{
-			OccupiedActor->SetRightShoulder(true);
-		}
 		UGameplayTagUtils::AddTagToActor(OtherActor, TAG_COVER_RIGHTPEEK);
 	}
 }
 
 void ABaseCoverPoint::Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor)
 {
-	if(bCantMoveInThisCoverPoint)
-	{
-		return;
-	}
-	
 	if(bLeftCoverPoint)
 	{
 		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTPEEK);
@@ -240,7 +366,7 @@ void ABaseCoverPoint::Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, A
 	}
 }
 
-void ABaseCoverPoint::Internal_ActivateOverlapBoxes(bool bActivate)
+void ABaseCoverPoint::Internal_ActivateOverlapBoxes(bool bActivate) const
 {
 	LeftCoverPeekBox->SetGenerateOverlapEvents(bActivate);
 	RightCoverPeekBox->SetGenerateOverlapEvents(bActivate);
@@ -248,8 +374,73 @@ void ABaseCoverPoint::Internal_ActivateOverlapBoxes(bool bActivate)
 	RightCoverEdgeBox->SetGenerateOverlapEvents(bActivate);
 }
 
-void ABaseCoverPoint::Internal_StartCoverTransition()
+void ABaseCoverPoint::Internal_ApplyLeftEdgeTagToActor()
 {
+	if(!OccupiedActor)
+	{
+		return;
+	}
+	
+	CachedTransform = OccupiedActor->GetActorTransform();
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_LEFTEDGE);
+}
+
+void ABaseCoverPoint::Internal_ApplyRightEdgeTagToActor()
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}
+	
+	CachedTransform = OccupiedActor->GetActorTransform();
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_RIGHTEDGE);
+}
+
+void ABaseCoverPoint::Internal_ResetCharacterValuesOnCoverExit() const
+{
+	if(bCrouchingCover)
+	{
+		OccupiedActor->SetStance(EALSStance::Standing);
+	}
+	OccupiedActor->SetRotationMode(EALSRotationMode::LookingDirection, true, true);
+	OccupiedActor->SetDesiredGait(EALSGait::Running);
+}
+
+void ABaseCoverPoint::Internal_SetCoverNormalRotationValues() const
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}
+	OccupiedActor->SetRightShoulder(true);
+	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection, true, true);
+}
+
+void ABaseCoverPoint::Internal_SetCoverAimingRotationValues(bool bRightShoulder) const
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}
+	OccupiedActor->SetRightShoulder(bRightShoulder);
+	OccupiedActor->SetRotationMode(EALSRotationMode::Aiming, true, true);
+}
+
+void ABaseCoverPoint::Internal_TryPeekRolloutAndFire(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder)
+{
+	if(!ActorAiming())
+	{
+		Internal_StartPeekRollout(TargetPeekBox, bRightCameraShoulder);	
+	}
+	Internal_StartPeekFire();
+}
+
+void ABaseCoverPoint::Internal_StartCoverTransition() const
+{
+	if(!OccupiedActor)
+	{
+		return;
+	}	
 	CoverTransitionTimeline->PlayFromStart();
 }
 
@@ -262,17 +453,48 @@ void ABaseCoverPoint::Internal_CoverTransitionUpdate(float Alpha)
 
 	const FTransform& OccupiedActorTransform = OccupiedActor->GetActorTransform();
 	FTransform TargetTransform;
+	
 	TargetTransform.SetLocation(FVector(TargetCoverLocation.X, TargetCoverLocation.Y, OccupiedActorTransform.GetLocation().Z));
 	TargetTransform.SetRotation(FQuat(TargetCoverRotation));
 	const FTransform& NewActorTransform = UKismetMathLibrary::TLerp(OccupiedActorTransform, TargetTransform, Alpha, ELerpInterpolationMode::QuatInterp);
-	OccupiedActor->SetActorLocationAndRotation(NewActorTransform.GetTranslation(), NewActorTransform.GetRotation());
+	OccupiedActor->SetActorLocationAndRotation(NewActorTransform.GetTranslation(), NewActorTransform.GetRotation(), true);
 }
 
 void ABaseCoverPoint::Internal_CoverTransitionFinished()
 {
+	if(!OccupiedActor)
+	{
+		return;
+	}
+	
 	if(UCharacterMovementComponent* CharMoveComp = OccupiedActor->FindComponentByClass<UCharacterMovementComponent>())
 	{
 		CharMoveComp->SetPlaneConstraintFromVectors(MiddleCoverWall->GetForwardVector(), MiddleCoverWall->GetUpVector());
 		CharMoveComp->SetPlaneConstraintEnabled(true);
 	}
+}
+
+bool ABaseCoverPoint::ActorInLeftEdge() const
+{
+	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTEDGE);
+}
+
+bool ABaseCoverPoint::ActorInLeftPeek() const
+{
+	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTPEEK);
+}
+
+bool ABaseCoverPoint::ActorInRightEdge() const
+{
+	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTEDGE);
+}
+
+bool ABaseCoverPoint::ActorInRightPeek() const
+{
+	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTPEEK);
+}
+
+bool ABaseCoverPoint::ActorAiming() const
+{
+	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_STATE_AIMING);
 }

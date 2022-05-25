@@ -40,9 +40,10 @@ void ABaseAIController::OnPossess(APawn* InPawn)
 	
 	AIPawn.SetObject(InPawn);
 	AIPawn.SetInterface(Cast<IAIPawn>(InPawn));
-	BlackboardComponent->InitializeBlackboard(*AIPawn->GetAIBehavior()->BlackboardAsset);
-	BehaviorTreeComponent->StartTree(*(AIPawn->GetAIBehavior()));
-	AIPawn->OnCombatStateChanged().AddDynamic(this, &ABaseAIController::SetIsInCombat);
+	if(AIPawn)
+	{
+		AIPawn->OnCombatStateChanged().AddDynamic(this, &ABaseAIController::SetIsInCombat);	
+	}
 	InitAIComponents();
 	InitPerceptionComponents();
 }
