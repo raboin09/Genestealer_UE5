@@ -94,6 +94,7 @@ private:
 	bool ActorInRightEdge() const;
 	bool ActorInRightPeek() const;
 	bool ActorAiming() const;
+	bool ActorFiring() const;
 	
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
