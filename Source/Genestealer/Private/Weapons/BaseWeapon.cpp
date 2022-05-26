@@ -269,13 +269,15 @@ void ABaseWeapon::HandleFiring()
 {
 	if ((GetCurrentAmmoInClip() > 0 || HasInfiniteClip() || HasInfiniteAmmo()) && CanFire())
 	{
-		if(const float Duration = SimulateWeaponFire(); Duration <= 0.f)
-		{
-			HandlePostBlendInFiring();
-		} else
-		{
-			GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::HandlePostBlendInFiring, Duration, false);	
-		}
+		// if(const float Duration = SimulateWeaponFire(); Duration <= 0.f)
+		// {
+		// 	HandlePostBlendInFiring();
+		// } else
+		// {
+		// 	GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::HandlePostBlendInFiring, Duration, false);	
+		// }
+		SimulateWeaponFire();
+		HandlePostBlendInFiring();
 	}
 	else if (CanReload())
 	{

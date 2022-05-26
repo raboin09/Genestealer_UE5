@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Utils/CoreUtils.h"
 
@@ -90,7 +91,7 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 } 
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
-{
+{	
 	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	// TODO handle Niagara collisions
 	return NiagaraFX;
@@ -172,7 +173,7 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 	{
 		if( FireFXSystem != nullptr )
 		{
-			FireFXSystem->Deactivate();
+			FireFXSystem->DeactivateImmediate();
 			FireFXSystem = nullptr;
 		}
 	}
@@ -391,7 +392,11 @@ FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirect
 	AAIController* AIPC = GetInstigator() ? Cast<AAIController>(GetInstigator()->Controller) : nullptr;
 	FVector OutStartTrace = FVector::ZeroVector;
 
-	if (PlayerController)
+	if(!bInitialRaycastFromController)
+	{
+		OutStartTrace = GetRaycastOriginLocation();
+	}
+	else if (PlayerController)
 	{
 		FRotator UnusedRot;
 		PlayerController->GetPlayerViewPoint(OutStartTrace, UnusedRot);

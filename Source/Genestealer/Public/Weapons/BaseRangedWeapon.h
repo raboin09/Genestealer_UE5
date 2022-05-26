@@ -51,6 +51,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bRaycastFromWeapon = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bInitialRaycastFromController = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TargetingSpreadMod;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float FiringSpreadIncrement = 1.0f;
@@ -71,7 +73,7 @@ protected:
 	int32 InitialClips = 4;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
-	FName RaycastSourceSocketName = "Muzzle";	
+	FName RaycastSourceSocketName = "Muzzle";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* FireFXClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
