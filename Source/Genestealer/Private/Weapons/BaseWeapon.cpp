@@ -2,6 +2,7 @@
 #include "Weapons/BaseWeapon.h"
 #include "Sound/SoundCue.h"
 #include "Characters/BaseCharacter.h"
+#include "Components/AudioComponent.h"
 #include "Core/BasePlayerController.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
@@ -59,11 +60,6 @@ ABaseWeapon::ABaseWeapon()
 	SetRootComponent(WeaponRootComponent);
 }
 
-void ABaseWeapon::UseAmmo()
-{
-	BroadcastAmmoUsage();
-}
-
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();	
@@ -86,6 +82,15 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	}
 	bPendingEquip = true;
 	DetermineWeaponState();
+
+	if(WeaponType == EWeaponType::Heavy)
+	{
+		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_CANNOT_GET_IN_COVER);
+	} else
+	{
+		UGameplayTagUtils::RemoveTagFromActor(OwningPawn, TAG_STATE_CANNOT_GET_IN_COVER);
+	}
+	
 	if (LastWeapon)
 	{
 		FAnimMontagePlayData PlayData;
@@ -106,23 +111,13 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	{
 		PlayWeaponSound(EquipSound);
 	}
-	BroadcastAmmoUsage();
 }
 
 void ABaseWeapon::OnEquipFinished()
 {	
 	bIsEquipped = true;
 	bPendingEquip = false;
-	DetermineWeaponState(); 
-	BlueprintEquip(true);
-	if (OwningPawn)
-	{
-		if (GetCurrentAmmoInClip() <= 0 && CanReload())
-		{
-			StartReload();
-		}
-	}
-	BroadcastAmmoUsage();
+	DetermineWeaponState();
 }
 
 void ABaseWeapon::OnUnEquip()
@@ -133,14 +128,6 @@ void ABaseWeapon::OnUnEquip()
 	}
 	bIsEquipped = false;
 	StopFire();
-	if (bPendingReload)
-	{
-		StopWeaponAnimation(ReloadAnim);
-		bPendingReload = false;
-
-		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
-		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
-	}
 
 	if (bPendingEquip)
 	{
@@ -152,46 +139,19 @@ void ABaseWeapon::OnUnEquip()
 	DetermineWeaponState();
 }
 
-void ABaseWeapon::StartReload()
-{
-	if (CanReload())
-	{
-		bPendingReload = true;
-		DetermineWeaponState();
-		FAnimMontagePlayData PlayData;
-		PlayData.MontageToPlay = ReloadAnim;
-		float AnimDuration = PlayWeaponAnimation(PlayData);	
-		if (AnimDuration <= 0.0f)
-		{
-			AnimDuration = ReloadDurationIfNoAnim;
-		}
-		GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseWeapon::StopReload, AnimDuration, false);
-		GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
-		
-		if (OwningPawn)
-		{
-			PlayWeaponSound(ReloadSound);
-		}
-	}
-}
-
-void ABaseWeapon::StopReload()
-{
-	if (CurrentState == EWeaponState::Reloading)
-	{
-		bPendingReload = false;
-		DetermineWeaponState();
-		StopWeaponAnimation(ReloadAnim);
-		BroadcastAmmoUsage();
-	}
-}
-
 void ABaseWeapon::StartFire()
 {
 	if (!bWantsToFire)
 	{
 		bWantsToFire = true;
-		DetermineWeaponState();
+		FireStartAudio = PlayWeaponSound(FireWarmupSound);
+		if(FireWarmUpTime > 0.f)
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::DetermineWeaponState, FireWarmUpTime, false);	
+		} else
+		{
+			DetermineWeaponState();
+		}
 	}
 }
 
@@ -200,13 +160,18 @@ void ABaseWeapon::StopFire()
 	if (bWantsToFire)
 	{
 		bWantsToFire = false;
+		if(FireStartAudio)
+		{
+			FireStartAudio->Deactivate();
+			FireStartAudio = nullptr;
+		}
 		DetermineWeaponState();
 	}
 }
 
 bool ABaseWeapon::CanFire() const
 {
-	bool bCanFire = false;
+	bool bCanFire = true;
 	if(ITaggable* OwnerTag = Cast<ITaggable>(OwningPawn))
 	{
 		FGameplayTagContainer TagContainer = FGameplayTagContainer();
@@ -214,8 +179,8 @@ bool ABaseWeapon::CanFire() const
 		TagContainer.AddTag(TAG_STATE_DEAD);
 		bCanFire = !OwnerTag->GetTagContainer().HasAny(TagContainer);
 	}
-	const bool bStateOKToFire = ( ( CurrentState ==  EWeaponState::Idle ) || ( CurrentState == EWeaponState::Firing) );	
-	return (( bCanFire == true ) && ( bStateOKToFire == true ) && ( bPendingReload == false ));
+	const bool bStateOKToFire = (CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing);	
+	return  bCanFire && bStateOKToFire ;
 }
 
 void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
@@ -267,41 +232,22 @@ UMeshComponent* ABaseWeapon::GetSecondaryWeaponMesh() const
 
 void ABaseWeapon::HandleFiring()
 {
-	if ((GetCurrentAmmoInClip() > 0 || HasInfiniteClip() || HasInfiniteAmmo()) && CanFire())
+	if (CheckChildFireCondition() && CanFire())
 	{
-		// if(const float Duration = SimulateWeaponFire(); Duration <= 0.f)
-		// {
-		// 	HandlePostBlendInFiring();
-		// } else
-		// {
-		// 	GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::HandlePostBlendInFiring, Duration, false);	
-		// }
 		SimulateWeaponFire();
-		HandlePostBlendInFiring();
-	}
-	else if (CanReload())
-	{
-		StartReload();
+		FireWeapon();
+		BurstCounter++;
 	}
 	else if (OwningPawn)
 	{
-		if (GetCurrentAmmo() == 0 && !bRefiring)
-		{
-			PlayWeaponSound(OutOfAmmoSound);
-		}
-
 		if (BurstCounter > 0)
 		{
 			OnBurstFinished();
 		}
 	}
-
+	
 	if (OwningPawn)
 	{
-		if (GetCurrentAmmoInClip() <= 0 && CanReload())
-		{
-			StartReload();
-		}
 		bRefiring = (CurrentState == EWeaponState::Firing && TimeBetweenShots > 0.0f);
 		if (bRefiring)
 		{
@@ -310,13 +256,6 @@ void ABaseWeapon::HandleFiring()
 	}
 
 	LastFireTime = GetWorld()->GetTimeSeconds();
-}
-
-void ABaseWeapon::HandlePostBlendInFiring()
-{
-	FireWeapon();
-	UseAmmo();
-	BurstCounter++;
 }
 
 void ABaseWeapon::OnBurstStarted()
@@ -400,29 +339,14 @@ void ABaseWeapon::SetWeaponState(EWeaponState NewState)
 void ABaseWeapon::DetermineWeaponState()
 {
 	EWeaponState NewState = EWeaponState::Idle;
-	if (bIsEquipped)
-	{
-		if(bPendingReload)
-		{
-			if(CanReload() == false )
-			{
-				NewState = CurrentState;
-			}
-			else
-			{
-				NewState = EWeaponState::Reloading;
-			}
-		}		
-		else if ( (bPendingReload == false ) && ( bWantsToFire == true ) && ( CanFire() == true ))
-		{
-			NewState = EWeaponState::Firing;
-		}
+	if (bIsEquipped &&  bWantsToFire && ( CanFire()))
+	{	
+		NewState = EWeaponState::Firing;
 	}
 	else if (bPendingEquip)
 	{
 		NewState = EWeaponState::Equipping;
 	}
-
 	SetWeaponState(NewState);
 }
 

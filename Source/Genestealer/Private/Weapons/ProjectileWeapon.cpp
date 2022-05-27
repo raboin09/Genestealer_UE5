@@ -19,7 +19,7 @@ void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 	constexpr float ProjectileAdjustRange = 10000.0f;
 	const FVector StartTrace = GetCameraDamageStartLocation(ShootDir);
 	const FVector EndTrace = StartTrace + ShootDir * ProjectileAdjustRange;
-	FHitResult Impact = WeaponTrace(StartTrace, EndTrace);
+	FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
 	if (Impact.bBlockingHit)
 	{
 		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);//.GetSafeNormal();
@@ -34,7 +34,7 @@ void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 		{
 			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 150.0f;
 			FVector MuzzleEndTrace = Origin;
-			FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace);
+			FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace());
 			if (MuzzleImpact.bBlockingHit)
 			{
 				bWeaponPenetration = true;

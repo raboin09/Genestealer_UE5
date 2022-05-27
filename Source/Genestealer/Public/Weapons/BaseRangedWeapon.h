@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "Effects/BaseEffect.h"
 #include "NiagaraComponent.h"
+#include "API/AmmoEntity.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseRangedWeapon.generated.h"
 
 class ABaseImpactEffect;
 
 UCLASS(Abstract, NotBlueprintable)
-class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon
+class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IAmmoEntity
 {
 	GENERATED_BODY()
 
@@ -20,15 +21,23 @@ public:
     
 protected:
 	virtual void BeginPlay() override;
-	
+	virtual void StartReload() override;
+	virtual void StopReload() override;
+	virtual void StopFire() override;
+	virtual void OnEquipFinished() override;
+	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) override;
 	virtual float SimulateWeaponFire() override;
 	virtual void StopSimulatingWeaponFire() override;
-	virtual void ReloadWeapon() override;
 	virtual void GiveAmmo(int AddAmount) override;
-	virtual void UseAmmo() override;
 	virtual void OnUnEquip() override;
+	virtual bool CanFire() const override;
 	virtual void BroadcastAmmoUsage() override;
+	virtual void HandleFiring() override;
+	virtual void DetermineWeaponState() override;
+	
 	virtual FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact);
+	virtual void UseAmmo();
+	virtual void ReloadWeapon();
 	
 	FVector GetRaycastOriginLocation();
 	FVector GetRaycastOriginRotation();
@@ -39,25 +48,29 @@ protected:
 	FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact) const;
 	float GetCurrentSpread() const;
 	float GetCurrentFiringSpreadPercentage() const;
-	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const;
+	bool ShouldLineTrace() const;
+	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace) const;
 
 	UFUNCTION(BlueprintImplementableEvent)
     void DebugFire(FVector Origin, FVector End, FColor ColorToDraw);
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	float TraceSpread = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TraceRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	bool bRaycastFromWeapon = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	bool bInitialRaycastFromController = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	float TargetingSpreadMod;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bHasFiringSpread = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
+	float TraceSpread = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
 	float FiringSpreadIncrement = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
 	float FiringSpreadMax = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	FName RaycastSourceSocketName = "Muzzle";
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bRaycastFromWeaponMeshInsteadOfPawnMesh = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bAimOriginIsPlayerEyesInsteadOfWeapon = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bAkimbo = false;
 
@@ -65,29 +78,39 @@ protected:
 	bool bInfiniteAmmo = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteClip = false;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo", meta = (EditCondition = "!bInfiniteAmmo", EditConditionHides))
 	int32 MaxAmmo = 100;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo", meta = (EditCondition = "!bInfiniteClip", EditConditionHides))
 	int32 AmmoPerClip = 20;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo", meta = (EditCondition = "!bInfiniteAmmo", EditConditionHides))
 	int32 InitialClips = 4;
-
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
-	FName RaycastSourceSocketName = "Muzzle";
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* FireFXClass;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "FireFXClass != nullptr", EditConditionHides))
 	bool bLoopedMuzzleFX = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "FireFXClass != nullptr", EditConditionHides))
+	bool bAdjustVFXScaleOnSpawn = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	float ParticleMeshZ = 33.f; 
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	bool bLoopedFireSound = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	USoundCue* FireFinishSound;
-
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	USoundCue* ReloadSound;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	USoundCue* OutOfAmmoSound;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "FireAnim != nullptr", EditConditionHides))
+	bool bLoopedFireAnim = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* CoverFireRightAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
@@ -116,9 +139,13 @@ private:
 	UPROPERTY(Transient)
 	UNiagaraComponent* NiagaraFX;
 	UPROPERTY(Transient)
+	UAudioComponent* ReloadAudio;
+	UPROPERTY(Transient)
 	UAudioComponent* FireAC;
 	UPROPERTY(Transient)
 	float CurrentFiringSpread;
+	UPROPERTY(Transient)
+	bool bPendingReload;
 	UPROPERTY(Transient)
 	int32 CurrentAmmo;
 	UPROPERTY(Transient)
@@ -126,8 +153,13 @@ private:
 
 	UPROPERTY()
 	UMeshComponent* NextFiringMesh;
+	UPROPERTY()
+	FAmmoAmountChanged AmmoAmountChanged;
 
+	FTimerHandle TimerHandle_StopReload;
+	FTimerHandle TimerHandle_ReloadWeapon;
 public:
+	FORCEINLINE virtual bool CheckChildFireCondition() override { return GetCurrentAmmoInClip() > 0 || HasInfiniteClip(); }
 	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return CurrentAmmo; }
 	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return CurrentAmmoInClip; }
 	FORCEINLINE virtual int32 GetMaxAmmo() override { return MaxAmmo; }
@@ -135,4 +167,5 @@ public:
 	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual void OnBurstFinished() override { Super::OnBurstFinished(); }
+	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 };

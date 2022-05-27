@@ -18,15 +18,20 @@ enum class EWeaponState : uint8
 };
 
 UENUM(BlueprintType)
-enum class EWeaponSlot : uint8
+enum class EWeaponType : uint8
 {
-	Pistol,
-	Rifle,
-	Melee
+	NONE,
+	Melee,
+	Heavy,
+	Rifle
 };
 
-// Broadcasts CurrentAmmoInClip and CurrentAmmo
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAmmoAmountChanged, int32, CurrentAmmoInClip, int32, ClipCapacity, int32, CurrentAmmo);
+UENUM(BlueprintType)
+enum class EWeaponSlot : uint8
+{
+	Primary,
+	Alternate
+};
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
@@ -40,9 +45,7 @@ class GENESTEALER_API IWeapon
 	GENERATED_BODY()
 
 public:
-	virtual FAmmoAmountChanged& OnAmmoAmountChanged() = 0;
-	virtual void BroadcastAmmoUsage() = 0;
-
+	virtual EWeaponType GetWeaponType() const PURE_VIRTUAL(IWeapon::GetWeaponType, return EWeaponType::NONE;);
 	virtual EALSOverlayState GetWeaponOverlay() PURE_VIRTUAL(IWeapon::GetWeaponOverlay, return EALSOverlayState::Default;);
 	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentWeapon, return EWeaponState::Idle; );
 	
@@ -53,22 +56,11 @@ public:
 	virtual void OnEquipFinished() PURE_VIRTUAL(IWeapon::OnEquipFinished,);
 	virtual void OnUnEquip() PURE_VIRTUAL(IWeapon::OnUnEquip,);
 
-	virtual void StartReload() PURE_VIRTUAL(IWeapon::StartReload,);
-	virtual void StopReload() PURE_VIRTUAL(IWeapon::StopReload,);
-
 	virtual void StartFire() PURE_VIRTUAL(IWeapon::StartFire,);
 	virtual void StopFire() PURE_VIRTUAL(IWeapon::StopFire,);
 
 	virtual bool CanFire() const PURE_VIRTUAL(IWeapon::CanFire, return false;);
 	virtual bool CanReload() PURE_VIRTUAL(IWeapon::CanReload, return false;);
-
-	virtual void GiveAmmo(int32 AddAmount) PURE_VIRTUAL(IWeapon::GiveAmmo,);
-	virtual int32 GetCurrentAmmo() PURE_VIRTUAL(IWeapon::GetCurrentAmmo, return 0;);
-	virtual int32 GetCurrentAmmoInClip() PURE_VIRTUAL(IWeapon::GetCurrentAmmoInClip, return 0;)
-	virtual int32 GetAmmoPerClip() PURE_VIRTUAL(IWeapon::GetAmmoPerClip, return 0;)
-	virtual int32 GetMaxAmmo() PURE_VIRTUAL(IWeapon::GetMaxAmmo, return 0;);
-	virtual bool HasInfiniteAmmo() PURE_VIRTUAL(IWeapon::HasInfiniteAmmo, return false;);
-	virtual bool HasInfiniteClip() PURE_VIRTUAL(IWeapon::HasInfiniteClip, return false;);
 
 	virtual UMeshComponent* GetWeaponMesh() const PURE_VIRTUAL(IWeapon::GetWeaponMesh, return nullptr;);
 	virtual UMeshComponent* GetSecondaryWeaponMesh() const PURE_VIRTUAL(IWeapon::GetSecondaryWeaponMesh, return nullptr;);

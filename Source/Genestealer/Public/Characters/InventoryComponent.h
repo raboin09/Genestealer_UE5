@@ -22,7 +22,7 @@ class GENESTEALER_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 	
-	void SpawnInventoryActors(TSubclassOf<AActor> PistolClass, TSubclassOf<AActor> RifleClass, TSubclassOf<AActor> MeleeClass);
+	void SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass);
 	void DestroyInventory();
 
 	TSubclassOf<AActor> GetPistolClass() const;
@@ -38,13 +38,13 @@ public:
 	void StopFiring();
 	void OnTargetingChange(bool bIsTargeting);
 	
-	void EquipPistolWeapon();
-	void EquipRifleWeapon();
-	void EquipMeleeWeapon();
+	void EquipAlternateWeapon();
+	void EquipPrimaryWeapon();
 
 	bool HasWeapon(const UClass* WeaponClass) const;
 	void GiveWeaponClassAmmo(const UClass* WeaponClass, int32 AmmoRoundsToGive);
 
+	FORCEINLINE EWeaponType GetCurrentWeaponType() const { return CurrentWeapon ? CurrentWeapon->GetWeaponType() : EWeaponType::NONE; }
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FORCEINLINE TScriptInterface<IWeapon> GetEquippedWeapon() const{ return CurrentWeapon; }
 	EWeaponState GetCurrentWeaponState() const;
@@ -65,11 +65,9 @@ private:
 	void Internal_SetCurrentWeapon(TScriptInterface<IWeapon> NewWeapon, class TScriptInterface<IWeapon> LastWeapon = nullptr);
 
 	UPROPERTY()
-	TScriptInterface<IWeapon> PistolWeapon;
+	TScriptInterface<IWeapon> PrimaryWeapon;
 	UPROPERTY()
-	TScriptInterface<IWeapon> RifleWeapon;
-	UPROPERTY()
-	TScriptInterface<IWeapon> MeleeWeapon;
+	TScriptInterface<IWeapon> AlternateWeapon;
 	
 	UPROPERTY(Transient)
 	TScriptInterface<IWeapon> CurrentWeapon;

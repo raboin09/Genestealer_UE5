@@ -1,5 +1,8 @@
 #include "Characters/InventoryComponent.h"
+
+#include "API/AmmoEntity.h"
 #include "GameFramework/Character.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/SpawnUtils.h"
 
@@ -13,32 +16,24 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UInventoryComponent::SpawnInventoryActors(TSubclassOf<AActor> PistolClass, TSubclassOf<AActor> RifleClass, TSubclassOf<AActor> MeleeClass)
+void UInventoryComponent::SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass)
 {
-	if(PistolClass)
+	if(PrimaryWeaponClass)
 	{
-		Internal_SpawnWeaponFromClass(PistolClass, EWeaponSlot::Pistol);
+		Internal_SpawnWeaponFromClass(PrimaryWeaponClass, EWeaponSlot::Primary);
 	}
 	
-	if(RifleClass)
+	if(AlternateWeaponClass)
 	{
-		Internal_SpawnWeaponFromClass(RifleClass, EWeaponSlot::Rifle);
+		Internal_SpawnWeaponFromClass(AlternateWeaponClass, EWeaponSlot::Alternate);
 	}
 
-	if(MeleeClass)
+	if(PrimaryWeapon)
 	{
-		Internal_SpawnWeaponFromClass(MeleeClass, EWeaponSlot::Melee);
-	}	
-
-	if(RifleWeapon)
+		EquipPrimaryWeapon();
+	} else if(AlternateWeapon)
 	{
-		EquipRifleWeapon();
-	} else if(PistolWeapon)
-	{
-		EquipPistolWeapon();
-	} else if(MeleeWeapon)
-	{
-		EquipMeleeWeapon();
+		EquipAlternateWeapon();
 	}
 }
 
@@ -61,66 +56,52 @@ void UInventoryComponent::Internal_SpawnWeaponFromClass(TSubclassOf<AActor> Weap
 
 void UInventoryComponent::DestroyInventory()
 {
-	if(PistolWeapon)
+	if(PrimaryWeapon)
 	{
-		PistolWeapon->StopFire();
-		Internal_RemoveWeapon(PistolWeapon, EWeaponSlot::Pistol);
-	}
-
-	if(RifleWeapon)
-	{
-		RifleWeapon->StopFire();
-		Internal_RemoveWeapon(RifleWeapon, EWeaponSlot::Rifle);
-	}
-
-	if(MeleeWeapon)
-	{
-		MeleeWeapon->StopFire();
-		Internal_RemoveWeapon(MeleeWeapon, EWeaponSlot::Melee);
+		PrimaryWeapon->StopFire();
+		Internal_RemoveWeapon(PrimaryWeapon, EWeaponSlot::Primary);
 	}
 	
+	if(AlternateWeapon)
+	{
+		AlternateWeapon->StopFire();
+		Internal_RemoveWeapon(AlternateWeapon, EWeaponSlot::Alternate);
+	}	
+
 	CurrentWeapon = nullptr;
 }
 
 TSubclassOf<AActor> UInventoryComponent::GetPistolClass() const
 {
-	if(PistolWeapon && PistolWeapon.GetObject() && PistolWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
+	if(AlternateWeapon && AlternateWeapon.GetObject() && AlternateWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
 	{
-		return PistolWeapon.GetObject()->GetClass();
+		return AlternateWeapon.GetObject()->GetClass();
 	}
 	return nullptr;
 }
 
 TSubclassOf<AActor> UInventoryComponent::GetRifleClass() const
 {
-	if(RifleWeapon && RifleWeapon.GetObject() && RifleWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
+	if(PrimaryWeapon && PrimaryWeapon.GetObject() && PrimaryWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
 	{
-		return RifleWeapon.GetObject()->GetClass();
+		return PrimaryWeapon.GetObject()->GetClass();
 	}
 	return nullptr;
 }
 
-void UInventoryComponent::EquipPistolWeapon()
+void UInventoryComponent::EquipAlternateWeapon()
 {
-	if(PistolWeapon)
+	if(AlternateWeapon)
 	{
-		Internal_SetCurrentWeapon(PistolWeapon, CurrentWeapon);
+		Internal_SetCurrentWeapon(AlternateWeapon, CurrentWeapon);
 	}
 }
 
-void UInventoryComponent::EquipRifleWeapon()
+void UInventoryComponent::EquipPrimaryWeapon()
 {
-	if(RifleWeapon)
+	if(PrimaryWeapon)
 	{
-		Internal_SetCurrentWeapon(RifleWeapon, CurrentWeapon);
-	}
-}
-
-void UInventoryComponent::EquipMeleeWeapon()
-{
-	if(MeleeWeapon)
-	{
-		Internal_SetCurrentWeapon(MeleeWeapon, CurrentWeapon);
+		Internal_SetCurrentWeapon(PrimaryWeapon, CurrentWeapon);
 	}
 }
 
@@ -167,9 +148,9 @@ void UInventoryComponent::OnTargetingChange(bool bIsTargeting)
 
 void UInventoryComponent::StartReload()
 {
-	if(CurrentWeapon)
+	if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(CurrentWeapon.GetObject()))
 	{
-		CurrentWeapon->StartReload();
+		AmmoEntity->StartReload();
 	}
 }
 
@@ -182,14 +163,11 @@ void UInventoryComponent::AddWeapon(TScriptInterface<IWeapon> Weapon, EWeaponSlo
 			Weapon->OnEnterInventory(CastedChar);
 			switch (Slot)
 			{
-			case EWeaponSlot::Pistol:
-				PistolWeapon = Weapon;
+			case EWeaponSlot::Alternate:
+				AlternateWeapon = Weapon;
 				break;
-			case EWeaponSlot::Rifle:
-				RifleWeapon = Weapon;
-				break;
-			case EWeaponSlot::Melee:
-				MeleeWeapon = Weapon;
+			case EWeaponSlot::Primary:
+				PrimaryWeapon = Weapon;
 				break;
 			default: ;
 			}
@@ -204,7 +182,7 @@ bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 	if(!TempWeapon)
 		return false;
 
-	if(const UObject* PistolTempObj = PistolWeapon.GetObject())
+	if(const UObject* PistolTempObj = AlternateWeapon.GetObject())
 	{
 		if(PistolTempObj->GetClass() == TempWeapon->GetClass())
 		{
@@ -212,17 +190,9 @@ bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 		}
 	}
 
-	if(const UObject* RifleTempObj = RifleWeapon.GetObject())
+	if(const UObject* RifleTempObj = PrimaryWeapon.GetObject())
 	{
 		if(RifleTempObj->GetClass() == TempWeapon->GetClass())
-		{
-			return true;
-		}
-	}
-
-	if(const UObject* MeleeTempObj = MeleeWeapon.GetObject())
-	{
-		if(MeleeTempObj->GetClass() == TempWeapon->GetClass())
 		{
 			return true;
 		}
@@ -233,13 +203,12 @@ bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 
 void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 AmmoRoundsToGive)
 {
-	if(HasWeapon(WeaponClass))
+	if(!HasWeapon(WeaponClass))
 	{
-		if(const TScriptInterface<IWeapon> TempWeapon = WeaponClass->GetDefaultObject())
-		{
-			TempWeapon->GiveAmmo(AmmoRoundsToGive);
-		}
+		return;
 	}
+	
+	UKismetSystemLibrary::PrintString(this, "TODO Giving Ammo");
 }
 
 EWeaponState UInventoryComponent::GetCurrentWeaponState() const
@@ -288,31 +257,11 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 			NewWeapon->OnEquip(LastWeapon);		
 		}
 	}
-
-	// if (NewWeapon)
-	// {
-	// 	if(ACharacter* CastedChar = Cast<ACharacter>(GetOwner()))
-	// 	{
-	// 		if(USkeletalMeshComponent* MeshComponent = CastedChar->GetMesh())
-	// 		{
-	// 			if(NewWeapon->GetWeaponMesh())
-	// 			{
-	// 				NewWeapon->GetWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
-	// 			}
-	// 			
-	// 			// Attach dual wield if exists
-	// 			if(NewWeapon->GetSecondaryWeaponMesh())
-	// 			{
-	// 				NewWeapon->GetSecondaryWeaponMesh()->AttachToComponent(MeshComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("LeftHandSocket"));
-	// 			}
-	// 		}
-	// 	}
-	// }
 	CurrentWeaponChanged.Broadcast(NewWeapon, LastWeapon);
 	
 	// Needed to catch this for the first BeginPlay loop
-	if(NewWeapon)
+	if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(NewWeapon.GetObject()))
 	{
-		NewWeapon->BroadcastAmmoUsage();
+		AmmoEntity->BroadcastAmmoUsage();
 	}
 }

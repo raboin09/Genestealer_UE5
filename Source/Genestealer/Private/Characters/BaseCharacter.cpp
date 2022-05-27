@@ -61,7 +61,7 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 
 void ABaseCharacter::SprintAction_Implementation(bool bValue)
 {
-	if(IsInCover())
+	if(IsInCover() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
 	{
 		return;
 	}
@@ -131,7 +131,7 @@ void ABaseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	if(InventoryComponent)
 	{
-		InventoryComponent->SpawnInventoryActors(StartingPistolClass, StartingRifleClass, StartingMeleeClass);
+		InventoryComponent->SpawnInventoryActors(StartingPistolClass, StartingRifleClass);
 	}
 }
 
@@ -183,6 +183,10 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 	}
 	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
+	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())
+	{
+		Internal_CoverDodgeTryEnd();
+	}
 }
 
 void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
@@ -262,7 +266,7 @@ void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, co
 }
 
 void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback)
-{
+{	
 	float ImpulseValue = UCombatUtils::GetHitImpulseValue(HitReactEvent.HitReactType);
 	if(ImpulseValue == 0.f)
 	{
@@ -279,6 +283,11 @@ void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEv
 
 void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 {
+	if(!IsAlive())
+	{
+		return;
+	}
+	
 	if (LastRagdollVelocity.Size() > 100)
 	{
 		GetWorldTimerManager().SetTimer(TimerHandle_Ragdoll, this, &ABaseCharacter::Internal_TryCharacterKnockbackRecovery, .1f, false);
@@ -423,6 +432,11 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 
 void ABaseCharacter::GL_HandleCoverDodgeAction()
 {
+	if(!Internal_CanGetInCover())
+	{
+		return;
+	}
+	
 	if(!CurrentCoverPoint)
 	{
 		Internal_CoverDodgeTryStart();
@@ -434,6 +448,7 @@ void ABaseCharacter::GL_HandleCoverDodgeAction()
 
 void ABaseCharacter::Internal_CoverDodgeTryStart()
 {
+	
 	if(!Controller)
 	{
 		return;
@@ -463,7 +478,10 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 
 void ABaseCharacter::Internal_CoverDodgeTryEnd()
 {
-	CurrentCoverPoint->VacateCover(this);
+	if(CurrentCoverPoint)
+	{
+		CurrentCoverPoint->VacateCover(this);	
+	}
 	CurrentCoverPoint = nullptr;
 }
 

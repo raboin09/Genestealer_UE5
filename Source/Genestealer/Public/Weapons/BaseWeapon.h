@@ -32,33 +32,27 @@ public:
 	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) override;
 	virtual void OnEquipFinished() override;
 	virtual void OnUnEquip() override;
-	virtual void StartReload() override;
-	virtual void StopReload() override;
 	virtual void StartFire() override;
 	virtual void StopFire() override;
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	virtual void StartWeaponRagdoll() override;
+	FORCEINLINE virtual EWeaponType GetWeaponType() const override { return WeaponType; }
 	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; }
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
-	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
-
-	UFUNCTION(BlueprintCallable)
-    virtual int32 GetCurrentAmmo() override PURE_VIRTUAL(ABaseWeapon::GetCurrentAmmo, return 0;)
-    UFUNCTION(BlueprintCallable)
-    virtual int32 GetMaxAmmo() override PURE_VIRTUAL(ABaseWeapon::GetMaxAmmo, return 0;)
-	virtual bool CanReload() override PURE_VIRTUAL(ABaseWeapon::CanReload, return false;)
-	virtual void GiveAmmo(int32 AddAmount) override PURE_VIRTUAL(ABaseWeapon::GiveAmmo,);
-	virtual void UseAmmo();
 	
+	virtual bool CanReload() override PURE_VIRTUAL(ABaseWeapon::CanReload, return false;)
+	virtual bool CheckChildFireCondition() PURE_VIRTUAL(ABaseWeapon::CheckChildFireCondition, return false;)
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
+	virtual void HandleFiring();
 	virtual void OnBurstFinished();
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
-	
+
+	void SetWeaponState(EWeaponState NewState);
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound) const;
     float PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const;
     void StopWeaponAnimation(UAnimMontage* AnimMontage) const;
@@ -66,23 +60,11 @@ protected:
 	virtual void OnLeaveInventory() override;
 	virtual void PlayCameraShake();
 	virtual bool IsWeaponOnCooldown() const;
+	virtual void DetermineWeaponState();
 	
-	UFUNCTION()
-	virtual void BroadcastAmmoUsage() override PURE_VIRTUAL(ABaseWeapon::BroadcastAmmoUsage,) 
-	
-	// Pure virtual functions
-	UFUNCTION(BlueprintCallable)
-    virtual int32 GetCurrentAmmoInClip() override PURE_VIRTUAL(ABaseWeapon::GetCurrentAmmoInClip, return 0;)
-	UFUNCTION(BlueprintCallable)
-    virtual int32 GetAmmoPerClip() override PURE_VIRTUAL(ABaseWeapon::GetAmmoPerClip, return 0;)
-	UFUNCTION(BlueprintCallable)
-	virtual bool HasInfiniteAmmo() override PURE_VIRTUAL(ABaseWeapon::HasInfiniteAmmo, return false;)
-	UFUNCTION(BlueprintCallable)
-    virtual bool HasInfiniteClip() override PURE_VIRTUAL(ABaseWeapon::HasInfiniteClip, return false;)
 	virtual void FireWeapon() PURE_VIRTUAL(ABaseWeapon::FireWeapon,);
 	virtual float SimulateWeaponFire() PURE_VIRTUAL(ABaseWeapon::SimulateWeaponFire, return 0.f; )
-	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)	
-	virtual void ReloadWeapon() PURE_VIRTUAL(ABaseWeapon::ReloadWeapon,)
+	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)
 
 	/////////////////////////////////
 	// IWeapon overrides
@@ -95,13 +77,13 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ACharacter* GetOwningPawn() const override { return OwningPawn; }
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void BlueprintEquip(bool bEquipping);
-
 	UPROPERTY()
 	ACharacter* OwningPawn;
 	EWeaponState CurrentState;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
+	EWeaponType WeaponType = EWeaponType::Rifle;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
 	USphereComponent* WeaponRootComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
@@ -113,72 +95,58 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
 	USkeletalMeshComponent* SecondaryWeaponSkeletalMesh;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "ReloadAnim == nullptr", EditConditionHides))
 	float ReloadDurationIfNoAnim = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	UAnimMontage* ReloadAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	UAnimMontage* EquipAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	bool bLoopedFireAnim = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EALSOverlayState WeaponOverlayState;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	float FireWarmUpTime = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float AI_UseRange = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	float TimeBetweenShots = .2f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee && FireWarmUpTime > 0", EditConditionHides))
+	USoundCue* FireWarmupSound;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	USoundCue* EquipSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
-	USoundCue* ReloadSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
-	USoundCue* OutOfAmmoSound;
-
-
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera")
+	
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "FireCameraShake == nullptr || WeaponType != EWeaponType::Melee", EditConditionHides))
 	float CameraShakeScale = 1.f;
 
 	UPROPERTY(Transient)
 	float LastFireTime;
-	
-private:
-	void HandleFiring();
-	void HandlePostBlendInFiring();
-	void OnBurstStarted();
-	void SetWeaponState(EWeaponState NewState);
-	void DetermineWeaponState();
-	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
-
-private:
-	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
-	
-	UPROPERTY()
-	UInventoryComponent* OwningInventory;
-	UPROPERTY()
-	FAmmoAmountChanged AmmoAmountChanged;
-	
-	UPROPERTY(Transient)
-	bool bPendingReload;
-	UPROPERTY(Transient)
-	bool bPendingEquip;
 	UPROPERTY(Transient)
 	bool bRefiring;
 	UPROPERTY(Transient)
 	bool bIsEquipped;
 	UPROPERTY(Transient)
 	bool bWantsToFire;
+	UPROPERTY(Transient)
+	bool bPendingEquip;
 	
+private:
+	void OnBurstStarted();
+	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
+	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
+	
+	UPROPERTY()
+	UInventoryComponent* OwningInventory;
+	UPROPERTY(Transient)
+	UAudioComponent* FireStartAudio;	
 	UPROPERTY(Transient)
 	int32 BurstCounter;
 
 	FTimerHandle TimerHandle_OnEquipFinished;
-	FTimerHandle TimerHandle_StopReload;
-	FTimerHandle TimerHandle_ReloadWeapon;
 	FTimerHandle TimerHandle_HandleFiring;
 	FTimerHandle TimerHandle_FireBlendIn;
 };

@@ -16,15 +16,15 @@ class GENESTEALER_API AHitscanWeapon : public ABaseRangedWeapon
 protected:
 	// BaseRangedWeapon overrides
 	virtual void FireWeapon() override;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* TrailFX;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "TrailFX != nullptr", EditConditionHides))
 	FName TrailTargetParam = "ShockBeamEnd";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
-	UCurveFloat* DegreesCurve;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FlyBySound;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FlyBySound != nullptr", EditConditionHides))
+	UCurveFloat* DegreesCurve;
 	
 private:
 	void Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, FVector& ShootDirection);

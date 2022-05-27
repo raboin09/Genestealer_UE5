@@ -16,6 +16,8 @@ class GENESTEALER_API AMeleeWeapon : public ABaseWeapon, public IActivatable
 	GENERATED_BODY()
 	
 public:
+	AMeleeWeapon() { WeaponType = EWeaponType::Melee; }
+	
 	///////////////////////////////////////////
 	/// IActivatable code
 	///////////////////////////////////////////
@@ -28,16 +30,6 @@ protected:
 	///////////////////////////////////////////
 	/// ABaseWeapon code
 	///////////////////////////////////////////
-	FORCEINLINE virtual int32 GetCurrentAmmo() override { return 0.f; };
-	FORCEINLINE virtual int32 GetMaxAmmo() override { return 0.f; }
-	FORCEINLINE virtual bool CanReload() override { return false; }
-	FORCEINLINE virtual void GiveAmmo(int32 AddAmount) override {}
-	FORCEINLINE virtual void BroadcastAmmoUsage() override {}
-	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override{ return 1.f; }
-	FORCEINLINE virtual int32 GetAmmoPerClip() override { return 1.f; }
-	FORCEINLINE virtual bool HasInfiniteAmmo() override { return true; }
-	FORCEINLINE virtual bool HasInfiniteClip() override { return true; }
-	FORCEINLINE virtual void ReloadWeapon() override {}
 	FORCEINLINE virtual void FireWeapon() override {}
 	FORCEINLINE virtual void StopSimulatingWeaponFire() override {}
 	FORCEINLINE virtual float SimulateWeaponFire() override { return 0.f; }

@@ -34,6 +34,25 @@ void ABaseRangedWeapon::BeginPlay()
 	BroadcastAmmoUsage();
 }
 
+void ABaseRangedWeapon::OnEquipFinished()
+{
+	Super::OnEquipFinished();
+	if (OwningPawn)
+	{
+		if (GetCurrentAmmoInClip() <= 0 && CanReload())
+		{
+			StartReload();
+		}
+	}
+	BroadcastAmmoUsage();
+}
+
+void ABaseRangedWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
+{
+	Super::OnEquip(LastWeapon);
+	BroadcastAmmoUsage();
+}
+
 float ABaseRangedWeapon::SimulateWeaponFire()
 {
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
@@ -75,13 +94,37 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 		PlayWeaponSound(FireSound);
 	}
 	PlayCameraShake();
-
 	bSecondaryWeaponsTurn = !bSecondaryWeaponsTurn;
 	if(PlayData.MontageToPlay)
 	{
 		return PlayData.MontageToPlay->BlendIn.GetBlendTime();
 	}
 	return 0.f;
+}
+
+void ABaseRangedWeapon::StopSimulatingWeaponFire()
+{
+	if(FireFXSystem != nullptr)
+	{
+		FireFXSystem->DeactivateImmediate();
+		FireFXSystem = nullptr;
+	}
+
+	if (bLoopedFireAnim && CurrentMontage)
+	{
+		StopWeaponAnimation(CurrentMontage);
+		CurrentMontage = nullptr;
+	}
+
+	if (FireAC)
+	{
+		FireAC->FadeOut(0.1f, 0.0f);
+		FireAC = nullptr;
+
+		PlayWeaponSound(FireFinishSound);
+	}
+	
+	CurrentFiringSpread = 0.f;
 }
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
@@ -91,9 +134,25 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 } 
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
-{	
+{
 	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
-	// TODO handle Niagara collisions
+
+	if(NiagaraFX && bAdjustVFXScaleOnSpawn)
+	{
+		const FVector& AimDirection = GetAdjustedAim();
+		const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);	
+		const FVector ShootDirection = GetShootDirection(AimDirection);
+		const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
+		const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, true);
+		
+		FVector AdjustedScale = MaxVFXScaleAdjust;
+		if(Impact.bBlockingHit)
+		{
+			AdjustedScale.Z = UKismetMathLibrary::Vector_Distance(StartTrace, Impact.Location);
+			AdjustedScale.Z /= UKismetMathLibrary::Max(ParticleMeshZ, 1);
+		}
+		NiagaraFX->SetNiagaraVariableVec3("User.SpawnScale", AdjustedScale);
+	}
 	return NiagaraFX;
 }
 
@@ -167,34 +226,6 @@ bool ABaseRangedWeapon::Internal_HasRightInput() const
 	return false;
 }
 
-void ABaseRangedWeapon::StopSimulatingWeaponFire()
-{
-	if (bLoopedMuzzleFX)
-	{
-		if( FireFXSystem != nullptr )
-		{
-			FireFXSystem->DeactivateImmediate();
-			FireFXSystem = nullptr;
-		}
-	}
-
-	if (bLoopedFireAnim && CurrentMontage)
-	{
-		StopWeaponAnimation(CurrentMontage);
-		CurrentMontage = nullptr;
-	}
-
-	if (FireAC)
-	{
-		FireAC->FadeOut(0.1f, 0.0f);
-		FireAC = nullptr;
-
-		PlayWeaponSound(FireFinishSound);
-	}
-	
-	CurrentFiringSpread = 0.f;
-}
-
 void ABaseRangedWeapon::ReloadWeapon()
 {
 	int32 ClipDelta = FMath::Min(AmmoPerClip - CurrentAmmoInClip, CurrentAmmo - CurrentAmmoInClip);
@@ -216,6 +247,28 @@ void ABaseRangedWeapon::ReloadWeapon()
 	BroadcastAmmoUsage();
 }
 
+void ABaseRangedWeapon::StopReload()
+{
+	if (CurrentState == EWeaponState::Reloading)
+	{
+		bPendingReload = false;
+		CurrentState = EWeaponState::Idle;
+		DetermineWeaponState();
+		StopWeaponAnimation(ReloadAnim);
+	}
+	BroadcastAmmoUsage();
+}
+
+void ABaseRangedWeapon::StopFire()
+{
+	Super::StopFire();
+	if(ReloadAudio)
+	{
+		ReloadAudio->Deactivate();
+		ReloadAudio = nullptr;
+	}
+}
+
 void ABaseRangedWeapon::GiveAmmo(int AddAmount)
 {
 	const int32 MissingAmmo = FMath::Max(0, MaxAmmo - CurrentAmmo);
@@ -232,27 +285,44 @@ void ABaseRangedWeapon::GiveAmmo(int AddAmount)
 
 void ABaseRangedWeapon::UseAmmo()
 {
-	if (!HasInfiniteAmmo())
+	if (!HasInfiniteClip())
 	{
 		CurrentAmmoInClip--;
 	}
 
-	if (!HasInfiniteAmmo() && !HasInfiniteClip())
+	if (!HasInfiniteAmmo())
 	{
 		CurrentAmmo--;
 	}
-	Super::UseAmmo();
+	BroadcastAmmoUsage();
 }
 
 void ABaseRangedWeapon::OnUnEquip()
 {
 	Super::OnUnEquip();
+	if (bPendingReload)
+	{
+		StopWeaponAnimation(ReloadAnim);
+		bPendingReload = false;
+
+		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
+		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
+	}
 	if(!FireFXSystem)
 	{
 		return;
 	}
 
 	FireFXSystem->DeactivateImmediate();
+}
+
+bool ABaseRangedWeapon::CanFire() const
+{
+	if(bPendingReload)
+	{
+		return false;
+	}
+	return Super::CanFire();
 }
 
 FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact)
@@ -264,7 +334,7 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 		{
 			const FVector StartTrace = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
 			const FVector EndTrace = Impact.ImpactPoint - Impact.ImpactNormal * 10.0f;
-			FHitResult Hit = WeaponTrace(StartTrace, EndTrace);
+			FHitResult Hit = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
 			UseImpact = Hit;
 			return UseImpact;
 		}
@@ -274,7 +344,7 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 
 FVector ABaseRangedWeapon::GetRaycastOriginLocation()
 {
-	if(bRaycastFromWeapon)
+	if(bRaycastFromWeaponMeshInsteadOfPawnMesh)
 	{
 		if(!NextFiringMesh)
 		{
@@ -303,12 +373,19 @@ FVector ABaseRangedWeapon::GetRaycastOriginLocation()
 
 FVector ABaseRangedWeapon::GetShootDirection(const FVector& AimDirection)
 {
-	const int32 RandomSeed = FMath::Rand();
-	const FRandomStream WeaponRandomStream(RandomSeed);
-	const float CurrentSpread = GetCurrentSpread();
-	const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
-	CurrentFiringSpread = FMath::Min(FiringSpreadMax, CurrentFiringSpread + FiringSpreadIncrement);
-	return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
+	if(bHasFiringSpread)
+	{
+		const int32 RandomSeed = FMath::Rand();
+		const FRandomStream WeaponRandomStream(RandomSeed);
+		const float CurrentSpread = GetCurrentSpread();
+		const float ConeHalfAngle = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+		CurrentFiringSpread = FMath::Min(FiringSpreadMax, CurrentFiringSpread + FiringSpreadIncrement);
+		return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
+	}
+		const int32 RandomSeed = FMath::Rand();
+		const FRandomStream WeaponRandomStream(RandomSeed);
+		const float ConeHalfAngle = FMath::DegreesToRadians(0.f);
+		return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
 }
 
 float ABaseRangedWeapon::GetCurrentSpread() const
@@ -331,10 +408,19 @@ float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
 	return FinalSpread / FiringSpreadMax;
 }
 
+bool ABaseRangedWeapon::ShouldLineTrace() const
+{
+	if(GetInstigator() && GetInstigator()->Controller)
+	{
+		// Not a line trace if this is a player
+		return !GetInstigator()->Controller->IsA(ABasePlayerController::StaticClass());
+	}
+	return true;
+}
 
 FVector ABaseRangedWeapon::GetRaycastOriginRotation()
 {
-	if(bRaycastFromWeapon)
+	if(bRaycastFromWeaponMeshInsteadOfPawnMesh)
 	{
 		if(!NextFiringMesh)
 		{
@@ -392,7 +478,7 @@ FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirect
 	AAIController* AIPC = GetInstigator() ? Cast<AAIController>(GetInstigator()->Controller) : nullptr;
 	FVector OutStartTrace = FVector::ZeroVector;
 
-	if(!bInitialRaycastFromController)
+	if(!bAimOriginIsPlayerEyesInsteadOfWeapon)
 	{
 		OutStartTrace = GetRaycastOriginLocation();
 	}
@@ -418,7 +504,7 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 		{
 			const FVector StartTrace = Impact.ImpactPoint + Impact.ImpactNormal * 10.0f;
 			const FVector EndTrace = Impact.ImpactPoint - Impact.ImpactNormal * 10.0f;
-			FHitResult Hit = WeaponTrace(StartTrace, EndTrace);
+			FHitResult Hit = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
 			UseImpact = Hit;
 			return UseImpact;
 		}
@@ -426,19 +512,95 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 	return Impact;
 }
 
-FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace) const
+FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace) const
 {
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
 	TraceParams.bReturnPhysicalMaterial = true;
 	FHitResult Hit(ForceInit);
 	TArray<AActor*> IgnoreActors; 
 	IgnoreActors.Add(GetInstigator());
-	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+	if(bLineTrace)
+	{
+		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+	} else
+	{
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
+	}
 	return Hit;
+}
+
+void ABaseRangedWeapon::StartReload()
+{
+	if (CanReload())
+	{
+		bPendingReload = true;
+		DetermineWeaponState();
+		if(ReloadAnim)
+		{
+			FAnimMontagePlayData PlayData;
+			PlayData.MontageToPlay = ReloadAnim;
+			float AnimDuration = PlayWeaponAnimation(PlayData);	
+			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, AnimDuration, false);
+			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
+		} else
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, ReloadDurationIfNoAnim, false);
+			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, ReloadDurationIfNoAnim - .1f, false);
+		}
+
+		ReloadAudio = PlayWeaponSound(ReloadSound);
+	}
 }
 
 void ABaseRangedWeapon::BroadcastAmmoUsage()
 {
 	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / AmmoPerClip) * AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % AmmoPerClip;
 	OnAmmoAmountChanged().Broadcast(CurrentAmmoInClip, AmmoPerClip, TotalAmmo);
+}
+
+void ABaseRangedWeapon::HandleFiring()
+{
+	if (GetCurrentAmmo() == 0 && !bRefiring)
+	{
+		PlayWeaponSound(OutOfAmmoSound);
+	}	
+	else if (GetCurrentAmmoInClip() <= 0 && CanReload())
+	{
+		StartReload();
+	} else
+	{
+		Super::HandleFiring();
+		UseAmmo();
+	}
+}
+
+void ABaseRangedWeapon::DetermineWeaponState()
+{
+	EWeaponState NewState = EWeaponState::Idle;
+	if (bIsEquipped)
+	{
+		if(bPendingReload)
+		{
+			if(CanReload() == false )
+			{
+				NewState = CurrentState;
+			}
+			else
+			{
+				NewState = EWeaponState::Reloading;
+			}
+		}		
+		else
+		{
+			if(bWantsToFire && CanFire())
+			{
+				NewState = EWeaponState::Firing;	
+			}
+		}
+	}
+	else if (bPendingEquip)
+	{
+		NewState = EWeaponState::Equipping;
+	}
+	SetWeaponState(NewState);
 }

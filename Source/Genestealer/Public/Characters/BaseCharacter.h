@@ -161,7 +161,8 @@ private:
 	
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
-
+	
+	FORCEINLINE bool Internal_CanGetInCover() { return !GetTagContainer().HasTag(TAG_STATE_CANNOT_GET_IN_COVER); }
 	void Internal_CoverDodgeTryStart();
 	void Internal_CoverDodgeTryEnd();
 

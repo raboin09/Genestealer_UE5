@@ -15,9 +15,10 @@ void AHitscanWeapon::FireWeapon()
 {
 	const FVector& AimDirection = GetAdjustedAim();
 	const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);
+	
 	FVector ShootDirection = GetShootDirection(AimDirection);
 	const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
-	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace);
+	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
 	if(TrailParticle)
 	{
 		TrailParticle->DeactivateImmediate();
@@ -30,7 +31,6 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 	const FVector EndTrace = Origin + ShootDirection * TraceRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
 	Internal_SpawnTrailEffect(EndPoint);
-	Internal_SpawnFlybySound(Impact, ShootDirection);
 	if(!Impact.GetActor())
 	{
 		return;
