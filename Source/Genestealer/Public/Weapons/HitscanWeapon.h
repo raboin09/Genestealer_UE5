@@ -16,7 +16,9 @@ class GENESTEALER_API AHitscanWeapon : public ABaseRangedWeapon
 protected:
 	// BaseRangedWeapon overrides
 	virtual void FireWeapon() override;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	int32 NumberOfShotsPerFire = 1;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	UFXSystemAsset* TrailFX;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "TrailFX != nullptr", EditConditionHides))
@@ -27,12 +29,12 @@ protected:
 	UCurveFloat* DegreesCurve;
 	
 private:
-	void Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, FVector& ShootDirection);
+	void Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, const FVector& ShootDirection);
 	void Internal_SpawnTrailEffect(const FVector& EndPoint);
-	void Internal_SpawnFlybySound(const FHitResult& Impact, FVector& ShootDir);
+	void Internal_SpawnFlybySound(const FHitResult& Impact, FVector& ShootDir) const;
 	void Internal_PlayWeaponMissEffectFX(const FHitResult& Impact);
 
 	UPROPERTY()
-	UFXSystemComponent* TrailParticle; 
+	TArray<UFXSystemComponent*> TrailParticles; 
 	
 };

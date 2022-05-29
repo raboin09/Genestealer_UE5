@@ -162,7 +162,7 @@ void ABaseWeapon::StopFire()
 		bWantsToFire = false;
 		if(FireStartAudio)
 		{
-			FireStartAudio->Deactivate();
+			FireStartAudio->FadeOut(.3f, 0.f);
 			FireStartAudio = nullptr;
 		}
 		DetermineWeaponState();

@@ -25,6 +25,7 @@ public:
 	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return CurrentAffiliation; }
 	FORCEINLINE virtual UBehaviorTree* GetAIBehavior() const override { return InstancedBehaviorTree ? InstancedBehaviorTree : DefaultBehaviorTree; }
 	FORCEINLINE virtual FPlayerInCombatChanged& OnCombatStateChanged() override { return PlayerInCombatChanged; }
+	FORCEINLINE virtual bool IsAIFiring() const override { return IsFiring(); }
 	virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const override;
 	virtual void FireWeapon(bool bStartFiring) override;
 	virtual void Aim(bool bStartAiming) override;

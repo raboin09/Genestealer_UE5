@@ -37,6 +37,7 @@ public:
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	virtual void StartWeaponRagdoll() override;
+	FORCEINLINE virtual bool ShouldForceAimOnFire() const override { return bForceAimOnFire; }
 	FORCEINLINE virtual EWeaponType GetWeaponType() const override { return WeaponType; }
 	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; }
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
@@ -45,7 +46,7 @@ public:
 	virtual bool CanReload() override PURE_VIRTUAL(ABaseWeapon::CanReload, return false;)
 	virtual bool CheckChildFireCondition() PURE_VIRTUAL(ABaseWeapon::CheckChildFireCondition, return false;)
 protected:
-
+	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void HandleFiring();
@@ -108,6 +109,8 @@ protected:
 	float FireWarmUpTime = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float AI_UseRange = 500.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bForceAimOnFire = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	float TimeBetweenShots = .2f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
@@ -120,7 +123,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "FireCameraShake == nullptr || WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "FireCameraShake != nullptr || WeaponType != EWeaponType::Melee", EditConditionHides))
 	float CameraShakeScale = 1.f;
 
 	UPROPERTY(Transient)

@@ -64,6 +64,7 @@ public:
 	FORCEINLINE virtual UHealthComponent* GetHealthComponent() const override { return HealthComponent; }
 	FORCEINLINE virtual FVector GetHeadLocation() const override { return GetMesh()->GetSocketLocation("head"); }
 	FORCEINLINE virtual FVector GetChestLocation() const override { return GetMesh()->GetSocketLocation("spine_02");}
+	FORCEINLINE virtual FVector GetPelvisLocation() const override { return GetMesh()->GetSocketLocation("pelvis");}
 
 	////////////////////////////////
 	/// ITaggable override
@@ -86,17 +87,8 @@ public:
 	bool IsInCombat();
 	void SetInCombat(bool bInNewState, AActor* DamageCauser);
 
-	////////////////////////////////
-	/// ABaseCharacter Input
-	////////////////////////////////
-	void Input_CoverAction();
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnDeath();
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_Aim();	
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_StopAiming();
 	
 protected:
 	////////////////////////////
@@ -132,11 +124,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	EAffiliation CurrentAffiliation;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
-	TSubclassOf<AActor> StartingPistolClass;
+	TSubclassOf<AActor> StartingPrimaryWeaponClass;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
-	TSubclassOf<AActor> StartingRifleClass;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
-	TSubclassOf<AActor> StartingMeleeClass;
+	TSubclassOf<AActor> StartingAlternateWeaponClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
 	
@@ -176,6 +166,9 @@ private:
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 protected:
 	
+	////////////////////////////////
+	/// ABaseCharacter Input
+	////////////////////////////////
 	virtual bool GL_IsForwardMovementAllowed(float Value) override;
 	virtual bool GL_IsRightMovementAllowed(float Value) override;
 	virtual bool GL_IsJumpAllowed(bool bValue) override;

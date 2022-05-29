@@ -3,6 +3,7 @@
 #include "Characters/BaseCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Character/Animation/ALSPlayerCameraBehavior.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Characters/Animation/BaseAnimInstance.h"
@@ -131,7 +132,7 @@ void ABaseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	if(InventoryComponent)
 	{
-		InventoryComponent->SpawnInventoryActors(StartingPistolClass, StartingRifleClass);
+		InventoryComponent->SpawnInventoryActors(StartingPrimaryWeaponClass, StartingAlternateWeaponClass);
 	}
 }
 
@@ -181,7 +182,7 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 		AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
 		SkeletalMesh->SetVisibility(false);
 	}
-	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::KeepRelativeTransform);
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
 	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())
 	{
@@ -398,8 +399,11 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			CurrentCoverPoint->StartCoverFire();
 		} else
 		{
-			SetRotationMode(EALSRotationMode::Aiming, true, false);
 			InventoryComponent->StartFiring();
+			if(InventoryComponent->DoesCurrentWeaponForceAimOnFire())
+			{
+				SetRotationMode(EALSRotationMode::Aiming, true, false);
+			}
 		}
 		
 		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
@@ -426,6 +430,41 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
+		}
+	}
+}
+
+void ABaseCharacter::AimAction_Implementation(bool bValue)
+{
+	if(bValue)
+	{
+		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+		if(IsInCover() && CurrentCoverPoint)
+		{
+			CurrentCoverPoint->StartCoverAim();
+		} else
+		{
+			SetRotationMode(EALSRotationMode::Aiming, true, true);
+		}
+	} else
+	{
+		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+		if(IsFiring() && !IsInCover())
+		{
+			SetRotationMode(EALSRotationMode::Aiming, true, true);
+			if(CameraBehavior)
+			{
+				CameraBehavior->SetRotationMode(EALSRotationMode::LookingDirection);
+			}
+			return;
+		}
+		
+		if(IsInCover() && CurrentCoverPoint)
+		{
+			CurrentCoverPoint->StopCoverAim();
+		} else
+		{
+			SetRotationMode(EALSRotationMode::LookingDirection);
 		}
 	}
 }
@@ -483,38 +522,6 @@ void ABaseCharacter::Internal_CoverDodgeTryEnd()
 		CurrentCoverPoint->VacateCover(this);	
 	}
 	CurrentCoverPoint = nullptr;
-}
-
-void ABaseCharacter::AimAction_Implementation(bool bValue)
-{
-	if(bValue)
-	{
-		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
-		if(IsInCover() && CurrentCoverPoint)
-		{
-			CurrentCoverPoint->StartCoverAim();
-		} else
-		{
-			SetRotationMode(EALSRotationMode::Aiming);
-		}
-		K2_Aim();
-	} else
-	{
-		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
-		if(IsFiring())
-		{
-			return;
-		}
-		
-		if(IsInCover() && CurrentCoverPoint)
-		{
-			CurrentCoverPoint->StopCoverAim();
-		} else
-		{
-			SetRotationMode(EALSRotationMode::LookingDirection);
-		}
-		K2_StopAiming();
-	}
 }
 
 void ABaseCharacter::PlayerForwardMovementInput(float Value)

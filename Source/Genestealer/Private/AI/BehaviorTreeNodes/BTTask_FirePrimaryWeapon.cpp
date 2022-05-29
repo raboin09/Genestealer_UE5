@@ -23,7 +23,10 @@ EBTNodeResult::Type UBTTask_FireSelectedWeapon::ExecuteTask(UBehaviorTreeCompone
 		// FRotator Rot = UKismetMathLibrary::FindLookAtRotation(CurrPawn->GetActorLocation(), SelectedActor->GetActorLocation());
 		// CurrPawn->SetActorRotation({SelectedActor->GetActorRotation().Pitch, Rot.Yaw, SelectedActor->GetActorRotation().Roll});
 		// AIPawn->Aim(true);
-		AIPawn->FireWeapon(true);
+		if(!AIPawn->IsAIFiring())
+		{
+			AIPawn->FireWeapon(true);
+		}
 		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;

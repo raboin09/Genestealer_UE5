@@ -118,7 +118,7 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 
 	if (FireAC)
 	{
-		FireAC->FadeOut(0.1f, 0.0f);
+		FireAC->FadeOut(0.3f, 0.0f);
 		FireAC = nullptr;
 
 		PlayWeaponSound(FireFinishSound);
@@ -145,13 +145,13 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
 		const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
 		const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, true);
 		
-		FVector AdjustedScale = MaxVFXScaleAdjust;
+		FVector MaxAdjustedScale = MaxVFXScaleAdjust;
 		if(Impact.bBlockingHit)
 		{
-			AdjustedScale.Z = UKismetMathLibrary::Vector_Distance(StartTrace, Impact.Location);
-			AdjustedScale.Z /= UKismetMathLibrary::Max(ParticleMeshZ, 1);
+			MaxAdjustedScale.Z = UKismetMathLibrary::Vector_Distance(StartTrace, Impact.Location);
+			MaxAdjustedScale.Z /= UKismetMathLibrary::Max(ParticleMeshZ, 1);
 		}
-		NiagaraFX->SetNiagaraVariableVec3("User.SpawnScale", AdjustedScale);
+		NiagaraFX->SetNiagaraVariableVec3(MaxSpawnScaleName, MaxAdjustedScale);
 	}
 	return NiagaraFX;
 }
@@ -519,12 +519,13 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	FHitResult Hit(ForceInit);
 	TArray<AActor*> IgnoreActors; 
 	IgnoreActors.Add(GetInstigator());
+	auto DrawDebugTrace = EDrawDebugTrace::None;
 	if(bLineTrace)
 	{
-		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	} else
 	{
-		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
 	}
 	return Hit;
 }
@@ -539,7 +540,7 @@ void ABaseRangedWeapon::StartReload()
 		{
 			FAnimMontagePlayData PlayData;
 			PlayData.MontageToPlay = ReloadAnim;
-			float AnimDuration = PlayWeaponAnimation(PlayData);	
+			const float AnimDuration = PlayWeaponAnimation(PlayData);	
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, AnimDuration, false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		} else

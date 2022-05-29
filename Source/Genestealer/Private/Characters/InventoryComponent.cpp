@@ -71,6 +71,15 @@ void UInventoryComponent::DestroyInventory()
 	CurrentWeapon = nullptr;
 }
 
+bool UInventoryComponent::DoesCurrentWeaponForceAimOnFire() const
+{
+	if(CurrentWeapon)
+	{
+		return CurrentWeapon->ShouldForceAimOnFire();
+	}
+	return false;
+}
+
 TSubclassOf<AActor> UInventoryComponent::GetPistolClass() const
 {
 	if(AlternateWeapon && AlternateWeapon.GetObject() && AlternateWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))

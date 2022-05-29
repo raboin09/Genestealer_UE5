@@ -36,4 +36,5 @@ public:
 	virtual UHealthComponent* GetHealthComponent() const PURE_VIRTUAL(IAttackable::GetHealthComponent, return nullptr;)
 	virtual FVector GetHeadLocation() const PURE_VIRTUAL(IAttackable::GetHeadLocation, return FVector::ZeroVector;)
 	virtual FVector GetChestLocation() const PURE_VIRTUAL(IAttackable::GetChestLocation, return FVector::ZeroVector;)
+	virtual FVector GetPelvisLocation() const PURE_VIRTUAL(IAttackable::GetPelvisLocation, return FVector::ZeroVector;)
 };

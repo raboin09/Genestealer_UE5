@@ -24,7 +24,7 @@ public:
 	
 	void SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass);
 	void DestroyInventory();
-
+	bool DoesCurrentWeaponForceAimOnFire() const;
 	TSubclassOf<AActor> GetPistolClass() const;
 	TSubclassOf<AActor> GetRifleClass() const;
 	

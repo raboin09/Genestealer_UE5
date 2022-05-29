@@ -51,9 +51,6 @@ protected:
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace) const;
 
-	UFUNCTION(BlueprintImplementableEvent)
-    void DebugFire(FVector Origin, FVector End, FColor ColorToDraw);
-
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TraceRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
@@ -64,7 +61,6 @@ protected:
 	float FiringSpreadIncrement = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
 	float FiringSpreadMax = 10.f;
-
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	FName RaycastSourceSocketName = "Muzzle";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
@@ -92,6 +88,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "FireFXClass != nullptr", EditConditionHides))
 	bool bAdjustVFXScaleOnSpawn = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	FString MaxSpawnScaleName = "User.SpawnScaleMax";
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
 	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
 	float ParticleMeshZ = 33.f; 
@@ -115,7 +113,9 @@ protected:
 	UAnimMontage* CoverFireRightAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* CoverFireLeftAnim;
-	
+
+	UPROPERTY(Transient)
+	UNiagaraComponent* NiagaraFX;
 private:
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
@@ -136,8 +136,6 @@ private:
 	UFXSystemComponent* FireFXSystem;
 	UPROPERTY(Transient)
 	UParticleSystemComponent* ParticleFX;
-	UPROPERTY(Transient)
-	UNiagaraComponent* NiagaraFX;
 	UPROPERTY(Transient)
 	UAudioComponent* ReloadAudio;
 	UPROPERTY(Transient)
@@ -160,10 +158,10 @@ private:
 	FTimerHandle TimerHandle_ReloadWeapon;
 public:
 	FORCEINLINE virtual bool CheckChildFireCondition() override { return GetCurrentAmmoInClip() > 0 || HasInfiniteClip(); }
-	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return CurrentAmmo; }
-	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return CurrentAmmoInClip; }
-	FORCEINLINE virtual int32 GetMaxAmmo() override { return MaxAmmo; }
-	FORCEINLINE virtual int32 GetAmmoPerClip() override { return AmmoPerClip; }
+	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return HasInfiniteAmmo() ? 1 : CurrentAmmo; }
+	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
+	FORCEINLINE virtual int32 GetMaxAmmo() override { return HasInfiniteAmmo() ? 1 : MaxAmmo; }
+	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
 	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual void OnBurstFinished() override { Super::OnBurstFinished(); }

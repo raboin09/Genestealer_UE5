@@ -13,20 +13,27 @@
 
 void AHitscanWeapon::FireWeapon()
 {
+	for(UFXSystemComponent* TrailParticle : TrailParticles)
+	{
+		if(TrailParticle)
+		{
+			TrailParticle->DeactivateImmediate();
+		}
+	}
+	
 	const FVector& AimDirection = GetAdjustedAim();
 	const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);
-	
-	FVector ShootDirection = GetShootDirection(AimDirection);
-	const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
-	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
-	if(TrailParticle)
+
+	for(int i=0; i<NumberOfShotsPerFire; i++)
 	{
-		TrailParticle->DeactivateImmediate();
+		const FVector ShootDirection = GetShootDirection(AimDirection);
+		const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
+		const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
+		Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
 	}
-	Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
 }
 
-void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, FVector& ShootDirection)
+void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, const FVector& ShootDirection)
 {
 	const FVector EndTrace = Origin + ShootDirection * TraceRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
@@ -35,9 +42,8 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 	{
 		return;
 	}
-	
-	const UClass* HitActorClass = Impact.GetActor()->GetClass();
-	if(!HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+
+	if(const UClass* HitActorClass = Impact.GetActor()->GetClass(); !HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
 	{
 		Internal_PlayWeaponMissEffectFX(Impact);
 	} else
@@ -51,23 +57,25 @@ void AHitscanWeapon::Internal_SpawnTrailEffect(const FVector& EndPoint)
 	if (TrailFX)
 	{
 		const FVector Origin = GetRaycastOriginLocation();
-		FRotator EndRotation = UKismetMathLibrary::FindLookAtRotation(Origin, EndPoint);
+		const FRotator EndRotation = UKismetMathLibrary::FindLookAtRotation(Origin, EndPoint);
+		UFXSystemComponent* TempTrailParticle = nullptr;
 		if(TrailFX->IsA(UParticleSystem::StaticClass()))
 		{
-			TrailParticle = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(TrailFX), Origin, EndRotation);
+			TempTrailParticle = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(TrailFX), Origin, EndRotation);
 		} else if(TrailFX->IsA(UNiagaraSystem::StaticClass()))
 		{
-			TrailParticle = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Cast<UNiagaraSystem>(TrailFX), Origin, EndRotation);
+			TempTrailParticle = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Cast<UNiagaraSystem>(TrailFX), Origin, EndRotation);
 		}
 		
-		if(TrailParticle)
+		if(TempTrailParticle)
 		{
-			TrailParticle->SetVectorParameter(TrailTargetParam, EndPoint);	
+			TempTrailParticle->SetVectorParameter(TrailTargetParam, EndPoint);
+			TrailParticles.Add(TempTrailParticle);
 		}
 	}
 }
 
-void AHitscanWeapon::Internal_SpawnFlybySound(const FHitResult& Impact, FVector& ShootDir)
+void AHitscanWeapon::Internal_SpawnFlybySound(const FHitResult& Impact, FVector& ShootDir) const
 {
 	// Translated to C++ from here https://www.youtube.com/watch?v=w7zGmwuRX_Q
 	ABasePlayerCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(this);
