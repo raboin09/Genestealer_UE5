@@ -51,7 +51,8 @@ public:
 	
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
 	virtual void OnLeaveInventory() PURE_VIRTUAL(IWeapon::OnLeaveInventory,);
-	
+
+	virtual bool IsWeaponOnCooldown() const PURE_VIRTUAL(IWeapon::IsWeaponOnCooldown, return false;);
 	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) PURE_VIRTUAL(IWeapon::OnEquip,);
 	virtual void OnEquipFinished() PURE_VIRTUAL(IWeapon::OnEquipFinished,);
 	virtual void OnUnEquip() PURE_VIRTUAL(IWeapon::OnUnEquip,);

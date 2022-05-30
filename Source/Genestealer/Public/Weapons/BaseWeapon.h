@@ -37,6 +37,7 @@ public:
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
 	virtual void StartWeaponRagdoll() override;
+	virtual bool IsWeaponOnCooldown() const override;
 	FORCEINLINE virtual bool ShouldForceAimOnFire() const override { return bForceAimOnFire; }
 	FORCEINLINE virtual EWeaponType GetWeaponType() const override { return WeaponType; }
 	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; }
@@ -60,7 +61,6 @@ protected:
 	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	virtual void OnLeaveInventory() override;
 	virtual void PlayCameraShake();
-	virtual bool IsWeaponOnCooldown() const;
 	virtual void DetermineWeaponState();
 	
 	virtual void FireWeapon() PURE_VIRTUAL(ABaseWeapon::FireWeapon,);
@@ -111,7 +111,7 @@ protected:
 	float AI_UseRange = 500.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bForceAimOnFire = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TimeBetweenShots = .2f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
@@ -136,6 +136,13 @@ protected:
 	bool bWantsToFire;
 	UPROPERTY(Transient)
 	bool bPendingEquip;
+
+	UPROPERTY(Transient)
+	bool bDeactivateWindowOccurred = true;
+	UPROPERTY(Transient)
+	float BlockAttacksUntil;
+	
+	FTimerHandle TimerHandle_HandleFiring;
 	
 private:
 	void OnBurstStarted();
@@ -150,6 +157,5 @@ private:
 	int32 BurstCounter;
 
 	FTimerHandle TimerHandle_OnEquipFinished;
-	FTimerHandle TimerHandle_HandleFiring;
 	FTimerHandle TimerHandle_FireBlendIn;
 };

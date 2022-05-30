@@ -76,7 +76,11 @@ enum class EALSOverlayState : uint8
 	Torch,
 	Binoculars,
 	Box,
-	Barrel
+	Barrel,
+	HammerTwoHanded,
+	MiningLaser,
+	HipRifle,
+	MiningPick
 };
 
 /**

@@ -320,6 +320,18 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true), Category = "ALS|Character States")
 	bool Barrel_ = false;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true), Category = "ALS|Character States")
+	bool HammerTwoHanded_ = false;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true), Category = "ALS|Character States")
+	bool MiningLaser_ = false;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true), Category = "ALS|Character States")
+	bool HipRifle_ = false;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true), Category = "ALS|Character States")
+	bool MiningPick_ = false;
+
 public:
 	FALSOverlayState()
 	{
@@ -340,6 +352,10 @@ public:
 	const bool& Binoculars() const { return Binoculars_; }
 	const bool& Box() const { return Box_; }
 	const bool& Barrel() const { return Barrel_; }
+	const bool& HammerTwoHanded() const { return HammerTwoHanded_; }
+	const bool& MiningLaser() const { return HammerTwoHanded_; }
+	const bool& HipRifle() const { return HipRifle_; }
+	const bool& MiningPick() const { return MiningPick_; }
 
 	operator EALSOverlayState() const { return State; }
 
@@ -359,6 +375,10 @@ public:
 		Binoculars_ = State == EALSOverlayState::Binoculars;
 		Box_ = State == EALSOverlayState::Box;
 		Barrel_ = State == EALSOverlayState::Barrel;
+		HammerTwoHanded_ = State == EALSOverlayState::HammerTwoHanded;
+		MiningLaser_ = State == EALSOverlayState::MiningLaser;
+		HipRifle_ = State == EALSOverlayState::HipRifle;
+		MiningPick_ = State == EALSOverlayState::MiningPick;
 	}
 };
 

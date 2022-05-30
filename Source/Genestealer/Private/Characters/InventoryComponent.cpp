@@ -80,7 +80,7 @@ bool UInventoryComponent::DoesCurrentWeaponForceAimOnFire() const
 	return false;
 }
 
-TSubclassOf<AActor> UInventoryComponent::GetPistolClass() const
+TSubclassOf<AActor> UInventoryComponent::GetAlternateWeaponClass() const
 {
 	if(AlternateWeapon && AlternateWeapon.GetObject() && AlternateWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
 	{
@@ -89,7 +89,7 @@ TSubclassOf<AActor> UInventoryComponent::GetPistolClass() const
 	return nullptr;
 }
 
-TSubclassOf<AActor> UInventoryComponent::GetRifleClass() const
+TSubclassOf<AActor> UInventoryComponent::GetPrimaryWeaponClass() const
 {
 	if(PrimaryWeapon && PrimaryWeapon.GetObject() && PrimaryWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))
 	{

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LockOnComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "BasePlayerCharacter.generated.h"
 
@@ -16,4 +17,11 @@ class GENESTEALER_API ABasePlayerCharacter : public ABaseCharacter
 
 public:
 	ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer);
+protected:
+	virtual void GL_HandleFireAction(bool bValue) override;
+
+	UPROPERTY()
+	UTimelineComponent* LockOnInterpTimeline;
+	UPROPERTY(EditDefaultsOnly)
+	ULockOnComponent* LockOnComponent;
 };

@@ -170,19 +170,19 @@ void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWea
 	if(!NewWeapon)
 		return;
 	
-	if(NewWeapon->GetWeaponMesh() == nullptr)
-	{
-		// TODO handle bare handed weapon
-	} else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
-	{
-		AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
-		StaticMesh->SetVisibility(false);		
-	} else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
-	{
-		AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
-		SkeletalMesh->SetVisibility(false);
-	}
-	NewWeapon->GetWeaponMesh()->AttachToComponent(HeldObjectRoot, FAttachmentTransformRules::KeepRelativeTransform);
+	// if(NewWeapon->GetWeaponMesh() == nullptr)
+	// {
+	// 	// TODO handle bare handed weapon
+	// } else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
+	// {
+	// 	AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
+	// 	StaticMesh->SetVisibility(false);		
+	// } else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
+	// {
+	// 	AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
+	// 	SkeletalMesh->SetVisibility(false);
+	// }
+	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("VB RHS_ik_hand_gun"));
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
 	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())
 	{

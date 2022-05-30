@@ -74,6 +74,8 @@ private:
 	UPROPERTY()
 	UMeshComponent* MeshComponentRef;
 	UPROPERTY(Transient)
+	float MontageLengthInGameTime;
+	UPROPERTY(Transient)
 	bool bIsActive;
 	UPROPERTY(Transient)
 	TArray<AActor*> HitActors;
