@@ -260,6 +260,7 @@ void ABaseWeapon::HandleFiring()
 
 void ABaseWeapon::OnBurstStarted()
 {
+	K2_OnBurstStarted();
 	const float GameTime = GetWorld()->GetTimeSeconds();
 	if (IsWeaponOnCooldown())
 	{

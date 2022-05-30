@@ -21,6 +21,7 @@ void ULockOnComponent::BeginPlay()
 	{
 		return;
 	}
+	
 	FOnTimelineFloat CoverLerpFunction;
 	CoverLerpFunction.BindDynamic(this, &ULockOnComponent::Internal_CoverTransitionUpdate);
 	LockOnInterpTimeline->AddInterpFloat(LockOnTransitionCurve, CoverLerpFunction);
@@ -33,11 +34,16 @@ void ULockOnComponent::BeginPlay()
 
 void ULockOnComponent::InterpToBestTargetForMeleeAttack()
 {
+	if(AActor* SourceActor = GetOwner(); bUseControllerRotation)
+	{
+		SourceActor->SetActorRotation(Internal_GetControllerAndActorBlendedRotation(SourceActor));
+	}
+	
 	SelectedActor = Internal_TraceForTarget();
 	if(!SelectedActor)
 	{
 		return;
-	}
+	}	
 	TargetActorLocation = SelectedActor->GetActorLocation();
 	TargetActorRotation = GetOwner()->GetActorRotation();
 	Internal_StartInterpTransition();
@@ -75,13 +81,7 @@ void ULockOnComponent::Internal_CoverTransitionFinished()
 AActor* ULockOnComponent::Internal_TraceForTarget() const
 {
 	AActor* SourceActor = GetOwner();
-	APlayerController* PlayerController = nullptr;
-	if(APawn* PawnObj = Cast<APawn>(SourceActor))
-	{
-		PlayerController = Cast<APlayerController>(PawnObj->Controller);
-	}
-
-	if(!PlayerController)
+	if(!SourceActor)
 	{
 		return nullptr;
 	}
@@ -93,13 +93,26 @@ AActor* ULockOnComponent::Internal_TraceForTarget() const
 	TArray<AActor*> AlreadyHitActors;
 	for (int i = 0; i < NumCones; i++) {
 		float YawFinal = YawValueFirst + (DegreeIncrements * i);
-		FVector RotatedVector = SourceActor->GetActorForwardVector().RotateAngleAxis(YawFinal, FVector(0, 0, 1)) * ArcDistance;
-		FVector CharOwnerLocation = SourceActor->GetActorLocation() + TraceOffset;
-		CharOwnerLocation += TraceOffset;
-		FVector FinalVectorInput = RotatedVector + CharOwnerLocation;
+
+		FVector StartTrace;
+		FVector EndTrace;
+		
+		if(bUseControllerRotation)
+		{
+			StartTrace = SourceActor->GetActorLocation() + TraceOffset;
+			FRotator FinalRot = Internal_GetControllerAndActorBlendedRotation(SourceActor);
+			EndTrace = StartTrace + (FinalRot.Vector().RotateAngleAxis(YawFinal, FVector(0, 0, 1))) * ArcDistance;
+		} else
+		{
+			FVector RotatedVector = SourceActor->GetActorForwardVector().RotateAngleAxis(YawFinal, FVector(0, 0, 1)) * ArcDistance;
+			StartTrace = SourceActor->GetActorLocation() + TraceOffset;
+			EndTrace = RotatedVector + StartTrace;
+			StartTrace += TraceOffset;
+		}
+
 		TArray<TEnumAsByte <EObjectTypeQuery>> ObjectTypes;
 		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
-		UKismetSystemLibrary::SphereTraceMultiForObjects(this, CharOwnerLocation, FinalVectorInput, SweepRadius, ObjectTypes, false, { SourceActor }, bDrawDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None, TempHitResults, true);
+		UKismetSystemLibrary::SphereTraceMultiForObjects(this, StartTrace, EndTrace, SweepRadius, ObjectTypes, false, { SourceActor }, bDrawDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None, TempHitResults, true);
 		for (FHitResult HitResult : TempHitResults) {
 			if(UCombatUtils::AreActorsEnemies(SourceActor, HitResult.GetActor()))
 			{
@@ -118,4 +131,24 @@ AActor* ULockOnComponent::Internal_FindBestTargetFromActors(const TArray<FHitRes
 	}
 
 	return Cast<AActor>(PotentialHitResults[0].GetActor());
+}
+
+FRotator ULockOnComponent::Internal_GetControllerAndActorBlendedRotation(AActor* SourceActor) const
+{
+	APlayerController* PlayerController = nullptr;
+	if(const APawn* PawnObj = Cast<APawn>(SourceActor))
+	{
+		PlayerController = Cast<APlayerController>(PawnObj->Controller);
+	}
+
+	if(!PlayerController)
+	{
+		return SourceActor->GetActorRotation();
+	}
+	
+	const FRotator StartRot = SourceActor->GetActorRotation();		
+	FVector TempLoc;
+	FRotator TempRot;
+	PlayerController->GetPlayerViewPoint(TempLoc, TempRot);		
+	return FRotator(StartRot.Pitch, TempRot.Yaw, StartRot.Roll);
 }

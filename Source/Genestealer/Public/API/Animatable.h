@@ -16,6 +16,7 @@ struct FAnimMontagePlayData
 	FName MontageSection = NAME_None;
 	bool bShouldBlendOut = true;
 	bool bForcePlay = false;
+	bool bForceInPlace = false;
 	float PlayRate = 1.f;
 };
 

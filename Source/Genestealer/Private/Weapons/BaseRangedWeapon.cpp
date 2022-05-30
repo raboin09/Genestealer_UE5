@@ -106,7 +106,13 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 {
 	if(FireFXSystem != nullptr)
 	{
-		FireFXSystem->DeactivateImmediate();
+		if(bDeactivateVFXImmediately)
+		{
+			FireFXSystem->DeactivateImmediate();
+		} else
+		{
+			FireFXSystem->Deactivate();
+		}
 		FireFXSystem = nullptr;
 	}
 
@@ -512,7 +518,7 @@ FHitResult ABaseRangedWeapon::AdjustHitResultIfNoValidHitComponent(const FHitRes
 	return Impact;
 }
 
-FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace) const
+FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius) const
 {
 	FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
 	TraceParams.bReturnPhysicalMaterial = true;
@@ -525,7 +531,7 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	} else
 	{
-		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, 5.f, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, CircleRadius, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
 	}
 	return Hit;
 }

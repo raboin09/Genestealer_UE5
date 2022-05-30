@@ -2,13 +2,13 @@
 
 
 #include "Effects/BaseEffect.h"
-
-
-
+#include "NiagaraComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "API/Taggable.h"
 #include "Core/AudioManager.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Utils/CombatUtils.h"
@@ -20,6 +20,12 @@ ABaseEffect::ABaseEffect()
 	SetAutoDestroyWhenFinished(false);
 }
 
+void ABaseEffect::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	K2_OnDestroyEffect();
+	Super::EndPlay(EndPlayReason);
+}
+
 void ABaseEffect::K2_ActivateEffect_Implementation()
 {
 	check(false)
@@ -27,7 +33,10 @@ void ABaseEffect::K2_ActivateEffect_Implementation()
 
 void ABaseEffect::K2_OnDestroyEffect_Implementation()
 {
-	
+	if(EffectVFX)
+	{
+		EffectVFX->Deactivate();
+	}
 }
 
 void ABaseEffect::Internal_PlayEffectSound()
@@ -40,13 +49,36 @@ void ABaseEffect::Internal_PlayEffectSound()
 
 void ABaseEffect::Internal_PlayEffectParticleSystem()
 {
-	if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
+	if(!EffectDataObj || !EffectContext.ReceivingActor)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, CastedNiagaraSystem, GetActorLocation(), GetActorRotation());
+		UKismetSystemLibrary::PrintString(this, "Bad 1");
+		return;
 	}
-	else if(UParticleSystem* CastedParticleSystem = Cast<UParticleSystem>(K2_GetEffectParticleSystem()))
+	
+	const bool bReceivingActorIsPawn = EffectContext.ReceivingActor->IsA(APawn::StaticClass());
+	if(!EffectDataObj->bAttachVFXToActor || !bReceivingActorIsPawn)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, CastedParticleSystem, GetActorLocation(), GetActorRotation());
+		if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
+		{
+			EffectVFX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, CastedNiagaraSystem, GetActorLocation(), GetActorRotation());
+		}
+		else if(UParticleSystem* CastedParticleSystem = Cast<UParticleSystem>(K2_GetEffectParticleSystem()))
+		{
+			EffectVFX = UGameplayStatics::SpawnEmitterAtLocation(this, CastedParticleSystem, GetActorLocation(), GetActorRotation());
+		}
+	} else
+	{
+		if(UMeshComponent* ActorMesh = EffectContext.ReceivingActor->FindComponentByClass<USkeletalMeshComponent>())
+		{
+			if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
+			{
+				EffectVFX = UNiagaraFunctionLibrary::SpawnSystemAttached(CastedNiagaraSystem, ActorMesh, "spine_03", FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+			}
+			else if(UParticleSystem* CastedParticleSystem = Cast<UParticleSystem>(K2_GetEffectParticleSystem()))
+			{
+				EffectVFX = UGameplayStatics::SpawnEmitterAttached(CastedParticleSystem, ActorMesh, "spine_03", FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+			}
+		}
 	}
 }
 
@@ -102,10 +134,9 @@ void ABaseEffect::ActivateEffect()
 void ABaseEffect::DestroyEffect()
 {
 	Internal_AddAndRemoveTagsFromReceiver_Deactivation();
-	K2_OnDestroyEffect();
 	if(IsValid(this))
 	{
-		Destroy();
+		SetLifeSpan(1.f);
 	}
 }
 

@@ -3,6 +3,7 @@
 
 #include "Effects/BaseStatModifierEffect.h"
 #include "Characters/HealthComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 

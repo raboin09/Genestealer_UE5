@@ -67,6 +67,9 @@ protected:
 	virtual float SimulateWeaponFire() PURE_VIRTUAL(ABaseWeapon::SimulateWeaponFire, return 0.f; )
 	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnBurstStarted();
+	
 	/////////////////////////////////
 	// IWeapon overrides
 	/////////////////////////////////

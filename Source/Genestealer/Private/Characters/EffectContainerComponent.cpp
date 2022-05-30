@@ -74,7 +74,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 	EffectContext.SurfaceHit = Impact;
 	EffectActor->SetEffectContext(EffectContext);
 	USpawnUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);	
-	EffectActor->AttachToComponent(Impact.GetComponent(), FAttachmentTransformRules::KeepWorldTransform);
+	// EffectActor->AttachToComponent(Impact.GetComponent(), FAttachmentTransformRules::KeepWorldTransform);
 	return EffectActor;
 }
 
@@ -138,10 +138,35 @@ void UEffectContainerComponent::Internal_ApplyEffect(TScriptInterface<IEffect> I
 	}
 }
 
-void UEffectContainerComponent::TryActivateEffect(TScriptInterface<IEffect> IncomingEffect) const
+void UEffectContainerComponent::Internal_RemoveEffectsWithTags(const TArray<FGameplayTag>& InTags, TScriptInterface<IEffect> IncomingEffect)
 {
-	const bool bCanApplyEffect = CanApplyEffect(IncomingEffect);
-	if (IncomingEffect && bCanApplyEffect)
+	for(const FGameplayTag& CurrTag : InTags)
+	{
+		TArray<int32> EffectKeys;
+		EffectsToTick.GetKeys(EffectKeys);
+		for(const int32 Key : EffectKeys)
+		{
+			if(const auto Effect = EffectsToTick.Find(Key); Effect->TickingEffect)
+			{
+				if(Effect->TickingEffect->GetEffectTags().Contains(CurrTag) && Effect->TickingEffect != IncomingEffect)
+				{
+					Effect->TickingEffect->DestroyEffect();
+					EffectsToTick.Remove(Key);
+				}
+			}
+		}
+	}
+}
+
+void UEffectContainerComponent::TryActivateEffect(TScriptInterface<IEffect> IncomingEffect)
+{
+	if(!IncomingEffect)
+	{
+		return;
+	}
+	
+	Internal_RemoveEffectsWithTags(IncomingEffect->GetRemoveEffectTags(), IncomingEffect);
+	if (CanApplyEffect(IncomingEffect))
 	{
 		IncomingEffect->ActivateEffect();
 	}
@@ -170,6 +195,11 @@ void UEffectContainerComponent::TickEffects()
 
 void UEffectContainerComponent::Internal_TickEffect(const int32 CurrentTickingEffectKey)
 {
+	if(!EffectsToTick.Contains(CurrentTickingEffectKey))
+	{
+		return;
+	}
+	
 	const FTickingEffect CurrentTickingEffect = *EffectsToTick.Find(CurrentTickingEffectKey);
 	const TScriptInterface<IEffect> CurrentEffect = CurrentTickingEffect.TickingEffect;
 	
@@ -184,14 +214,12 @@ void UEffectContainerComponent::Internal_TickEffect(const int32 CurrentTickingEf
 		if(GetWorld()->GetTimeSeconds() >= CurrentTickingEffect.ExpirationTime)
 		{
 			DestroyEffect(CurrentEffect, CurrentTickingEffectKey);
-		}		
-	}
-	else
-	{
-		if (TickCounter % CurrentTickingEffect.TickModulus == 0)
-		{
-			TryActivateEffect(CurrentEffect);
+			return;
 		}
+	}
+	
+	if (TickCounter % CurrentTickingEffect.TickModulus == 0){
+			TryActivateEffect(CurrentEffect);
 	}
 }
 
@@ -228,7 +256,7 @@ bool UEffectContainerComponent::CanApplyEffect(TScriptInterface<IEffect> Incomin
 	{
 		return false;
 	}
-
+	
 	const FGameplayTagContainer BlockedTagContainer = FGameplayTagContainer::CreateFromArray(IncomingEffect->GetBlockedTags());
 	if (TaggableOwner->GetTagContainer().HasAny(BlockedTagContainer))
 	{

@@ -49,7 +49,7 @@ protected:
 	float GetCurrentSpread() const;
 	float GetCurrentFiringSpreadPercentage() const;
 	bool ShouldLineTrace() const;
-	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace) const;
+	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float TraceRange = 10000.f;
@@ -92,7 +92,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
 	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
-	float ParticleMeshZ = 33.f; 
+	float ParticleMeshZ = 33.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	bool bDeactivateVFXImmediately = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;

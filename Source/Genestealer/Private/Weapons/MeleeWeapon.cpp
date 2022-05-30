@@ -3,6 +3,7 @@
 
 #include "Weapons/MeleeWeapon.h"
 
+#include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/EffectUtils.h"
@@ -92,6 +93,10 @@ FAnimMontagePlayData AMeleeWeapon::Internal_GetPlayData() const
 {
 	FAnimMontagePlayData PlayData;	
 	PlayData.MontageToPlay = FireAnim;
+	if(OwningPawn && OwningPawn->IsPlayerControlled())
+	{
+		PlayData.bForceInPlace = true;
+	}
 	PlayData.MontageSection = Internal_GetNextMontageSection();
 	return PlayData;
 }

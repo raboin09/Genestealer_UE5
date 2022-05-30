@@ -7,10 +7,10 @@
 #include "NiagaraSystem.h"
 #include "GameFramework/Actor.h"
 #include "API/Effect.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Engine/DataTable.h"
 #include "BaseEffect.generated.h"
 
-class UFXSystemAsset;
 class USoundCue;
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
@@ -27,6 +27,8 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	FEffectInitializationData EffectData;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	bool bAttachVFXToActor = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	FDataTableRowHandle ImpactVFXRowHandle;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
@@ -116,6 +118,7 @@ class GENESTEALER_API ABaseEffect : public AActor, public IEffect
 	
 public:	
 	ABaseEffect();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	//////////////////////////
 	/// IEffect overrides
@@ -123,7 +126,9 @@ public:
 	FORCEINLINE virtual void SetEffectContext(const FEffectContext& InContext) override { EffectContext = InContext; };
 	FORCEINLINE virtual const FEffectInitializationData& GetEffectInitializationData() override { return EffectDataObj->EffectData; };
 	FORCEINLINE virtual const TArray<FGameplayTag>& GetBlockedTags() const override { return EffectDataObj->EffectData.ValidTargets.BlockedTags; }
+	FORCEINLINE virtual const TArray<FGameplayTag>& GetEffectTags() const override { return EffectDataObj->EffectData.EffectTags; }
 	FORCEINLINE virtual const TArray<FGameplayTag>& GetRequiredTags() const override { return EffectDataObj->EffectData.ValidTargets.RequiredTags; }
+	FORCEINLINE virtual const TArray<FGameplayTag>& GetRemoveEffectTags() const override { return EffectDataObj->EffectData.RemoveEffectsWithTags; }
 	virtual void PlayEffectFX() override;
 	virtual void ActivateEffect() override;
 	virtual void DestroyEffect() override;
@@ -158,6 +163,9 @@ protected:
 	UBaseEffectData* EffectDataObj;
 	UPROPERTY(BlueprintReadOnly)
 	FEffectContext EffectContext;
+
+	UPROPERTY(Transient)
+	UFXSystemComponent* EffectVFX;
 private:
 	void Internal_PlayEffectSound();
 	void Internal_PlayEffectParticleSystem();
@@ -166,5 +174,5 @@ private:
 	// Add and remove tags
 	void Internal_AddAndRemoveTagsFromReceiver_Activation();
 	// If Effect added tags and EffectDataObj has bShouldRemoveAppliedTagsWhenDestroyed, remove applied tags
-	void Internal_AddAndRemoveTagsFromReceiver_Deactivation();
+	void Internal_AddAndRemoveTagsFromReceiver_Deactivation();	
 };

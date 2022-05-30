@@ -248,11 +248,20 @@ void ABaseCharacter::ForceStopAnimMontage(UAnimMontage* AnimMontage)
 
 float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData)
 {
-	if (!AnimMontagePlayData.MontageToPlay)
+	if (!AnimMontagePlayData.MontageToPlay || !GetMesh())
 	{
 		return 0.f;
 	}
+	
 	AnimMontagePlayData.MontageToPlay->bEnableAutoBlendOut = AnimMontagePlayData.bShouldBlendOut;
+	if(AnimMontagePlayData.bForceInPlace)
+	{
+		if(UBaseAnimInstance* BaseAnimInstance = Cast<UBaseAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			const int32 SectionIndex = AnimMontagePlayData.MontageToPlay->GetSectionIndex(AnimMontagePlayData.MontageSection);
+			BaseAnimInstance->DisableRootMotionModeForDuration(AnimMontagePlayData.MontageToPlay->GetSectionLength(SectionIndex));
+		}
+	}	
 	return PlayAnimMontage(AnimMontagePlayData.MontageToPlay, AnimMontagePlayData.PlayRate, AnimMontagePlayData.MontageSection);
 }
 

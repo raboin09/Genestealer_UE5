@@ -100,11 +100,15 @@ struct FEffectInitializationData
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	EEffectInterval EffectInterval = EEffectInterval::Instant;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
+	TArray<FGameplayTag> EffectTags;
+	UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	TArray<FGameplayTag> TagsToApply;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	bool bShouldReverseEffectsOnDestroy = true;
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
 	TArray<FGameplayTag> TagsToRemove;
+	UPROPERTY(EditDefaultsOnly, Category=Defaults)
+	TArray<FGameplayTag> RemoveEffectsWithTags;
 };
 
 // This class does not need to be modified.
@@ -125,7 +129,9 @@ public:
 	virtual void SetEffectContext(const FEffectContext& InContext) PURE_VIRTUAL(IEffect::SetEffectContext,)
 	virtual const FEffectInitializationData& GetEffectInitializationData() = 0;
 	virtual const TArray<FGameplayTag>& GetBlockedTags() const = 0;
+	virtual const TArray<FGameplayTag>& GetEffectTags() const = 0;
 	virtual const TArray<FGameplayTag>& GetRequiredTags() const= 0;
+	virtual const TArray<FGameplayTag>& GetRemoveEffectTags() const= 0;
 	virtual void PlayEffectFX() PURE_VIRTUAL(IEffect::PlayEffectFX,)
 	virtual void ActivateEffect() PURE_VIRTUAL(IEffect::ActivateEffect,)
 	virtual void DestroyEffect() PURE_VIRTUAL(IEffect::DestroyEffect,)

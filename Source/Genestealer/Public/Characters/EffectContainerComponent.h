@@ -55,8 +55,9 @@ protected:
 private:
 	TScriptInterface<IEffect> CreateEffectInstance(TSubclassOf<AActor> BaseEffectClass, AActor* InstigatingActor) const;
 
-	void TryActivateEffect(TScriptInterface<IEffect> IncomingEffect) const;
+	void TryActivateEffect(TScriptInterface<IEffect> IncomingEffect);
 	void Internal_ApplyEffect(TScriptInterface<IEffect> IncomingEffect);
+	void Internal_RemoveEffectsWithTags(const TArray<FGameplayTag>& InTags, TScriptInterface<IEffect> IncomingEffect);
 	
 	void TickEffects();
 	void Internal_TickEffect(const int32 CurrentTickingEffectKey);

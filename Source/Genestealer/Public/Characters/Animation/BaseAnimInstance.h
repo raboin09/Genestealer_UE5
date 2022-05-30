@@ -4,19 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AGRCoreAnimInstance.h"
+#include "Character/Animation/ALSCharacterAnimInstance.h"
 #include "BaseAnimInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GENESTEALER_API UBaseAnimInstance : public UAGRCoreAnimInstance
+class GENESTEALER_API UBaseAnimInstance : public UALSCharacterAnimInstance
 {
 	GENERATED_BODY()
 
 public:
 	UBaseAnimInstance();
 	virtual void NativeInitializeAnimation() override;
+	void DisableRootMotionModeForDuration(float Duration);
 	
 protected:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -29,4 +31,12 @@ protected:
 	bool bIsInCover = false;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
 	bool bReady = false;
+
+private:
+
+	UFUNCTION()
+	void EnableRootMotionMode();
+	
+	ERootMotionMode::Type RootMotionCache;
+	FTimerHandle TimerHandle_RootMotionDisable;
 };

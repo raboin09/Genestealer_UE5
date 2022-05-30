@@ -105,7 +105,10 @@ void AHitscanWeapon::Internal_PlayWeaponMissEffectFX(const FHitResult& Impact)
 		if(const TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, GetInstigator()))
 		{
 			TempEffect->PlayEffectFX();
-			TempEffect->DestroyEffect();
+			if(AActor* EffectActor = Cast<AActor>(TempEffect.GetObject()))
+			{
+				EffectActor->SetLifeSpan(.5f);
+			}
 		}
 	}
 }
