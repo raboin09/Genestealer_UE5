@@ -14,50 +14,40 @@
 ABaseWeapon::ABaseWeapon()
 {
 	WeaponRootComponent = CreateDefaultSubobject<USphereComponent>(TEXT("WeaponRoot"));
+	WeaponRootComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	WeaponRootComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	WeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponSkeletalMesh"));
-	WeaponSkeletalMesh->bReceivesDecals = false;
-	WeaponSkeletalMesh->CastShadow = true;
-	WeaponSkeletalMesh->SetCollisionObjectType(ECC_WorldDynamic);
-	WeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	WeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	WeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	WeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	InitWeaponMesh(WeaponSkeletalMesh);
 	WeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
 
 	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
-	WeaponStaticMesh->bReceivesDecals = false;
-	WeaponStaticMesh->CastShadow = true;
-	WeaponStaticMesh->SetCollisionObjectType(ECC_WorldDynamic);
-	WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	WeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	WeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	WeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	InitWeaponMesh(WeaponStaticMesh);
 	WeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
 	SecondaryWeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SecondaryWeaponSkeletalMesh"));
-	SecondaryWeaponSkeletalMesh->bReceivesDecals = false;
-	SecondaryWeaponSkeletalMesh->CastShadow = true;
-	SecondaryWeaponSkeletalMesh->SetCollisionObjectType(ECC_WorldDynamic);
-	SecondaryWeaponSkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SecondaryWeaponSkeletalMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	SecondaryWeaponSkeletalMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	InitWeaponMesh(SecondaryWeaponSkeletalMesh);
 	SecondaryWeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
 
 	SecondaryWeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondaryWeaponStaticMesh"));
-	SecondaryWeaponStaticMesh->bReceivesDecals = false;
-	SecondaryWeaponStaticMesh->CastShadow = true;
-	SecondaryWeaponStaticMesh->SetCollisionObjectType(ECC_WorldDynamic);
-	SecondaryWeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SecondaryWeaponStaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	SecondaryWeaponStaticMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	InitWeaponMesh(SecondaryWeaponStaticMesh);
 	SecondaryWeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
 	DefaultGameplayTags.Add(TAG_ACTOR_WEAPON);
 	
 	SetRootComponent(WeaponRootComponent);
+}
+
+
+void ABaseWeapon::InitWeaponMesh(UMeshComponent* InMeshComp)
+{
+	InMeshComp->bReceivesDecals = false;
+	InMeshComp->CastShadow = true;
+	InMeshComp->SetCollisionObjectType(ECC_WorldDynamic);
+	InMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InMeshComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	InMeshComp->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	InMeshComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
 void ABaseWeapon::BeginPlay()
@@ -107,10 +97,17 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 		OnEquipFinished();
 	}
 
-	if (OwningPawn && OwningPawn->IsPlayerControlled())
+	if (Internal_IsPlayerControlled())
 	{
 		PlayWeaponSound(EquipSound);
 	}
+	K2_OnEquip();
+}
+
+
+bool ABaseWeapon::Internal_IsPlayerControlled() const
+{
+	return OwningPawn && OwningPawn->IsPlayerControlled();
 }
 
 void ABaseWeapon::OnEquipFinished()
@@ -122,6 +119,7 @@ void ABaseWeapon::OnEquipFinished()
 
 void ABaseWeapon::OnUnEquip()
 {
+	K2_OnUnEquip();
 	if(GetWeaponMesh())
 	{
 		GetWeaponMesh()->SetHiddenInGame(true);

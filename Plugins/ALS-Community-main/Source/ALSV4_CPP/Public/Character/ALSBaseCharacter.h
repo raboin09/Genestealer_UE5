@@ -358,11 +358,12 @@ public:
 protected:
 	// Genestealer virtuals
 
-	virtual bool GL_IsForwardMovementAllowed(float Value) { return false; };
+	virtual bool GL_IsForwardMovementAllowed(float Value) { return false; }
 	virtual bool GL_IsRightMovementAllowed(float Value) { return false; }
-	virtual bool GL_IsJumpAllowed(bool bValue) { return false; }
-	virtual void GL_HandleFireAction(bool bValue) {};
-	virtual void GL_HandleCoverDodgeAction() {};
+	virtual void GL_HandleFireAction(bool bValue) {}
+	virtual void GL_HandleCoverDodgeAction() {}
+	virtual void GL_HandleSprintAction(bool bValue) {}
+	virtual void GL_HandleAimAction(bool bValue) {}
 	
 	/** Ragdoll System */
 

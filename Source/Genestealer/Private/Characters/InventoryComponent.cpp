@@ -80,6 +80,16 @@ bool UInventoryComponent::DoesCurrentWeaponForceAimOnFire() const
 	return false;
 }
 
+bool UInventoryComponent::CanWeaponAim() const
+{
+	if(CurrentWeapon)
+	{
+		const EWeaponType WeaponType = CurrentWeapon->GetWeaponType();
+		return WeaponType == EWeaponType::Rifle;
+	}
+	return false;
+}
+
 TSubclassOf<AActor> UInventoryComponent::GetAlternateWeaponClass() const
 {
 	if(AlternateWeapon && AlternateWeapon.GetObject() && AlternateWeapon.GetObject()->GetClass()->IsChildOf(AActor::StaticClass()))

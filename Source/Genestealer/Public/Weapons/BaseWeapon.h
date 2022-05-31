@@ -54,6 +54,7 @@ protected:
 	virtual void OnBurstFinished();
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
 
+	bool Internal_IsPlayerControlled() const;
 	void SetWeaponState(EWeaponState NewState);
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound) const;
     float PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const;
@@ -69,6 +70,10 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstStarted();
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnUnEquip();
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnEquip();
 	
 	/////////////////////////////////
 	// IWeapon overrides
@@ -99,34 +104,34 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
 	USkeletalMeshComponent* SecondaryWeaponSkeletalMesh;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "ReloadAnim == nullptr", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (ClampMin="0", EditCondition = "ReloadAnim == nullptr", EditConditionHides))
 	float ReloadDurationIfNoAnim = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	UAnimMontage* ReloadAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* EquipAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EALSOverlayState WeaponOverlayState;
 
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	float FireWarmUpTime = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float AI_UseRange = 500.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bForceAimOnFire = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TimeBetweenShots = .2f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee && FireWarmUpTime > 0", EditConditionHides))
 	USoundCue* FireWarmupSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* EquipSound;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	TSubclassOf<UCameraShakeBase> FireCameraShake;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (EditCondition = "FireCameraShake != nullptr || WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Camera", meta = (ClampMin="0", EditCondition = "FireCameraShake != nullptr || WeaponType != EWeaponType::Melee", EditConditionHides))
 	float CameraShakeScale = 1.f;
 
 	UPROPERTY(Transient)
@@ -139,11 +144,6 @@ protected:
 	bool bWantsToFire;
 	UPROPERTY(Transient)
 	bool bPendingEquip;
-
-	UPROPERTY(Transient)
-	bool bDeactivateWindowOccurred = true;
-	UPROPERTY(Transient)
-	float BlockAttacksUntil;
 	
 	FTimerHandle TimerHandle_HandleFiring;
 	
@@ -151,6 +151,7 @@ private:
 	void OnBurstStarted();
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
+	void InitWeaponMesh(UMeshComponent* InMeshComp);
 	
 	UPROPERTY()
 	UInventoryComponent* OwningInventory;

@@ -26,8 +26,6 @@ protected:
 	FVector AIScaleOverride;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* ConeComponent;
-
-	FTimerHandle TimerHandle_MissFXDestroy;
 	
 private:
 	bool TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor);

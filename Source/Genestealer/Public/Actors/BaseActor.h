@@ -18,7 +18,8 @@ public:
 	////////////////////////////////
 	/// ITaggable override
 	////////////////////////////////
-	FORCEINLINE virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
+	UFUNCTION()
+	virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -28,6 +29,4 @@ protected:
 
 private:
 	void Internal_AddDefaultTagsToContainer();
-	
-	FGameplayTagContainer GameplayTagContainer;
 };

@@ -120,7 +120,7 @@ struct FDeathEventPayload
 {
 	GENERATED_BODY()
 
-	FDeathEventPayload() : DyingActor(nullptr), KillingActor(nullptr)
+	FDeathEventPayload()
 	{
 		
 	}
@@ -132,9 +132,9 @@ struct FDeathEventPayload
 	}
 	
 	UPROPERTY()
-	AActor* DyingActor;
+	AActor* DyingActor = nullptr;
 	UPROPERTY()
-	AActor* KillingActor;
+	AActor* KillingActor = nullptr;
 	FHitResult HitResult;
 	FDamageHitReactEvent HitReactEvent;
 };

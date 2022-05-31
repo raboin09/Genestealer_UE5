@@ -8,7 +8,7 @@
 #include "Taggable.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
+UINTERFACE(MinimalAPI, meta=(CannotImplementInterfaceInBlueprint))
 class UTaggable : public UInterface
 {
 	GENERATED_BODY()
@@ -23,5 +23,8 @@ class GENESTEALER_API ITaggable
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual FGameplayTagContainer& GetTagContainer() = 0;
+	virtual FGameplayTagContainer& GetTagContainer() { return GameplayTagContainer; }
+
+protected:
+	FGameplayTagContainer GameplayTagContainer;
 };

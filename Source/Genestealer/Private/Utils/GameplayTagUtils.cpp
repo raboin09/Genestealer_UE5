@@ -16,7 +16,7 @@ bool UGameplayTagUtils::ActorHasAnyGameplayTags(AActor* InActor, TArray<FGamepla
 	return false;
 }
 
-bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact)
+bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, FGameplayTag InTag, bool bExact)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
@@ -25,7 +25,7 @@ bool UGameplayTagUtils::ActorHasGameplayTag(AActor* InActor, const FGameplayTag&
 	return false;
 }
 
-void UGameplayTagUtils::AddTagToActor(AActor* InActor, const FGameplayTag& InTag)
+void UGameplayTagUtils::AddTagToActor(AActor* InActor, FGameplayTag InTag)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
@@ -41,7 +41,7 @@ void UGameplayTagUtils::RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag
 	}
 }
 
-void UGameplayTagUtils::RemoveTagFromActor(AActor* InActor, const FGameplayTag& InTag)
+void UGameplayTagUtils::RemoveTagFromActor(AActor* InActor, FGameplayTag InTag)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{

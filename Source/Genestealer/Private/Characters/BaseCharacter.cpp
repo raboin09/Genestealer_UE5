@@ -60,15 +60,6 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
-void ABaseCharacter::SprintAction_Implementation(bool bValue)
-{
-	if(IsInCover() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
-	{
-		return;
-	}
-	Super::SprintAction_Implementation(bValue);
-}
-
 void ABaseCharacter::RagdollEnd()
 {
 	Super::RagdollEnd();
@@ -384,11 +375,6 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 	return true;
 }
 
-bool ABaseCharacter::GL_IsJumpAllowed(bool bValue)
-{
-	return true;
-}
-
 void ABaseCharacter::GL_HandleFireAction(bool bValue)
 {
 	if(!InventoryComponent)
@@ -443,10 +429,30 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 	}
 }
 
-void ABaseCharacter::AimAction_Implementation(bool bValue)
+void ABaseCharacter::GL_HandleCoverDodgeAction()
+{
+	if(!Internal_CanGetInCover())
+	{
+		return;
+	}
+	
+	if(!CurrentCoverPoint)
+	{
+		Internal_CoverDodgeTryStart();
+	} else
+	{
+		Internal_CoverDodgeTryEnd();
+	}
+}
+
+void ABaseCharacter::GL_HandleAimAction(bool bValue)
 {
 	if(bValue)
 	{
+	    if(!InventoryComponent || !InventoryComponent->CanWeaponAim()){
+	        return;
+	    }
+	    
 		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
 		if(IsInCover() && CurrentCoverPoint)
 		{
@@ -478,19 +484,20 @@ void ABaseCharacter::AimAction_Implementation(bool bValue)
 	}
 }
 
-void ABaseCharacter::GL_HandleCoverDodgeAction()
+void ABaseCharacter::GL_HandleSprintAction(bool bValue)
 {
-	if(!Internal_CanGetInCover())
+	if(IsInCover() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
 	{
 		return;
 	}
-	
-	if(!CurrentCoverPoint)
+
+	if (bValue)
 	{
-		Internal_CoverDodgeTryStart();
-	} else
+		SetDesiredGait(EALSGait::Sprinting);
+	}
+	else
 	{
-		Internal_CoverDodgeTryEnd();
+		SetDesiredGait(EALSGait::Running);
 	}
 }
 
@@ -531,24 +538,6 @@ void ABaseCharacter::Internal_CoverDodgeTryEnd()
 		CurrentCoverPoint->VacateCover(this);	
 	}
 	CurrentCoverPoint = nullptr;
-}
-
-void ABaseCharacter::PlayerForwardMovementInput(float Value)
-{
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
-	{
-		return;
-	}
-	ForwardMovementAction(Value);
-}
-
-void ABaseCharacter::PlayerRightMovementInput(float Value)
-{
-	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER}, true))
-	{
-		return;
-	}
-	RightMovementAction(Value);
 }
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()

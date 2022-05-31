@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 #include "Utils/CoreUtils.h"
 
 bool ABaseRangedWeapon::CanReload()
@@ -57,7 +58,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 {
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	Internal_AlternateFiringMesh();
-	if (FireFXClass)
+	if (FireFXClass && bSpawnMuzzleFX)
 	{
 		if (!bLoopedMuzzleFX || !FireFXSystem)
 		{
@@ -74,6 +75,11 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 				FireFXSystem = Internal_PlayNiagaraFireEffects();
 			}
 		}
+	}
+
+	if(bSpawnShellFX && Internal_IsPlayerControlled())
+	{
+		Internal_PlayShellEffects();
 	}
 	
 	if(!CurrentMontage || !bLoopedFireAnim)
@@ -131,6 +137,32 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 	}
 	
 	CurrentFiringSpread = 0.f;
+}
+
+void ABaseRangedWeapon::Internal_PlayShellEffects() const
+{
+	if(!NextFiringMesh)
+	{
+		return;
+	}
+	
+	const FTransform SpawnTransform = NextFiringMesh->GetSocketTransform(ShellSpawnSocket);	
+	if(ShellFXClass->IsA(UParticleSystem::StaticClass()))
+	{
+		UParticleSystemComponent* ShellFXSystem = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(ShellFXClass), SpawnTransform.GetLocation(), SpawnTransform.Rotator());
+		if(ShellFXSystem)
+		{
+			ShellFXSystem->OnParticleCollide.AddDynamic(this, &ABaseRangedWeapon::HandleShellParticleCollision);
+		}
+	} else if(ShellFXClass->IsA(UNiagaraSystem::StaticClass()))
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Cast<UNiagaraSystem>(ShellFXClass), SpawnTransform.GetLocation(), SpawnTransform.Rotator());
+	}
+}
+
+void ABaseRangedWeapon::HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat)
+{
+	UAudioManager::PlaySoundAtLocation(this, ShellImpactSound, Location);
 }
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
@@ -416,12 +448,7 @@ float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
 
 bool ABaseRangedWeapon::ShouldLineTrace() const
 {
-	if(GetInstigator() && GetInstigator()->Controller)
-	{
-		// Not a line trace if this is a player
-		return !GetInstigator()->Controller->IsA(ABasePlayerController::StaticClass());
-	}
-	return true;
+	return Internal_IsPlayerControlled();
 }
 
 FVector ABaseRangedWeapon::GetRaycastOriginRotation()

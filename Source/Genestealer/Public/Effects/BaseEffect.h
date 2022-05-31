@@ -43,35 +43,35 @@ struct FEffectImpactVFX : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
-	UNiagaraSystem* DefaultFX;
+	UNiagaraSystem* DefaultFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* ConcreteFX;
+	UNiagaraSystem* ConcreteFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* DirtFX;
+	UNiagaraSystem* DirtFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* WaterFX;
+	UNiagaraSystem* WaterFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* MetalFX;
+	UNiagaraSystem* MetalFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* WoodFX;
+	UNiagaraSystem* WoodFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* GlassFX;
+	UNiagaraSystem* GlassFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* GrassFX;
+	UNiagaraSystem* GrassFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* FleshFX;
+	UNiagaraSystem* FleshFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* NurgleFleshFX;
+	UNiagaraSystem* NurgleFleshFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* SandFX;
+	UNiagaraSystem* SandFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* PlasticFX;
+	UNiagaraSystem* PlasticFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* IceFX;
+	UNiagaraSystem* IceFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* FleshHeadshotFX;
+	UNiagaraSystem* FleshHeadshotFX = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Visual)
-	UNiagaraSystem* NurgleFleshHeadshotFX;
+	UNiagaraSystem* NurgleFleshHeadshotFX = nullptr;
 };
 
 USTRUCT(BlueprintType)
@@ -80,35 +80,35 @@ struct FEffectImpactSFX : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category=Defaults)
-	USoundCue* DefaultSound;
+	USoundCue* DefaultSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* ConcreteSound;
+	USoundCue* ConcreteSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* DirtSound;
+	USoundCue* DirtSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* WaterSound;
+	USoundCue* WaterSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* MetalSound;
+	USoundCue* MetalSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* WoodSound;
+	USoundCue* WoodSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* GlassSound;
+	USoundCue* GlassSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* GrassSound;
+	USoundCue* GrassSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* FleshSound;
+	USoundCue* FleshSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* NurgleFleshSound;
+	USoundCue* NurgleFleshSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* SandSound;
+	USoundCue* SandSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* PlasticSound;
+	USoundCue* PlasticSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* IceSound;
+	USoundCue* IceSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* FleshHeadshotSound;
+	USoundCue* FleshHeadshotSound = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category=Sound)
-	USoundCue* NurgleFleshHeadshotSound;
+	USoundCue* NurgleFleshHeadshotSound = nullptr;
 };
 
 UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), hideCategories = ("Material Parameters", "Optimization", "Skeletal Mesh", "HLOD", "Mobile", "Asset User Data", "Virtual Texture", "Compilation", "Clothing", "Master Post Component", "Skin Weights", "Clothing Simulation", "Override Parameters", "Activation", "Lighting", "Attachment", "Navigation", "Component Tick", "Physics", "Tags", "Component Replication", "Variable", "Parameters", "Randomness", "Rendering", "Replication", "Input", "Actor", "Actor Tick", "Collision", "Transform", "LOD", "Cooking"))
@@ -145,7 +145,6 @@ protected:
 	virtual void K2_ActivateEffect_Implementation();
 
 	// Optionally override one of these in child classes
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void K2_OnDestroyEffect();
 	virtual void K2_OnDestroyEffect_Implementation();

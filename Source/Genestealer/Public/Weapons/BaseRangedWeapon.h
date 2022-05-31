@@ -51,15 +51,15 @@ protected:
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
 
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TraceRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bHasFiringSpread = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
 	float TraceSpread = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
 	float FiringSpreadIncrement = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
 	float FiringSpreadMax = 10.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	FName RaycastSourceSocketName = "Muzzle";
@@ -82,43 +82,60 @@ protected:
 	int32 InitialClips = 4;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	bool bSpawnMuzzleFX = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX", EditConditionHides))
 	UFXSystemAsset* FireFXClass;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "FireFXClass != nullptr", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
 	bool bLoopedMuzzleFX = false;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "FireFXClass != nullptr", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
 	bool bAdjustVFXScaleOnSpawn = false;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
 	FString MaxSpawnScaleName = "User.SpawnScaleMax";
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
 	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX", meta = (EditCondition = "bAdjustVFXScaleOnSpawn", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
 	float ParticleMeshZ = 33.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
 	bool bDeactivateVFXImmediately = false;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
+	bool bSpawnShellFX = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Shells", meta = (EditCondition = "bSpawnShellFX", EditConditionHides))
+	UFXSystemAsset* ShellFXClass;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Shells", meta = (EditCondition = "bSpawnShellFX && ShellFXClass != nullptr", EditConditionHides))
+	FName ShellSpawnSocket = "ShellSpawn";
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Shells", meta = (EditCondition = "bSpawnShellFX && ShellFXClass != nullptr", EditConditionHides))
+	USoundCue* ShellImpactSound;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	bool bLoopedFireSound = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	USoundCue* FireFinishSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	USoundCue* ReloadSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	USoundCue* OutOfAmmoSound;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "FireAnim != nullptr", EditConditionHides))
 	bool bLoopedFireAnim = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "FireAnim != nullptr", EditConditionHides))
+	bool bCanCoverFire = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation|Cover", meta = (EditCondition = "FireAnim != nullptr && bCanCoverFire", EditConditionHides))
 	UAnimMontage* CoverFireRightAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation|Cover", meta = (EditCondition = "FireAnim != nullptr && bCanCoverFire", EditConditionHides))
 	UAnimMontage* CoverFireLeftAnim;
 
 	UPROPERTY(Transient)
 	UNiagaraComponent* NiagaraFX;
 private:
+	void Internal_PlayShellEffects() const;
+	UFUNCTION()
+	void HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
+	
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
 	UFUNCTION()

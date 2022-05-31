@@ -1267,12 +1267,7 @@ void AALSBaseCharacter::CameraRightAction_Implementation(float Value)
 void AALSBaseCharacter::JumpAction_Implementation(bool bValue)
 {
 	if (bValue)
-	{
-		if(!GL_IsJumpAllowed(bValue))
-		{
-			return;
-		}
-		
+	{		
 		// Jump Action: Press "Jump Action" to end the ragdoll if ragdolling, stand up if crouching, or jump if standing.
 		if (JumpPressedDelegate.IsBound())
 		{
@@ -1306,34 +1301,12 @@ void AALSBaseCharacter::JumpAction_Implementation(bool bValue)
 
 void AALSBaseCharacter::SprintAction_Implementation(bool bValue)
 {
-	if (bValue)
-	{
-		SetDesiredGait(EALSGait::Sprinting);
-	}
-	else
-	{
-		SetDesiredGait(EALSGait::Running);
-	}
+	GL_HandleSprintAction(bValue);
 }
 
 void AALSBaseCharacter::AimAction_Implementation(bool bValue)
 {
-	if (bValue)
-	{
-		// AimAction: Hold "AimAction" to enter the aiming mode, release to revert back the desired rotation mode.
-		SetRotationMode(EALSRotationMode::Aiming);
-	}
-	else
-	{
-		if (ViewMode == EALSViewMode::ThirdPerson)
-		{
-			SetRotationMode(DesiredRotationMode);
-		}
-		else if (ViewMode == EALSViewMode::FirstPerson)
-		{
-			SetRotationMode(EALSRotationMode::LookingDirection);
-		}
-	}
+	GL_HandleAimAction(bValue);
 }
 
 void AALSBaseCharacter::CameraTapAction_Implementation()

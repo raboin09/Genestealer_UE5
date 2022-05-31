@@ -53,11 +53,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")
 	static bool ActorHasAnyGameplayTags(AActor* InActor, TArray<FGameplayTag> InTags, bool bExact = false);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")
-	static bool ActorHasGameplayTag(AActor* InActor, const FGameplayTag& InTag, bool bExact = false);
+	static bool ActorHasGameplayTag(AActor* InActor, FGameplayTag InTag, bool bExact = false);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
-	static void AddTagToActor(AActor* InActor, const FGameplayTag& InTag);
+	static void AddTagToActor(AActor* InActor, FGameplayTag InTag);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag> InTags);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
-	static void RemoveTagFromActor(AActor* InActor, const FGameplayTag& InTag);
+	static void RemoveTagFromActor(AActor* InActor, FGameplayTag InTag);
 };

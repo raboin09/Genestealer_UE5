@@ -33,10 +33,6 @@ public:
 	////////////////////////////////
 	/// ALSCharacter overrides
 	////////////////////////////////
-	virtual void SprintAction_Implementation(bool bValue) override;
-	virtual void AimAction_Implementation(bool bValue) override;
-	virtual void PlayerForwardMovementInput(float Value);
-	virtual void PlayerRightMovementInput(float Value);
 	virtual void RagdollEnd() override;
 	virtual void RagdollStart() override;
 	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
@@ -69,7 +65,8 @@ public:
 	////////////////////////////////
 	/// ITaggable override
 	////////////////////////////////
-	FORCEINLINE virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
+	UFUNCTION()
+	virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
 
 	////////////////////////////////
 	/// IEffectible override
@@ -137,8 +134,6 @@ protected:
 	
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
-	UPROPERTY(BlueprintReadOnly)
-	FGameplayTagContainer GameplayTagContainer;
 
 	FPlayerInCombatChanged PlayerInCombatChanged;
 	
@@ -171,9 +166,10 @@ protected:
 	////////////////////////////////
 	virtual bool GL_IsForwardMovementAllowed(float Value) override;
 	virtual bool GL_IsRightMovementAllowed(float Value) override;
-	virtual bool GL_IsJumpAllowed(bool bValue) override;
 	virtual void GL_HandleFireAction(bool bValue) override;
 	virtual void GL_HandleCoverDodgeAction() override;
+	virtual void GL_HandleAimAction(bool bValue) override;
+	virtual void GL_HandleSprintAction(bool bValue) override;
 	
 private:
 	FTimerHandle TimerHandle_InCombat;

@@ -25,6 +25,7 @@ public:
 	void SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass);
 	void DestroyInventory();
 	bool DoesCurrentWeaponForceAimOnFire() const;
+	bool CanWeaponAim() const;
 	TSubclassOf<AActor> GetAlternateWeaponClass() const;
 	TSubclassOf<AActor> GetPrimaryWeaponClass() const;
 	
@@ -37,8 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopFiring();
 	void OnTargetingChange(bool bIsTargeting);
-	
+
+	UFUNCTION(BlueprintCallable)
 	void EquipAlternateWeapon();
+	UFUNCTION(BlueprintCallable)
 	void EquipPrimaryWeapon();
 
 	bool HasWeapon(const UClass* WeaponClass) const;
