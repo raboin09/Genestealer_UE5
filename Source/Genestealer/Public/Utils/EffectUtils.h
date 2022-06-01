@@ -30,7 +30,7 @@ public:
 	static void TryApplyHealToActor(AActor* ReceivingActor, AActor* InstigatingActor, float Heal);
 	static void TryApplyDamageToActor(AActor* ReceivingActor, AActor* InstigatingActor, float Damage, const FDamageHitReactEvent& HitReactEvent = FDamageHitReactEvent());
 
-	static UFXSystemAsset* GetVFXAssetFromKey(const FDataTableRowHandle& RowHandle, UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot);
-	static USoundCue* GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle, UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot);
+	static UFXSystemAsset* GetVFXAssetFromKey(const FDataTableRowHandle& RowHandle, const UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot);
+	static USoundCue* GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle, const UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot);
 
 };

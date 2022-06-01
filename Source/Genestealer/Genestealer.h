@@ -6,6 +6,7 @@
 
 #define TRACE_WEAPON ECC_GameTraceChannel1
 #define TRACE_COVER_WALL ECC_GameTraceChannel2
+#define OBJECT_TYPE_PROJECTILE ECC_GameTraceChannel4
 
 #define GENESTEALER_SURFACE_Default		SurfaceType_Default
 #define GENESTEALER_SURFACE_Concrete	SurfaceType1

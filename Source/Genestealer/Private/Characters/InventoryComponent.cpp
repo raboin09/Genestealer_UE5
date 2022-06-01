@@ -84,8 +84,7 @@ bool UInventoryComponent::CanWeaponAim() const
 {
 	if(CurrentWeapon)
 	{
-		const EWeaponType WeaponType = CurrentWeapon->GetWeaponType();
-		return WeaponType == EWeaponType::Rifle;
+		return CurrentWeapon->GetWeaponType() == EWeaponType::Rifle;
 	}
 	return false;
 }

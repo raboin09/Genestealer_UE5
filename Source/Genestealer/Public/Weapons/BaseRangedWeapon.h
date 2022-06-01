@@ -51,6 +51,8 @@ protected:
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon", meta = (EditCondition = "WeaponType != EWeaponType::Rifle && WeaponType != EWeaponType::Heavy"))
+	bool bAkimbo = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TraceRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
@@ -67,8 +69,6 @@ protected:
 	bool bRaycastFromWeaponMeshInsteadOfPawnMesh = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bAimOriginIsPlayerEyesInsteadOfWeapon = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	bool bAkimbo = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteAmmo = true;
@@ -97,7 +97,6 @@ protected:
 	float ParticleMeshZ = 33.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
 	bool bDeactivateVFXImmediately = false;
-
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	bool bSpawnShellFX = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Shells", meta = (EditCondition = "bSpawnShellFX", EditConditionHides))
@@ -110,7 +109,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
-	bool bLoopedFireSound = true;
+	bool bLoopedFireSound = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
 	USoundCue* FireFinishSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound", meta = (EditCondition = "FireSound != nullptr", EditConditionHides))
@@ -135,7 +134,6 @@ private:
 	void Internal_PlayShellEffects() const;
 	UFUNCTION()
 	void HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
-	
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
 	UFUNCTION()

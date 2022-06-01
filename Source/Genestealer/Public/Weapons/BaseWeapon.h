@@ -54,7 +54,7 @@ protected:
 	virtual void OnBurstFinished();
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
 
-	bool Internal_IsPlayerControlled() const;
+	bool IsWeaponPlayerControlled() const;
 	void SetWeaponState(EWeaponState NewState);
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound) const;
     float PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const;

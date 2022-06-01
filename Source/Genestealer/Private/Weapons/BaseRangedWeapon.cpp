@@ -77,7 +77,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 		}
 	}
 
-	if(bSpawnShellFX && Internal_IsPlayerControlled())
+	if(bSpawnShellFX && IsWeaponPlayerControlled())
 	{
 		Internal_PlayShellEffects();
 	}
@@ -448,7 +448,7 @@ float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
 
 bool ABaseRangedWeapon::ShouldLineTrace() const
 {
-	return Internal_IsPlayerControlled();
+	return IsWeaponPlayerControlled();
 }
 
 FVector ABaseRangedWeapon::GetRaycastOriginRotation()

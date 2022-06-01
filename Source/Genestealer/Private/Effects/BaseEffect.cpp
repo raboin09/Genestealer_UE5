@@ -49,13 +49,12 @@ void ABaseEffect::Internal_PlayEffectSound()
 
 void ABaseEffect::Internal_PlayEffectParticleSystem()
 {
-	if(!EffectDataObj || !EffectContext.ReceivingActor)
+	if(!EffectDataObj)
 	{
-		UKismetSystemLibrary::PrintString(this, "Bad 1");
 		return;
 	}
 	
-	const bool bReceivingActorIsPawn = EffectContext.ReceivingActor->IsA(APawn::StaticClass());
+	const bool bReceivingActorIsPawn = EffectContext.ReceivingActor ? EffectContext.ReceivingActor->IsA(APawn::StaticClass()) : false;
 	if(!EffectDataObj->bAttachVFXToActor || !bReceivingActorIsPawn)
 	{
 		if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
@@ -115,6 +114,7 @@ bool ABaseEffect::Internal_IsValidHeadshot() const
 	{
 		bPlayerControlled = CastedPawn->IsPlayerControlled();	
 	}
+	UKismetSystemLibrary::PrintString(this, EffectContext.SurfaceHit.BoneName.ToString());
 	return UCombatUtils::IsBoneNameHead(EffectContext.SurfaceHit.BoneName) && !bPlayerControlled;
 }
 

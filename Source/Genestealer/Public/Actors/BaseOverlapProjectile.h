@@ -8,6 +8,7 @@
 #include "Weapons/ProjectileWeapon.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Sound/SoundCue.h"
+#include "Actors/BaseActor.h"
 #include "BaseOverlapProjectile.generated.h"
 
 /**
@@ -23,16 +24,15 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PostInitializeComponents() override;
 	
-	void SetActorOwner(AActor* InActor) { ActorOwner = InActor; }
 	void InitVelocity(const FVector& ShootDirection) const;
-	FORCEINLINE void SetWeaponEffects(const TArray<TSubclassOf<AActor>> InWeaponEffectsToApply) { WeaponEffectsToApply = InWeaponEffectsToApply; }; 
+
+	FORCEINLINE void AddAdditionalEffectsToApply(TArray<TSubclassOf<AActor>> AdditionalEffectsToApply) { ProjectileEffectsToApply.Append(AdditionalEffectsToApply);}
+	
 private:
 	void PlayFlybySound();
-
+	
 	UFUNCTION()
 	void OnImpact(const FHitResult& HitResult);
-	
-	virtual void HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult);
 	
 	UPROPERTY(VisibleDefaultsOnly, Category="Overlap|Projectile")
 	UProjectileMovementComponent* MovementComp;
@@ -44,15 +44,13 @@ private:
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* SummonedMesh;
-protected:
-	UPROPERTY(EditDefaultsOnly, Category="Overlap|Projectile|Effects", meta=(MustImplement="Effect"))
-	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;
 	
-	TWeakObjectPtr<AController> MyController;
-
-	UPROPERTY(EditDefaultsOnly, Category="Overlap|Projectile|Effects" )
+protected:
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(MustImplement="Effect"))
+	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer" )
 	USoundCue* FlyBySound;
-	UPROPERTY(EditDefaultsOnly, Category="Overlap|Projectile|Effects")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float FlybyRange;
 	UPROPERTY(Transient)
 	bool bFlybyPlayed;
@@ -61,17 +59,9 @@ protected:
 	UPROPERTY(Transient)
 	bool bFlybyIsInFront;
 
-	UPROPERTY()
-	TScriptInterface<IWeapon> OwningWeapon;
-
 	virtual void Impact(const FHitResult& Impact);
 	void ApplyHitEffects(const FHitResult& Impact) const;
 	void ApplyMissEffects(const FHitResult Impact);
 	virtual void HandleActorDeath();
 	virtual void BeginPlay() override;
-
-private:
-	TArray<TSubclassOf<AActor>> WeaponEffectsToApply;
-	UPROPERTY()
-	AActor* ActorOwner;
 };

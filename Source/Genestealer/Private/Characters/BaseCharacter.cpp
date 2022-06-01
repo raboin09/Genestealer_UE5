@@ -46,6 +46,7 @@ void ABaseCharacter::InitCapsuleCollisionDefaults() const
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 }
 
 void ABaseCharacter::InitMeshCollisionDefaults() const
@@ -53,6 +54,7 @@ void ABaseCharacter::InitMeshCollisionDefaults() const
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetCollisionResponseToChannels(ECR_Block); 
+	GetMesh()->SetCollisionResponseToChannel(OBJECT_TYPE_PROJECTILE, ECR_Block);
 }
 
 void ABaseCharacter::Tick(float DeltaSeconds)
@@ -158,21 +160,8 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 
 void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWeapon, TScriptInterface<IWeapon> PreviousWeapon)
 {
-	if(!NewWeapon)
-		return;
-	
-	// if(NewWeapon->GetWeaponMesh() == nullptr)
-	// {
-	// 	// TODO handle bare handed weapon
-	// } else if(const UStaticMeshComponent* CastedStaticMesh = Cast<UStaticMeshComponent>(NewWeapon->GetWeaponMesh()))
-	// {
-	// 	AttachToHand(CastedStaticMesh->GetStaticMesh(), nullptr, nullptr, false, FVector::ZeroVector);
-	// 	StaticMesh->SetVisibility(false);		
-	// } else if(const USkeletalMeshComponent* CastedSkeletalMesh = Cast<USkeletalMeshComponent>(NewWeapon->GetWeaponMesh()))
-	// {
-	// 	AttachToHand(nullptr, CastedSkeletalMesh->SkeletalMesh ,nullptr, false, FVector::ZeroVector);
-	// 	SkeletalMesh->SetVisibility(false);
-	// }
+	if(!NewWeapon || !NewWeapon->GetWeaponMesh())
+		return;	
 	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("VB RHS_ik_hand_gun"));
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
 	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())

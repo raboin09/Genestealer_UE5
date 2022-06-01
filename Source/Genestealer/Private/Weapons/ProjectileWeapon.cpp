@@ -2,40 +2,35 @@
 
 
 #include "Weapons/ProjectileWeapon.h"
-
-#include "Actors/BaseOverlapProjectile.h"
 #include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
+#include "Actors/BaseOverlapProjectile.h"
+#include "Utils/SpawnUtils.h"
 
 void AProjectileWeapon::FireWeapon()
 {
-	SpawnProjectile();
+	Internal_SpawnProjectile();
 }
 
-void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
+void AProjectileWeapon::Internal_SpawnProjectile()
 {
 	FVector ShootDir = GetAdjustedAim();
 	FVector Origin = GetRaycastOriginLocation();
-	constexpr float ProjectileAdjustRange = 10000.0f;
 	const FVector StartTrace = GetCameraDamageStartLocation(ShootDir);
-	const FVector EndTrace = StartTrace + ShootDir * ProjectileAdjustRange;
-	FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
-	if (Impact.bBlockingHit)
+	const FVector EndTrace = StartTrace + ShootDir * TraceRange;
+	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), 10.f); Impact.bBlockingHit)
 	{
-		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);//.GetSafeNormal();
+		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);
 		bool bWeaponPenetration = false;
-		
-		const float DirectionDot = FVector::DotProduct(AdjustedDir, ShootDir);
-		if (DirectionDot < 0.0f)
+
+		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, ShootDir); DirectionDot < 0.0f)
 		{
 			bWeaponPenetration = true;
 		}
 		else if (DirectionDot < 0.5f)
 		{
-			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 150.0f;
+			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 25.0f;
 			FVector MuzzleEndTrace = Origin;
-			FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace());
-			if (MuzzleImpact.bBlockingHit)
+			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), 5.f); MuzzleImpact.bBlockingHit)
 			{
 				bWeaponPenetration = true;
 			}
@@ -52,12 +47,20 @@ void AProjectileWeapon::SpawnProjectile(bool bShouldSphereTrace)
 	}
 	FTransform SpawnTrans = FTransform();
 	SpawnTrans.SetLocation(Origin);
-	if (ABaseOverlapProjectile* Projectile = Cast<ABaseOverlapProjectile>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ProjectileClass, SpawnTrans)))
+	if (ABaseOverlapProjectile* Projectile = USpawnUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
-		Projectile->SetInstigator(GetInstigator());
-		Projectile->SetOwner(this);
-		Projectile->SetActorOwner(GetOwningPawn());	
 		Projectile->InitVelocity(ShootDir);
-		UGameplayStatics::FinishSpawningActor(Projectile, SpawnTrans);
+		Projectile->SetLifeSpan(ProjectileLife);
+		Projectile->AddAdditionalEffectsToApply(WeaponEffects);
+		USpawnUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
+		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
+		{
+			if(!IsWeaponPlayerControlled() && bSlowDownProjectileOnAIShooters)
+			{
+				// Make projectiles slower for easier dodging
+				ProjectileMovementComponent->InitialSpeed = ProjectileMovementComponent->InitialSpeed * .75f;
+				ProjectileMovementComponent->MaxSpeed = ProjectileMovementComponent->MaxSpeed * .75f;
+			}
+		}
 	}
 }

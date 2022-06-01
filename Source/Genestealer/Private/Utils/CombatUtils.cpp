@@ -60,14 +60,14 @@ float UCombatUtils::GetKnockbackRecoveryTime(EHitReactType InHit)
 	}
 }
 
-bool UCombatUtils::IsBoneNameHead(FName InBone)
+bool UCombatUtils::IsBoneNameHead(const FName& InBone)
 {
 	TArray<FName> ValidBones;
 	ValidBones.Add("head");
 	ValidBones.Add("neck_01");
 	ValidBones.Add("clavicle_l");
 	ValidBones.Add("clavicle_r");
-	return ValidBones.Contains(InBone);
+ 	return ValidBones.Contains(InBone);
 }
 
 FName UCombatUtils::GetNearestValidBoneForImpact(FName InBone)

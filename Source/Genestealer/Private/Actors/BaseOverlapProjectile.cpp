@@ -6,6 +6,7 @@
 #include "API/Effectible.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Components/AudioComponent.h"
+#include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Utils/CoreUtils.h"
@@ -21,6 +22,9 @@ ABaseOverlapProjectile::ABaseOverlapProjectile()
 	MovementComp->ProjectileGravityScale = 0.f;
 
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComp->SetCollisionProfileName("BlockAllDynamic");
+	CollisionComp->SetCollisionObjectType(OBJECT_TYPE_PROJECTILE);
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->bTraceComplexOnMove = true;
 	
@@ -64,20 +68,21 @@ void ABaseOverlapProjectile::Tick(float DeltaSeconds)
 void ABaseOverlapProjectile::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	MovementComp->OnProjectileStop.AddDynamic(this, &ABaseOverlapProjectile::OnImpact);
-	ABaseCharacter* OwnerChar = Cast<ABaseCharacter>(GetInstigator());
-	if(OwnerChar)
+	if(MovementComp)
 	{
-		CollisionComp->MoveIgnoreActors.Add(OwnerChar);
+		MovementComp->OnProjectileStop.AddDynamic(this, &ABaseOverlapProjectile::OnImpact);
 	}
-	AProjectileWeapon* OwnerWeapon = Cast<AProjectileWeapon>(GetOwner());
-	MyController = GetInstigatorController();
+	if(CollisionComp)
+	{
+		CollisionComp->IgnoreActorWhenMoving(GetInstigator(), true);
+		CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
+	}
 }
 
 void ABaseOverlapProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	if(ABaseCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(this))
+	if(const ABaseCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(this))
 	{
 		if(UKismetMathLibrary::DegAcos(GetDotProductTo(CurrChar)) >= 90.f)
 		{
@@ -101,39 +106,32 @@ void ABaseOverlapProjectile::PlayFlybySound()
 {
 	if(bFlybyIsInFront)
 	{
-		if(ABaseCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(this))
+		if(const ABaseCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(this))
 		{
 			if(GetDistanceTo(CurrChar) <= FlybyRange && UKismetMathLibrary::DegAcos(GetDotProductTo(CurrChar)) >= 90.f)
 			{
-				UGameplayStatics::PlaySoundAtLocation(this, FlyBySound, GetRootComponent()->GetComponentLocation(), FRotator::ZeroRotator);
+				UAudioManager::PlaySoundAtLocation(this, FlyBySound, GetRootComponent()->GetComponentLocation());
 				bFlybyPlayed = true;
 			}
 		}
 	}
 }
 
-void ABaseOverlapProjectile::HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult)
+void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 {
 	if(!HitResult.GetActor())
 	{
 		HandleActorDeath();
 		return;
 	}
-	
-	const UClass* HitActorClass = HitResult.GetActor()->GetClass();
-	if(!HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	if(const UClass* HitActorClass = HitResult.GetActor()->GetClass(); !HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
 	{
 		ApplyMissEffects(HitResult);
-	} else
+	} else  
 	{
 		Impact(HitResult);
 	}
 	HandleActorDeath();
-}
-
-void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
-{
-	HandleOverlapEvent(nullptr, HitResult);
 }
 
 void ABaseOverlapProjectile::Impact(const FHitResult& Impact)
@@ -146,16 +144,14 @@ void ABaseOverlapProjectile::Impact(const FHitResult& Impact)
 
 void ABaseOverlapProjectile::ApplyHitEffects(const FHitResult& Impact) const
 {
-	UEffectUtils::ApplyEffectsToHitResult(WeaponEffectsToApply, Impact, ActorOwner);
-	UEffectUtils::ApplyEffectsToHitResult(ProjectileEffectsToApply, Impact, ActorOwner);
+	UEffectUtils::ApplyEffectsToHitResult(ProjectileEffectsToApply, Impact, GetInstigator());
 }
 
 void ABaseOverlapProjectile::ApplyMissEffects(const FHitResult Impact)
 {
 	for(const TSubclassOf<AActor> CurrEffectClass : ProjectileEffectsToApply)
 	{
-		TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, ActorOwner, true);
-		if(TempEffect)
+		if(const TScriptInterface<IEffect> TempEffect = UEffectContainerComponent::CreateEffectInstanceFromHitResult(this, CurrEffectClass, Impact, GetInstigator(), true))
 		{
 			TempEffect->PlayEffectFX();
 			TempEffect->DestroyEffect();
@@ -165,12 +161,11 @@ void ABaseOverlapProjectile::ApplyMissEffects(const FHitResult Impact)
 
 void ABaseOverlapProjectile::HandleActorDeath()
 {
-	UAudioComponent* ProjAudioComp = FindComponentByClass<UAudioComponent>();
-	if (ProjAudioComp && ProjAudioComp->IsPlaying())
+	if (UAudioComponent* ProjAudioComp = FindComponentByClass<UAudioComponent>(); ProjAudioComp && ProjAudioComp->IsPlaying())
 	{
 		ProjAudioComp->FadeOut(0.1f, 0.f);
 	}
 
 	MovementComp->StopMovementImmediately();
-	SetLifeSpan(.1f);
+	Destroy();
 }

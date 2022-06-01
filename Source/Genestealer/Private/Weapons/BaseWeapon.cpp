@@ -97,7 +97,7 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 		OnEquipFinished();
 	}
 
-	if (Internal_IsPlayerControlled())
+	if (IsWeaponPlayerControlled())
 	{
 		PlayWeaponSound(EquipSound);
 	}
@@ -105,7 +105,7 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 }
 
 
-bool ABaseWeapon::Internal_IsPlayerControlled() const
+bool ABaseWeapon::IsWeaponPlayerControlled() const
 {
 	return OwningPawn && OwningPawn->IsPlayerControlled();
 }

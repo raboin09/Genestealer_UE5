@@ -16,10 +16,14 @@ class GENESTEALER_API AProjectileWeapon : public ABaseRangedWeapon
 	
 protected:
 	virtual void FireWeapon() override;
-	virtual void SpawnProjectile(bool bShouldSphereTrace = true);
 
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Projectile")
-	TSubclassOf<ABaseActor> ProjectileClass;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Projectile")
-	float ProjectileLife = -1.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	TSubclassOf<class ABaseOverlapProjectile> ProjectileClass;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(EditCondition = "ProjectileClass != nullptr", EditConditionHides))
+	bool bSlowDownProjectileOnAIShooters = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin = "1", EditCondition = "ProjectileClass != nullptr", EditConditionHides))
+	float ProjectileLife = 10.f;
+
+private:
+	virtual void Internal_SpawnProjectile();
 };

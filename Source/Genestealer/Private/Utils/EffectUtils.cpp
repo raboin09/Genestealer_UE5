@@ -109,7 +109,7 @@ void UEffectUtils::TryApplyDamageToActor(AActor* ReceivingActor, AActor* Instiga
 	}
 }
 
-UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowHandle, UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot)
+UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowHandle, const UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot)
 {
 	if(RowHandle.IsNull() || RowHandle.RowName.IsNone())
 	{
@@ -125,9 +125,13 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 	
 	if (bIsValidHeadshot && (OutRow.FleshHeadshotFX || OutRow.NurgleFleshHeadshotFX))
 	{
-		return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotFX ? OutRow.NurgleFleshHeadshotFX : OutRow.FleshHeadshotFX;
+		if(SurfaceMaterial)
+		{
+			return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotFX ? OutRow.NurgleFleshHeadshotFX : OutRow.FleshHeadshotFX;	
+		}
+		return OutRow.FleshHeadshotFX;
 	}
-	
+
 	if(!IsValid(SurfaceMaterial))
 	{
 		return OutRow.DefaultFX;  
@@ -167,7 +171,7 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 	return SelectedParticle ? SelectedParticle : OutRow.DefaultFX;
 }
 
-USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle, UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot)
+USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle, const UPhysicalMaterial* SurfaceMaterial, bool bIsValidHeadshot)
 {
 	if(RowHandle.IsNull() || RowHandle.RowName.IsNone())
 	{
@@ -179,16 +183,16 @@ USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle
 	{
 		return nullptr;
 	}
+
+	if(!IsValid(SurfaceMaterial))
+	{
+		return FoundRow->DefaultSound;
+	}
 	
 	const FEffectImpactSFX& OutRow = *FoundRow;	
 	if (bIsValidHeadshot && (OutRow.FleshHeadshotSound || OutRow.NurgleFleshHeadshotSound))
 	{
 		return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotSound ? OutRow.NurgleFleshHeadshotSound : OutRow.FleshHeadshotSound;
-	}
-
-	if(!IsValid(SurfaceMaterial))
-	{
-		return OutRow.DefaultSound;
 	}
 
 	USoundCue* SelectedSound;

@@ -26,6 +26,7 @@ public:
 	void SetEnemy(ACharacter* InEnemy);
 	ACharacter* GetEnemy() const;
 
+	UFUNCTION()
 	void SetIsInCombat(bool bIsInCombat, AActor* DamageCauser);
 	bool IsInCombat() const;
 

@@ -21,7 +21,7 @@ public:
 	static float GetHitImpulseValue(EHitReactType InHit);
 	static bool ShouldHitKnockback(EHitReactType InHit);
 	static float GetKnockbackRecoveryTime(EHitReactType InHit);
-	static bool IsBoneNameHead(FName InBone);
+	static bool IsBoneNameHead(const FName& InBone);
 	static FName GetNearestValidBoneForImpact(FName InBone);
 	static FRotator GetRotationFromComponentHit(const FHitResult& Impact);
 	static bool AreActorsAllies(AActor* FirstActor, AActor* SecondActor);

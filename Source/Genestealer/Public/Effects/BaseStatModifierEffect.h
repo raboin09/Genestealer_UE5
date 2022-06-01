@@ -26,13 +26,13 @@ public:
 	UBaseStatsModifierData() {}
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
-	EEffectStatType StatToModify;
+	EEffectStatType StatToModify = EEffectStatType::Health_Damage;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float BaseModifierValue;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
-	bool bOnlyHitReactOnDeath;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
 	EHitReactType HitImpulse;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage && HitImpulse != EHitReactType::None", EditConditionHides))
+	bool bOnlyHitReactOnDeath = true;
 };
 
 /**
