@@ -7,13 +7,21 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
+ABaseStatModifier::ABaseStatModifier()
+{
+	if(!StatEffectDataObj)
+	{
+		StatEffectDataObj = Cast<UBaseStatsModifierData>(UBaseStatsModifierData::StaticClass()->GetDefaultObject());
+	}
+}
+
 void ABaseStatModifier::K2_ActivateEffect_Implementation()
 {
 	K2_ApplyStatChange(CalculateModifierValues());
 }
 
 void ABaseStatModifier::K2_ApplyStatChange_Implementation(float ModifiedStatValue)
-{
+{	
 	switch (StatEffectDataObj->StatToModify) {
 	case EEffectStatType::Health_MaxWounds:
 		UEffectUtils::TryAddMaxWoundsToActor(EffectContext.ReceivingActor, ModifiedStatValue);
@@ -24,16 +32,25 @@ void ABaseStatModifier::K2_ApplyStatChange_Implementation(float ModifiedStatValu
 	case EEffectStatType::Health_Damage:
 		{
 			FDamageHitReactEvent HitReactEvent;
-			HitReactEvent.DamageTaken = ModifiedStatValue;
+			HitReactEvent.DamageTaken = CalculateHeadshotDamage(ModifiedStatValue);
 			HitReactEvent.HitDirection = EffectContext.InstigatingActor ?  EffectContext.InstigatingActor->GetActorForwardVector().GetSafeNormal() : FVector::ZeroVector;
 			HitReactEvent.HitResult = EffectContext.SurfaceHit;
 			HitReactEvent.bOnlyHitReactOnDeath = StatEffectDataObj->bOnlyHitReactOnDeath;
 			HitReactEvent.HitReactType = StatEffectDataObj->HitImpulse;
-			UEffectUtils::TryApplyDamageToActor(EffectContext.ReceivingActor, EffectContext.InstigatingActor, ModifiedStatValue, HitReactEvent);
+			UEffectUtils::TryApplyDamageToActor(EffectContext.ReceivingActor, EffectContext.InstigatingActor, HitReactEvent.DamageTaken, HitReactEvent);
 		}
 		break;
 	default:;
 	}
+}
+
+float ABaseStatModifier::CalculateHeadshotDamage(float ModifiedStatValue) const
+{
+	if(StatEffectDataObj->bAddDamageForHeadshots && UCombatUtils::IsBoneNameHead(EffectContext.SurfaceHit.BoneName))
+	{
+		return ModifiedStatValue * StatEffectDataObj->HeadshotModifier;
+	}
+	return ModifiedStatValue;
 }
 
 float ABaseStatModifier::CalculateModifierValues()

@@ -30,6 +30,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float BaseModifierValue;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
+	bool bAddDamageForHeadshots = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage && bAddDamageForHeadshots", EditConditionHides))
+	float HeadshotModifier = 1.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
 	EHitReactType HitImpulse;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage && HitImpulse != EHitReactType::None", EditConditionHides))
 	bool bOnlyHitReactOnDeath = true;
@@ -42,6 +46,9 @@ UCLASS(Abstract, Blueprintable)
 class GENESTEALER_API ABaseStatModifier : public ABaseEffect
 {
 	GENERATED_BODY()
+
+public:
+	ABaseStatModifier();
 	
 protected:
 	virtual void K2_ActivateEffect_Implementation() override;
@@ -55,6 +62,7 @@ protected:
 	UBaseStatsModifierData* StatEffectDataObj;
 	
 private:
+	float CalculateHeadshotDamage(float ModifiedStatValue) const;
 	float CalculateModifierValues();
 	void CalculateModifier(const FModifierExpression& ModifierExpression, const FGameplayTag& ModifierTag, float& ModifiedBaseValue) const;
 };

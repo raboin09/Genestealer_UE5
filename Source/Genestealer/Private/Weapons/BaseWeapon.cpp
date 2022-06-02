@@ -46,7 +46,8 @@ void ABaseWeapon::InitWeaponMesh(UMeshComponent* InMeshComp)
 	InMeshComp->SetCollisionObjectType(ECC_WorldDynamic);
 	InMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InMeshComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	InMeshComp->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	InMeshComp->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
+	InMeshComp->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 	InMeshComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
@@ -274,6 +275,7 @@ void ABaseWeapon::OnBurstFinished()
 {
 	BurstCounter = 0;
 	StopSimulatingWeaponFire();
+	K2_OnBurstFinished();
 	GetWorldTimerManager().ClearTimer(TimerHandle_HandleFiring);
 	bRefiring = false;
 }

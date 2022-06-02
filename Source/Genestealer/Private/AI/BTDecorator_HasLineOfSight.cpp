@@ -60,7 +60,7 @@ bool UBTDecorator_HasLineOfSight::LOSTrace(AActor* InActor, AActor* InEnemyActor
 	TraceParams.AddIgnoredActor(MyBot);
 	const FVector StartLocation = MyBot->GetActorLocation();
 	FHitResult Hit(ForceInit);
-	GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, TRACE_WEAPON, TraceParams);
+	GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, GENESTEALER_TRACE_WEAPON, TraceParams);
 	if(!Hit.bBlockingHit)
 	{
 		return false;

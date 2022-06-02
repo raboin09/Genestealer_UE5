@@ -125,10 +125,10 @@ UFXSystemAsset* UEffectUtils::GetVFXAssetFromKey(const FDataTableRowHandle& RowH
 	
 	if (bIsValidHeadshot && (OutRow.FleshHeadshotFX || OutRow.NurgleFleshHeadshotFX))
 	{
-		if(SurfaceMaterial)
+		if(SurfaceMaterial && SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh)
 		{
-			return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotFX ? OutRow.NurgleFleshHeadshotFX : OutRow.FleshHeadshotFX;	
-		}
+			return OutRow.NurgleFleshHeadshotFX ? OutRow.NurgleFleshHeadshotFX : OutRow.FleshHeadshotFX;
+		}		
 		return OutRow.FleshHeadshotFX;
 	}
 
@@ -192,7 +192,11 @@ USoundCue* UEffectUtils::GetSFXAssetFromKey(const FDataTableRowHandle& RowHandle
 	const FEffectImpactSFX& OutRow = *FoundRow;	
 	if (bIsValidHeadshot && (OutRow.FleshHeadshotSound || OutRow.NurgleFleshHeadshotSound))
 	{
-		return SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh && OutRow.NurgleFleshHeadshotSound ? OutRow.NurgleFleshHeadshotSound : OutRow.FleshHeadshotSound;
+		if(SurfaceMaterial && SurfaceMaterial->SurfaceType == GENESTEALER_SURFACE_NurgleFlesh)
+		{
+			return OutRow.NurgleFleshHeadshotSound ? OutRow.NurgleFleshHeadshotSound : OutRow.FleshHeadshotSound;
+		}	
+		return OutRow.FleshHeadshotSound;
 	}
 
 	USoundCue* SelectedSound;

@@ -4,6 +4,7 @@
 #include "Weapons/ProjectileWeapon.h"
 #include "GameFramework/Character.h"
 #include "Actors/BaseOverlapProjectile.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Utils/SpawnUtils.h"
 
 void AProjectileWeapon::FireWeapon()
@@ -17,7 +18,7 @@ void AProjectileWeapon::Internal_SpawnProjectile()
 	FVector Origin = GetRaycastOriginLocation();
 	const FVector StartTrace = GetCameraDamageStartLocation(ShootDir);
 	const FVector EndTrace = StartTrace + ShootDir * TraceRange;
-	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), 10.f); Impact.bBlockingHit)
+	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RadiusOfAimAdjust); Impact.bBlockingHit)
 	{
 		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);
 		bool bWeaponPenetration = false;
@@ -30,7 +31,7 @@ void AProjectileWeapon::Internal_SpawnProjectile()
 		{
 			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 25.0f;
 			FVector MuzzleEndTrace = Origin;
-			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), 5.f); MuzzleImpact.bBlockingHit)
+			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RadiusOfAimAdjust); MuzzleImpact.bBlockingHit)
 			{
 				bWeaponPenetration = true;
 			}
@@ -58,8 +59,8 @@ void AProjectileWeapon::Internal_SpawnProjectile()
 			if(!IsWeaponPlayerControlled() && bSlowDownProjectileOnAIShooters)
 			{
 				// Make projectiles slower for easier dodging
-				ProjectileMovementComponent->InitialSpeed = ProjectileMovementComponent->InitialSpeed * .75f;
-				ProjectileMovementComponent->MaxSpeed = ProjectileMovementComponent->MaxSpeed * .75f;
+				ProjectileMovementComponent->InitialSpeed = AIProjectileSpeedOverride;
+				ProjectileMovementComponent->MaxSpeed = AIProjectileSpeedOverride;
 			}
 		}
 	}

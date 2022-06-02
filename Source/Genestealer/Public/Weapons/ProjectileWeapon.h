@@ -18,9 +18,13 @@ protected:
 	virtual void FireWeapon() override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	float RadiusOfAimAdjust = 10.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	TSubclassOf<class ABaseOverlapProjectile> ProjectileClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(EditCondition = "ProjectileClass != nullptr", EditConditionHides))
 	bool bSlowDownProjectileOnAIShooters = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin = "1", EditCondition = "bSlowDownProjectileOnAIShooters && ProjectileClass != nullptr", EditConditionHides))
+	float AIProjectileSpeedOverride = 3000.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin = "1", EditCondition = "ProjectileClass != nullptr", EditConditionHides))
 	float ProjectileLife = 10.f;
 

@@ -18,6 +18,10 @@ ABaseEffect::ABaseEffect()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	SetAutoDestroyWhenFinished(false);
+	if(!EffectDataObj)
+	{
+		EffectDataObj = Cast<UBaseEffectData>(UBaseEffectData::StaticClass()->GetDefaultObject());
+	}
 }
 
 void ABaseEffect::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -49,11 +53,6 @@ void ABaseEffect::Internal_PlayEffectSound()
 
 void ABaseEffect::Internal_PlayEffectParticleSystem()
 {
-	if(!EffectDataObj)
-	{
-		return;
-	}
-	
 	const bool bReceivingActorIsPawn = EffectContext.ReceivingActor ? EffectContext.ReceivingActor->IsA(APawn::StaticClass()) : false;
 	if(!EffectDataObj->bAttachVFXToActor || !bReceivingActorIsPawn)
 	{
@@ -114,7 +113,6 @@ bool ABaseEffect::Internal_IsValidHeadshot() const
 	{
 		bPlayerControlled = CastedPawn->IsPlayerControlled();	
 	}
-	UKismetSystemLibrary::PrintString(this, EffectContext.SurfaceHit.BoneName.ToString());
 	return UCombatUtils::IsBoneNameHead(EffectContext.SurfaceHit.BoneName) && !bPlayerControlled;
 }
 
@@ -142,20 +140,20 @@ void ABaseEffect::DestroyEffect()
 
 UFXSystemAsset* ABaseEffect::K2_GetEffectParticleSystem_Implementation()
 {
-	if(!EffectDataObj || EffectDataObj->ImpactVFXRowHandle.IsNull())
+	if(EffectDataObj->ImpactVFXRowHandle.IsNull())
 	{
 		return nullptr;
 	}
-	UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
+	const UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
 	return UEffectUtils::GetVFXAssetFromKey(EffectDataObj->ImpactVFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
 }
 
 USoundCue* ABaseEffect::K2_GetEffectSound_Implementation()
 {
-	if(!EffectDataObj || EffectDataObj->ImpactSFXRowHandle.IsNull())
+	if(EffectDataObj->ImpactSFXRowHandle.IsNull())
 	{
 		return nullptr;
 	}
-	UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
+	const UPhysicalMaterial* PhysicalMaterial = EffectContext.SurfaceHit.PhysMaterial.Get();
 	return UEffectUtils::GetSFXAssetFromKey(EffectDataObj->ImpactSFXRowHandle, PhysicalMaterial, Internal_IsValidHeadshot());
 }

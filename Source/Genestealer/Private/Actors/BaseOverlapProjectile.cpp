@@ -22,9 +22,10 @@ ABaseOverlapProjectile::ABaseOverlapProjectile()
 	MovementComp->ProjectileGravityScale = 0.f;
 
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComp->SetCollisionProfileName("BlockAllDynamic");
-	CollisionComp->SetCollisionObjectType(OBJECT_TYPE_PROJECTILE);
+	CollisionComp->SetCollisionObjectType(GENESTEALER_OBJECT_TYPE_PROJECTILE);
+	CollisionComp->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->bTraceComplexOnMove = true;
 	

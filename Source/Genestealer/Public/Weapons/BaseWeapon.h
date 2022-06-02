@@ -51,7 +51,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void HandleFiring();
-	virtual void OnBurstFinished();
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
 
 	bool IsWeaponPlayerControlled() const;
@@ -70,6 +69,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstStarted();
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnBurstFinished();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnUnEquip();
 	UFUNCTION(BlueprintImplementableEvent)
@@ -147,7 +148,8 @@ protected:
 	
 	FTimerHandle TimerHandle_HandleFiring;
 	
-private:
+private:	
+	void OnBurstFinished();
 	void OnBurstStarted();
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;

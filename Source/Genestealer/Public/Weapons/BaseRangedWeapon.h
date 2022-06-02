@@ -11,6 +11,14 @@
 
 class ABaseImpactEffect;
 
+UENUM()
+enum class EWeaponVFXAdjustmentType : uint8
+{
+	NeverAdjust,
+	AdjustOnAIUse,
+	AdjustOnImpact
+};
+
 UCLASS(Abstract, NotBlueprintable)
 class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IAmmoEntity
 {
@@ -88,12 +96,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
 	bool bLoopedMuzzleFX = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
-	bool bAdjustVFXScaleOnSpawn = false;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
+	EWeaponVFXAdjustmentType AdjustVFX = EWeaponVFXAdjustmentType::NeverAdjust;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
 	FString MaxSpawnScaleName = "User.SpawnScaleMax";
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
 	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && bAdjustVFXScaleOnSpawn", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	FString MinSpawnScaleName = "User.SpawnScaleMin";
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	FVector MinVFXScaleAdjust = FVector(.1, .1, 30);
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnImpact", EditConditionHides))
 	float ParticleMeshZ = 33.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
 	bool bDeactivateVFXImmediately = false;
@@ -129,7 +141,7 @@ protected:
 	UAnimMontage* CoverFireLeftAnim;
 
 	UPROPERTY(Transient)
-	UNiagaraComponent* NiagaraFX;
+	UFXSystemComponent* FireVFXSystem;
 private:
 	void Internal_PlayShellEffects() const;
 	UFUNCTION()
@@ -150,13 +162,9 @@ private:
 	UPROPERTY(Transient)
 	UAnimMontage* CurrentMontage;
 	UPROPERTY(Transient)
-	UFXSystemComponent* FireFXSystem;
-	UPROPERTY(Transient)
-	UParticleSystemComponent* ParticleFX;
-	UPROPERTY(Transient)
 	UAudioComponent* ReloadAudio;
 	UPROPERTY(Transient)
-	UAudioComponent* FireAC;
+	UAudioComponent* FireAudio;
 	UPROPERTY(Transient)
 	float CurrentFiringSpread;
 	UPROPERTY(Transient)
@@ -181,6 +189,5 @@ public:
 	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
 	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
-	FORCEINLINE virtual void OnBurstFinished() override { Super::OnBurstFinished(); }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 };

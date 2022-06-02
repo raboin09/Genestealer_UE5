@@ -29,4 +29,6 @@ protected:
 	
 private:
 	bool TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor);
+
+	FVector OriginalScale;
 };

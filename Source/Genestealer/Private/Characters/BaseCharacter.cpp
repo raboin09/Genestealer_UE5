@@ -28,8 +28,8 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	InitMeshCollisionDefaults();
 	GetMesh()->SetGenerateOverlapEvents(true);
 
-	StaticMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	SkeletalMesh->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
+	StaticMesh->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
+	SkeletalMesh->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
@@ -45,8 +45,8 @@ void ABaseCharacter::InitCapsuleCollisionDefaults() const
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(TRACE_WEAPON, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionResponseToChannel(OBJECT_TYPE_PROJECTILE, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 }
 
 void ABaseCharacter::InitMeshCollisionDefaults() const
@@ -54,7 +54,7 @@ void ABaseCharacter::InitMeshCollisionDefaults() const
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetCollisionResponseToChannels(ECR_Block); 
-	GetMesh()->SetCollisionResponseToChannel(OBJECT_TYPE_PROJECTILE, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Block);
 }
 
 void ABaseCharacter::Tick(float DeltaSeconds)
@@ -504,7 +504,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	const FVector EndTrace = StartTrace + (CamRot.Vector() * 800.f);
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;
-	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::ForDuration, HitResult, true);
+	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::ForDuration, HitResult, true);
 	if(!HitResult.bBlockingHit)
 	{
 		return;

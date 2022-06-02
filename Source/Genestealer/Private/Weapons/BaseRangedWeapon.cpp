@@ -60,19 +60,19 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 	Internal_AlternateFiringMesh();
 	if (FireFXClass && bSpawnMuzzleFX)
 	{
-		if (!bLoopedMuzzleFX || !FireFXSystem)
+		if (!bLoopedMuzzleFX || !FireVFXSystem)
 		{
-			if(FireFXSystem && !bLoopedMuzzleFX)
+			if(FireVFXSystem && !bLoopedMuzzleFX)
 			{
-				FireFXSystem->DeactivateImmediate();
+				FireVFXSystem->DeactivateImmediate();
 			}
 
 			if(FireFXClass->IsA(UParticleSystem::StaticClass()))
 			{
-				FireFXSystem = Internal_PlayParticleFireEffects();
+				FireVFXSystem = Internal_PlayParticleFireEffects();
 			} else if(FireFXClass->IsA(UNiagaraSystem::StaticClass()))
 			{
-				FireFXSystem = Internal_PlayNiagaraFireEffects();
+				FireVFXSystem = Internal_PlayNiagaraFireEffects();
 			}
 		}
 	}
@@ -90,9 +90,9 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 
 	if (bLoopedFireSound)
 	{
-		if (FireAC == nullptr)
+		if (FireAudio == nullptr)
 		{
-			FireAC = PlayWeaponSound(FireSound);
+			FireAudio = PlayWeaponSound(FireSound);
 		}
 	}
 	else
@@ -110,16 +110,16 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 
 void ABaseRangedWeapon::StopSimulatingWeaponFire()
 {
-	if(FireFXSystem != nullptr)
+	if(FireVFXSystem != nullptr)
 	{
 		if(bDeactivateVFXImmediately)
 		{
-			FireFXSystem->DeactivateImmediate();
+			FireVFXSystem->DeactivateImmediate();
 		} else
 		{
-			FireFXSystem->Deactivate();
+			FireVFXSystem->Deactivate();
 		}
-		FireFXSystem = nullptr;
+		FireVFXSystem = nullptr;
 	}
 
 	if (bLoopedFireAnim && CurrentMontage)
@@ -128,10 +128,10 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 		CurrentMontage = nullptr;
 	}
 
-	if (FireAC)
+	if (FireAudio)
 	{
-		FireAC->FadeOut(0.3f, 0.0f);
-		FireAC = nullptr;
+		FireAudio->FadeOut(0.3f, 0.0f);
+		FireAudio = nullptr;
 
 		PlayWeaponSound(FireFinishSound);
 	}
@@ -167,29 +167,43 @@ void ABaseRangedWeapon::HandleShellParticleCollision(FName EventName, float Emit
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 {
-	ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	UParticleSystemComponent* ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	return ParticleFX;
 } 
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
 {
-	NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	UNiagaraComponent* NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 
-	if(NiagaraFX && bAdjustVFXScaleOnSpawn)
-	{
-		const FVector& AimDirection = GetAdjustedAim();
-		const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);	
-		const FVector ShootDirection = GetShootDirection(AimDirection);
-		const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
-		const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, true);
-		
-		FVector MaxAdjustedScale = MaxVFXScaleAdjust;
-		if(Impact.bBlockingHit)
-		{
-			MaxAdjustedScale.Z = UKismetMathLibrary::Vector_Distance(StartTrace, Impact.Location);
-			MaxAdjustedScale.Z /= UKismetMathLibrary::Max(ParticleMeshZ, 1);
+	if(NiagaraFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust)
+	{		
+		if(AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnImpact)
+		{			
+			FVector MaxAdjustedScale = MaxVFXScaleAdjust;
+			const FVector& AimDirection = GetAdjustedAim();
+			const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);	
+			const FVector ShootDirection = GetShootDirection(AimDirection);
+			const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
+			const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, true);
+			if(Impact.bBlockingHit)
+			{
+				MaxAdjustedScale.Z = UKismetMathLibrary::Vector_Distance(StartTrace, Impact.Location);
+				MaxAdjustedScale.Z /= UKismetMathLibrary::Max(ParticleMeshZ, 1);
+			}
+			NiagaraFX->SetNiagaraVariableVec3(MaxSpawnScaleName, MaxAdjustedScale);
+			NiagaraFX->SetNiagaraVariableVec3(MinSpawnScaleName, MinVFXScaleAdjust);
+			return NiagaraFX;
 		}
-		NiagaraFX->SetNiagaraVariableVec3(MaxSpawnScaleName, MaxAdjustedScale);
+
+		if(AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnAIUse)
+		{
+			if(IsWeaponPlayerControlled())
+			{
+				return NiagaraFX;
+			}
+			NiagaraFX->SetNiagaraVariableVec3(MaxSpawnScaleName, MaxVFXScaleAdjust);
+			NiagaraFX->SetNiagaraVariableVec3(MinSpawnScaleName, MinVFXScaleAdjust);
+		}
 	}
 	return NiagaraFX;
 }
@@ -346,12 +360,12 @@ void ABaseRangedWeapon::OnUnEquip()
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
 		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
 	}
-	if(!FireFXSystem)
+	if(!FireVFXSystem)
 	{
 		return;
 	}
 
-	FireFXSystem->DeactivateImmediate();
+	FireVFXSystem->DeactivateImmediate();
 }
 
 bool ABaseRangedWeapon::CanFire() const
@@ -448,7 +462,7 @@ float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
 
 bool ABaseRangedWeapon::ShouldLineTrace() const
 {
-	return IsWeaponPlayerControlled();
+	return !IsWeaponPlayerControlled();
 }
 
 FVector ABaseRangedWeapon::GetRaycastOriginRotation()
@@ -555,10 +569,10 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	auto DrawDebugTrace = EDrawDebugTrace::None;
 	if(bLineTrace)
 	{
-		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	} else
 	{
-		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, CircleRadius, UEngineTypes::ConvertToTraceType(TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, CircleRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
 	}
 	return Hit;
 }

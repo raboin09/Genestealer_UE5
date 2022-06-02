@@ -24,7 +24,7 @@ ABaseCoverPoint::ABaseCoverPoint()
 	MiddleCoverWall->AddLocalOffset(FVector(0.f, -130.f, 50.f));
 	MiddleCoverWall->SetWorldScale3D(FVector(4.f, .1f, 1.3f));
 	MiddleCoverWall->SetCollisionResponseToAllChannels(ECR_Ignore);
-	MiddleCoverWall->SetCollisionResponseToChannel(TRACE_COVER_WALL, ECR_Block);
+	MiddleCoverWall->SetCollisionResponseToChannel(GENESTEALER_TRACE_COVER_WALL, ECR_Block);
 	bMiddleCoverEnabled = true;
 	
 	LeftCoverPeekBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverPeekBox"));

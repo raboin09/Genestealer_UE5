@@ -85,8 +85,9 @@ void AConeWeapon::BeginPlay()
 	ConeComponent->IgnoreActorWhenMoving(this, true);
 	ConeComponent->IgnoreActorWhenMoving(OwningPawn, true);
 	ConeComponent->SetVisibility(false);
-	if(const AController* CurrCon = GetInstigatorController(); CurrCon->IsA(AAIController::StaticClass()))
+	if(const AController* CurrCon = GetInstigatorController(); CurrCon && CurrCon->IsA(AAIController::StaticClass()))
 	{
+		OriginalScale = ConeComponent->GetRelativeScale3D();
 		ConeComponent->SetRelativeScale3D(AIScaleOverride);
 	}
 }
