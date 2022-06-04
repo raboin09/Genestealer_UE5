@@ -24,6 +24,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	FVector AIScaleOverride;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	FVector AIAdjustmentOverride;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* ConeComponent;
 	

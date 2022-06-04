@@ -72,7 +72,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 				FireVFXSystem = Internal_PlayParticleFireEffects();
 			} else if(FireFXClass->IsA(UNiagaraSystem::StaticClass()))
 			{
-				FireVFXSystem = Internal_PlayNiagaraFireEffects();
+				FireVFXSystem = PlayNiagaraFireEffects();
 			}
 		}
 	}
@@ -171,7 +171,7 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 	return ParticleFX;
 } 
 
-UFXSystemComponent* ABaseRangedWeapon::Internal_PlayNiagaraFireEffects()
+UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 {
 	UNiagaraComponent* NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 

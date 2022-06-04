@@ -47,7 +47,8 @@ class GENESTEALER_API IWeapon
 public:
 	virtual EWeaponType GetWeaponType() const PURE_VIRTUAL(IWeapon::GetWeaponType, return EWeaponType::NONE;);
 	virtual EALSOverlayState GetWeaponOverlay() PURE_VIRTUAL(IWeapon::GetWeaponOverlay, return EALSOverlayState::Default;);
-	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentWeapon, return EWeaponState::Idle; );
+	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentState, return EWeaponState::Idle; );
+	virtual FTransform GetLeftHandSocketTransform() const PURE_VIRTUAL(IWeapon::GetLeftHandSocketTransform, return FTransform(); );
 	
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
 	virtual void OnLeaveInventory() PURE_VIRTUAL(IWeapon::OnLeaveInventory,);

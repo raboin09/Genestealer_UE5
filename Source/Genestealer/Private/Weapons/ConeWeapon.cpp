@@ -89,6 +89,7 @@ void AConeWeapon::BeginPlay()
 	{
 		OriginalScale = ConeComponent->GetRelativeScale3D();
 		ConeComponent->SetRelativeScale3D(AIScaleOverride);
+		ConeComponent->AddLocalOffset(AIAdjustmentOverride);
 	}
 }
 

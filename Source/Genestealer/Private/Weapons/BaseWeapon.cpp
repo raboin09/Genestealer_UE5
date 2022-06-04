@@ -229,6 +229,15 @@ UMeshComponent* ABaseWeapon::GetSecondaryWeaponMesh() const
 	return nullptr;
 }
 
+FTransform ABaseWeapon::GetLeftHandSocketTransform() const
+{
+	if(!GetWeaponMesh())
+	{
+		return FTransform();
+	}
+	return GetWeaponMesh()->GetSocketTransform(ik_hand_l_Socket, RTS_Component);
+}
+
 void ABaseWeapon::HandleFiring()
 {
 	if (CheckChildFireCondition() && CanFire())
@@ -237,33 +246,26 @@ void ABaseWeapon::HandleFiring()
 		FireWeapon();
 		BurstCounter++;
 	}
-	else if (OwningPawn)
+	else if (BurstCounter > 0)
 	{
-		if (BurstCounter > 0)
-		{
-			OnBurstFinished();
-		}
+		OnBurstFinished();
 	}
 	
-	if (OwningPawn)
+	if (CurrentState == EWeaponState::Firing && TimeBetweenShots > 0.0f)
 	{
-		bRefiring = (CurrentState == EWeaponState::Firing && TimeBetweenShots > 0.0f);
-		if (bRefiring)
-		{
-			GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, TimeBetweenShots, false);
-		}
+		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, TimeBetweenShots, false);
 	}
-
+	
 	LastFireTime = GetWorld()->GetTimeSeconds();
 }
 
 void ABaseWeapon::OnBurstStarted()
 {
 	K2_OnBurstStarted();
-	const float GameTime = GetWorld()->GetTimeSeconds();
 	if (IsWeaponOnCooldown())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring, LastFireTime + TimeBetweenShots - GameTime, false);
+		const float GameTime = GetWorld()->GetTimeSeconds();
+		GetWorldTimerManager().SetTimer(TimerHandle_HandleFiring, this, &ABaseWeapon::HandleFiring,  LastFireTime + TimeBetweenShots - GameTime, false);
 	}
 	else
 	{
@@ -411,7 +413,7 @@ void ABaseWeapon::PlayCameraShake()
 bool ABaseWeapon::IsWeaponOnCooldown() const
 {
 	const float GameTime = GetWorld()->GetTimeSeconds();
-	if (LastFireTime > 0 && TimeBetweenShots > 0.0f && LastFireTime + TimeBetweenShots > GameTime)
+	if (LastFireTime > 0 && TimeBetweenShots > 0.0f &&  LastFireTime + TimeBetweenShots > GameTime)
 	{
 		return true;
 	}

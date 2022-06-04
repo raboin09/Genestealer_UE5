@@ -51,6 +51,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void HandleFiring();
+	virtual void OnBurstFinished();
+	virtual void OnBurstStarted();
 	virtual void ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit = true);
 
 	bool IsWeaponPlayerControlled() const;
@@ -86,6 +88,7 @@ protected:
 	FORCEINLINE virtual EWeaponState GetCurrentState() const override { return CurrentState; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ACharacter* GetOwningPawn() const override { return OwningPawn; }
+	virtual FTransform GetLeftHandSocketTransform() const override;
 
 	UPROPERTY()
 	ACharacter* OwningPawn;
@@ -105,14 +108,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
 	USkeletalMeshComponent* SecondaryWeaponSkeletalMesh;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (ClampMin="0", EditCondition = "ReloadAnim == nullptr", EditConditionHides))
-	float ReloadDurationIfNoAnim = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
-	UAnimMontage* ReloadAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* EquipAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EALSOverlayState WeaponOverlayState;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	FName ik_hand_l_Socket = "ik_hand_l";
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	float FireWarmUpTime = 0.f;
@@ -149,8 +150,6 @@ protected:
 	FTimerHandle TimerHandle_HandleFiring;
 	
 private:	
-	void OnBurstFinished();
-	void OnBurstStarted();
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
 	void InitWeaponMesh(UMeshComponent* InMeshComp);

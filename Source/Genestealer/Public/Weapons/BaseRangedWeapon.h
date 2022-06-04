@@ -47,6 +47,8 @@ protected:
 	virtual void UseAmmo();
 	virtual void ReloadWeapon();
 	
+	UFUNCTION()
+	UFXSystemComponent* PlayNiagaraFireEffects();
 	FVector GetRaycastOriginLocation();
 	FVector GetRaycastOriginRotation();
 	FRotator GetRaycastSocketRotation() const;
@@ -139,17 +141,21 @@ protected:
 	UAnimMontage* CoverFireRightAnim;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation|Cover", meta = (EditCondition = "FireAnim != nullptr && bCanCoverFire", EditConditionHides))
 	UAnimMontage* CoverFireLeftAnim;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation", meta = (ClampMin="0", EditCondition = "ReloadAnim == nullptr", EditConditionHides))
+	float ReloadDurationIfNoAnim = 1.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	UAnimMontage* ReloadAnim;
 
 	UPROPERTY(Transient)
 	UFXSystemComponent* FireVFXSystem;
+	UPROPERTY()
+	UMeshComponent* NextFiringMesh;
 private:
 	void Internal_PlayShellEffects() const;
 	UFUNCTION()
 	void HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
-	UFUNCTION()
-	UFXSystemComponent* Internal_PlayNiagaraFireEffects();
 	UFUNCTION()
 	FAnimMontagePlayData Internal_GetPlayData() const;
 	UFUNCTION()
@@ -173,9 +179,7 @@ private:
 	int32 CurrentAmmo;
 	UPROPERTY(Transient)
 	int32 CurrentAmmoInClip;
-
-	UPROPERTY()
-	UMeshComponent* NextFiringMesh;
+	
 	UPROPERTY()
 	FAmmoAmountChanged AmmoAmountChanged;
 

@@ -52,6 +52,7 @@ public:
 	FORCEINLINE virtual bool IsRagdoll() const override { return GameplayTagContainer.HasTag(TAG_STATE_RAGDOLL); }
 	FORCEINLINE virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
 	FORCEINLINE virtual bool HasRightInput() const override { return bHasRightInput; }
+	FORCEINLINE virtual FTransform GetFABRIKHandL() const override { return InventoryComponent ? InventoryComponent->GetCurrentWeaponLeftHandSocketTransform() : FTransform(); }
 	
 	////////////////////////////////
 	/// IAttackable override

@@ -238,6 +238,15 @@ EWeaponState UInventoryComponent::GetCurrentWeaponState() const
 	return EWeaponState::Idle;
 }
 
+FTransform UInventoryComponent::GetCurrentWeaponLeftHandSocketTransform() const
+{
+	if(CurrentWeapon)
+	{
+		return CurrentWeapon->GetLeftHandSocketTransform();
+	}
+	return FTransform();
+}
+
 void UInventoryComponent::Internal_RemoveWeapon(TScriptInterface<IWeapon> Weapon, EWeaponSlot Slot)
 {
 	if (Weapon)

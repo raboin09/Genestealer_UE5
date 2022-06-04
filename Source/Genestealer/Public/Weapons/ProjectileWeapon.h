@@ -16,7 +16,9 @@ class GENESTEALER_API AProjectileWeapon : public ABaseRangedWeapon
 	
 protected:
 	virtual void FireWeapon() override;
-
+	virtual class ABaseOverlapProjectile* HandleProjectileFire();
+	virtual TArray<TSubclassOf<AActor>> GetAdditionalEffectsToApplyToProjectile() const { return WeaponEffects; };
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	float RadiusOfAimAdjust = 10.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
@@ -29,5 +31,6 @@ protected:
 	float ProjectileLife = 10.f;
 
 private:
-	virtual void Internal_SpawnProjectile();
+	virtual void Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity);
+	virtual ABaseOverlapProjectile* Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity);
 };

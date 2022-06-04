@@ -9,28 +9,35 @@
 
 void AProjectileWeapon::FireWeapon()
 {
-	Internal_SpawnProjectile();
+	HandleProjectileFire();
 }
 
-void AProjectileWeapon::Internal_SpawnProjectile()
+ABaseOverlapProjectile* AProjectileWeapon::HandleProjectileFire()
 {
-	FVector ShootDir = GetAdjustedAim();
-	FVector Origin = GetRaycastOriginLocation();
-	const FVector StartTrace = GetCameraDamageStartLocation(ShootDir);
-	const FVector EndTrace = StartTrace + ShootDir * TraceRange;
+	FVector Origin, ShootDir;
+	Internal_AimAndShootProjectile(Origin, ShootDir);
+	return Internal_SpawnProjectile(Origin, ShootDir);
+}
+
+void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity)
+{
+	OutVelocity = GetAdjustedAim();
+	OutSpawnOrigin = GetRaycastOriginLocation();
+	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
+	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
 	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RadiusOfAimAdjust); Impact.bBlockingHit)
 	{
-		const FVector AdjustedDir = (Impact.ImpactPoint - Origin);
+		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
 		bool bWeaponPenetration = false;
 
-		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, ShootDir); DirectionDot < 0.0f)
+		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
 		{
 			bWeaponPenetration = true;
 		}
 		else if (DirectionDot < 0.5f)
 		{
-			FVector MuzzleStartTrace = Origin - GetRaycastOriginRotation() * 25.0f;
-			FVector MuzzleEndTrace = Origin;
+			FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
+			FVector MuzzleEndTrace = OutSpawnOrigin;
 			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RadiusOfAimAdjust); MuzzleImpact.bBlockingHit)
 			{
 				bWeaponPenetration = true;
@@ -39,20 +46,25 @@ void AProjectileWeapon::Internal_SpawnProjectile()
 
 		if (bWeaponPenetration)
 		{
-			Origin = Impact.ImpactPoint - ShootDir * 10.0f;
+			OutSpawnOrigin = Impact.ImpactPoint - OutVelocity * 10.0f;
 		}
 		else
 		{
-			ShootDir = AdjustedDir;
+			OutVelocity = AdjustedDir;
 		}
 	}
+}
+
+ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity)
+{
+
 	FTransform SpawnTrans = FTransform();
-	SpawnTrans.SetLocation(Origin);
+	SpawnTrans.SetLocation(SpawnOrigin);
 	if (ABaseOverlapProjectile* Projectile = USpawnUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
-		Projectile->InitVelocity(ShootDir);
+		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
-		Projectile->AddAdditionalEffectsToApply(WeaponEffects);
+		Projectile->AddAdditionalEffectsToApply(GetAdditionalEffectsToApplyToProjectile());
 		USpawnUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
 		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
 		{
@@ -63,5 +75,7 @@ void AProjectileWeapon::Internal_SpawnProjectile()
 				ProjectileMovementComponent->MaxSpeed = AIProjectileSpeedOverride;
 			}
 		}
+		return Projectile;
 	}
+	return nullptr;
 }

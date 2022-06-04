@@ -34,6 +34,7 @@ void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsInCover = AnimOwner->IsInCover();
 		bAiming = AnimOwner->IsAiming();
 		bReady = AnimOwner->IsReady();
+		FabrikHandL = AnimOwner->GetFABRIKHandL();
 	}
 }
 
