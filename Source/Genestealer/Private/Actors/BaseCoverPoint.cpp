@@ -6,9 +6,11 @@
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Genestealer/Genestealer.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "NavAreas/NavArea_Obstacle.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
 ABaseCoverPoint::ABaseCoverPoint()
@@ -16,14 +18,12 @@ ABaseCoverPoint::ABaseCoverPoint()
 	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
 
 	CoverWallOffset = 40.f;
-
 	MiddleCoverWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiddleCoverWall"));
-	// MiddleCoverWall->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object);
-	// MiddleCoverWall->GetStaticMesh()->SetMaterial(0, ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial'")).Object);
 	MiddleCoverWall->SetHiddenInGame(true);
 	MiddleCoverWall->AddLocalOffset(FVector(0.f, -130.f, 50.f));
 	MiddleCoverWall->SetWorldScale3D(FVector(4.f, .1f, 1.3f));
 	MiddleCoverWall->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MiddleCoverWall->SetCollisionResponseToChannel(GENESTEALER_TRACE_INTERACTION, ECR_Block);
 	MiddleCoverWall->SetCollisionResponseToChannel(GENESTEALER_TRACE_COVER_WALL, ECR_Block);
 	bMiddleCoverEnabled = true;
 	
@@ -86,6 +86,34 @@ ABaseCoverPoint::ABaseCoverPoint()
 	RightCoverEdgeBox->IgnoreActorWhenMoving(this, true);
 
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RotationTimeline"));
+}
+
+void ABaseCoverPoint::SwitchOutlineOnMesh(bool bShouldOutline)
+{
+	if(MiddleCoverWall)
+	{
+		TArray<AActor*> FoundActor;
+		UGameplayStatics::GetAllActorsWithTag(this, AssociatedActorName, FoundActor);
+		if(FoundActor.Num() > 0)
+		{
+			if(!FoundActor[0])
+			{
+				return;
+			}
+
+			if(UStaticMeshComponent* FoundMesh = FoundActor[0]->FindComponentByClass<UStaticMeshComponent>())
+			{
+				const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Gray);
+				FoundMesh->SetRenderCustomDepth(bShouldOutline);
+				FoundMesh->SetCustomDepthStencilValue(OutlineColorInt);
+			}
+		}
+	}
+}
+
+void ABaseCoverPoint::InteractWithActor(AActor* InstigatingActor)
+{
+	
 }
 
 void ABaseCoverPoint::BeginPlay()

@@ -46,6 +46,7 @@ void ABaseCharacter::InitCapsuleCollisionDefaults() const
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_TRACE_INTERACTION, ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 }
 
@@ -504,7 +505,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	const FVector EndTrace = StartTrace + (CamRot.Vector() * 800.f);
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;
-	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::ForDuration, HitResult, true);
+	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
 	if(!HitResult.bBlockingHit)
 	{
 		return;

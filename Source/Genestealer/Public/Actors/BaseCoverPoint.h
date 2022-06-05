@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Actors/BaseActor.h"
 #include "API/CoverPoint.h"
+#include "API/Interactable.h"
+#include "Characters/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Utils/GameplayTagUtils.h"
@@ -14,20 +16,30 @@
  * 
  */
 UCLASS()
-class GENESTEALER_API ABaseCoverPoint : public ABaseActor, public ICoverPoint
+class GENESTEALER_API ABaseCoverPoint : public ABaseActor, public ICoverPoint, public IInteractable
 {
 	GENERATED_BODY()
 
 public:
 	ABaseCoverPoint();
-	
+
+	////////////////////////////////
+	/// IInteractable override
+	////////////////////////////////
+	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
+	virtual void InteractWithActor(AActor* InstigatingActor) override;
+
+	////////////////////////////////
+	/// ICoverPoint override
+	////////////////////////////////
 	virtual void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal) override;
 	virtual void VacateCover(ABaseCharacter* InActor) override;
-
 	virtual void StartCoverFire() override;
 	virtual void StopCoverFire() override;
 	virtual void StartCoverAim() override;
 	virtual void StopCoverAim() override;
+
+	virtual bool HasOccupant() { return IsValid(OccupiedActor); }
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
@@ -35,6 +47,8 @@ protected:
 	UFUNCTION()
 	virtual void ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UPROPERTY(EditInstanceOnly, Category="Genestealer")
+	FName AssociatedActorName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float CoverWallOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
@@ -95,7 +109,8 @@ private:
 	bool ActorInRightPeek() const;
 	bool ActorAiming() const;
 	bool ActorFiring() const;
-	
+
+private:
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
 

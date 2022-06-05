@@ -25,6 +25,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire|Charge")
 	int32 MaxChargedState = 2;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
+	int32 WhatChargeStateToPlayChargingSound = 1;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
+	float ChargeSoundDelay = 0.f;
 
 	// FireFX is the charging VFX, ChargeBlastVFX is on burst finished
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
@@ -60,8 +64,12 @@ private:
 	void Internal_TryIncreaseChargeState();
 	void Internal_FireAndReset();
 	void Internal_PlayChargeBlastVFX();
+	UFUNCTION()
+	void Internal_PlayChargeAudio();
 
 	int32 CurrentChargeState = -1;
+
+	FTimerHandle TimerHandle_DelayChargeAudio;
 
 	UPROPERTY()
 	UAudioComponent* ChargingAudio;

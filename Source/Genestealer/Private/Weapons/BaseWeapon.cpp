@@ -388,6 +388,7 @@ void ABaseWeapon::OnEnterInventory(ACharacter* NewOwner)
 	{
 		GetWeaponMesh()->SetHiddenInGame(true);
 	}
+	K2_OnEnterInventory();
 }
 
 void ABaseWeapon::OnLeaveInventory()

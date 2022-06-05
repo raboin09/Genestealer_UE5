@@ -7,6 +7,7 @@
 #include "API/Attackable.h"
 #include "Characters/EffectContainerComponent.h"
 #include "GameFramework/Character.h"
+#include "Genestealer/Genestealer.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/EffectUtils.h"
 
@@ -15,6 +16,7 @@ AConeWeapon::AConeWeapon()
 	ConeComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ConeComponent"));
 	ConeComponent->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cone.Cone'")).Object);
 	ConeComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ConeComponent->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 	ConeComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	ConeComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	ConeComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);

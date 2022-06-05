@@ -62,8 +62,9 @@ void ABaseAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
 	// Look toward focus
 	if (!FocalPoint.IsZero() && MyPawn)
 	{
-		if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 150)
+		if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 250)
 		{
+			Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
 			return;
 		}
 		

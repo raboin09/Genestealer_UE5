@@ -4,11 +4,13 @@
 #include "Characters/BaseAICharacter.h"
 
 #include "AI/BaseAIController.h"
+#include "Characters/InteractionComponent.h"
 
 ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AIControllerClass = ABaseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 }
 
 FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) const
@@ -47,4 +49,12 @@ float ABaseAICharacter::GetWeaponRange() const
 		return -1.f;
 	}
 	return InventoryComponent->GetEquippedWeapon()->GetWeaponRange();
+}
+
+void ABaseAICharacter::SwitchOutlineOnMesh(bool bShouldOutline)
+{
+	if(!IsDying() && InteractionComponent)
+	{
+		InteractionComponent->SwitchOutlineOnAllMeshes(bShouldOutline);
+	}
 }

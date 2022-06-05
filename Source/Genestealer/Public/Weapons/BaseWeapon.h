@@ -70,6 +70,8 @@ protected:
 	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnEnterInventory();
+	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstStarted();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstFinished();

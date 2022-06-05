@@ -21,7 +21,7 @@ class GENESTEALER_API UCoreUtils : public UBlueprintFunctionLibrary
 
 	public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
-	static AActor* GetTargetedActorByPlayerController(const UObject* ContextObject);
+	static TScriptInterface<IInteractable> GetTargetedActorByPlayerController(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static UInventoryComponent* GetInventoryComponentFromActor(const AActor* InActor);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")

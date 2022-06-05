@@ -16,7 +16,6 @@ void AChargeReleaseProjectileWeapon::BeginPlay()
 
 void AChargeReleaseProjectileWeapon::FireWeapon()
 {
-	UKismetSystemLibrary::PrintString(this, "Firing");
 	Internal_TryIncreaseChargeState();
 }
 
@@ -35,9 +34,15 @@ float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
 		}
 	}
 
-	if(!ChargingAudio)
+	if(!ChargingAudio && CurrentChargeState >= WhatChargeStateToPlayChargingSound)
 	{
-		ChargingAudio = PlayWeaponSound(FireSound);
+		if(ChargeSoundDelay <= 0.f)
+		{
+			Internal_PlayChargeAudio();
+		} else
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle_DelayChargeAudio,  this, &AChargeReleaseProjectileWeapon::Internal_PlayChargeAudio, ChargeSoundDelay, false);
+		}
 	}
 	return 0.f;
 }
@@ -45,6 +50,7 @@ float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
 void AChargeReleaseProjectileWeapon::OnBurstFinished()
 {
 	Super::OnBurstFinished();
+	GetWorldTimerManager().ClearTimer(TimerHandle_DelayChargeAudio);
 	if(CurrentChargeState > -1.f)
 	{
 		Internal_FireAndReset();
@@ -63,11 +69,8 @@ TArray<TSubclassOf<AActor>> AChargeReleaseProjectileWeapon::GetAdditionalEffects
 
 void AChargeReleaseProjectileWeapon::Internal_TryIncreaseChargeState()
 {
-	if(CurrentChargeState < MaxChargedState)
-	{
-		CurrentChargeState++;
-		UKismetSystemLibrary::PrintString(this, "IncreasingCharge " + FString::FromInt(CurrentChargeState));
-	} else
+	CurrentChargeState++;
+	if(CurrentChargeState >= MaxChargedState)
 	{
 		Internal_FireAndReset();
 	}
@@ -114,4 +117,9 @@ void AChargeReleaseProjectileWeapon::Internal_PlayChargeBlastVFX()
 			ChargeBlastNiagara->SetVariableVec2(ChargeBlastNiagaraScaleMinName, ChargeBlastScaleMin * CurrentChargeState);
 		}
 	}
+}
+
+void AChargeReleaseProjectileWeapon::Internal_PlayChargeAudio()
+{
+	ChargingAudio = PlayWeaponSound(FireSound);	
 }

@@ -39,7 +39,7 @@ UInventoryComponent* UCoreUtils::GetPlayerInventoryComponent(const UObject* Cont
 	return nullptr;
 }
 
-AActor* UCoreUtils::GetTargetedActorByPlayerController(const UObject* ContextObject)
+TScriptInterface<IInteractable> UCoreUtils::GetTargetedActorByPlayerController(const UObject* ContextObject)
 {
 	if(const ABasePlayerController* PlayerController = GetBasePlayerController(ContextObject))
 	{
