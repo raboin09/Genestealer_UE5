@@ -8,9 +8,9 @@
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "NavAreas/NavArea_Obstacle.h"
 #include "Utils/CombatUtils.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
 ABaseCoverPoint::ABaseCoverPoint()
@@ -86,34 +86,45 @@ ABaseCoverPoint::ABaseCoverPoint()
 	RightCoverEdgeBox->IgnoreActorWhenMoving(this, true);
 
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RotationTimeline"));
+	DissolveComponent = CreateDefaultSubobject<UDissolveComponent>(TEXT("DissolveComponent"));
+	DissolveMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DissolveMesh"));
+	DissolveMesh->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
+	DissolveMesh->SetupAttachment(MiddleCoverWall);
 }
 
 void ABaseCoverPoint::SwitchOutlineOnMesh(bool bShouldOutline)
 {
-	if(MiddleCoverWall)
+	if(AssociatedMesh)
 	{
-		TArray<AActor*> FoundActor;
-		UGameplayStatics::GetAllActorsWithTag(this, AssociatedActorName, FoundActor);
-		if(FoundActor.Num() > 0)
-		{
-			if(!FoundActor[0])
-			{
-				return;
-			}
+		const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Gray);
+		AssociatedMesh->SetRenderCustomDepth(bShouldOutline);
+		AssociatedMesh->SetCustomDepthStencilValue(OutlineColorInt);
+	}
 
-			if(UStaticMeshComponent* FoundMesh = FoundActor[0]->FindComponentByClass<UStaticMeshComponent>())
-			{
-				const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Gray);
-				FoundMesh->SetRenderCustomDepth(bShouldOutline);
-				FoundMesh->SetCustomDepthStencilValue(OutlineColorInt);
-			}
-		}
+	if(!DissolveComponent)
+	{
+		return;
+	}
+
+	if(!bShouldOutline)
+	{
+		DissolveComponent->StartDissolveTimeline();
+		bShouldPlayCoverDissolve = true;
+	} else if(bShouldPlayCoverDissolve && bShouldOutline)
+	{
+		bShouldPlayCoverDissolve = false;
+		DissolveComponent->StartAppearTimeline();
 	}
 }
 
 void ABaseCoverPoint::InteractWithActor(AActor* InstigatingActor)
 {
 	
+}
+
+void ABaseCoverPoint::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 void ABaseCoverPoint::BeginPlay()
@@ -140,6 +151,20 @@ void ABaseCoverPoint::BeginPlay()
 	FOnTimelineEvent CoverLerpFinishedEvent;
 	CoverLerpFinishedEvent.BindDynamic(this, &ABaseCoverPoint::Internal_CoverTransitionFinished);
 	CoverTransitionTimeline->SetTimelineFinishedFunc(CoverLerpFinishedEvent);
+
+	TArray<AActor*> FoundActor;
+	UGameplayStatics::GetAllActorsWithTag(this, AssociatedActorName, FoundActor);
+	if(FoundActor.Num() > 0 && FoundActor[0])
+	{
+		AssociatedMesh = FoundActor[0]->FindComponentByClass<UStaticMeshComponent>();
+	}
+	
+	if(DissolveComponent)
+	{
+		DissolveComponent->InitDissolveableMesh(DissolveMesh);
+	}
+
+	bShouldPlayCoverDissolve = true;
 }
 
 void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal)
@@ -160,6 +185,11 @@ void ABaseCoverPoint::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	
 	Internal_ActivateOverlapBoxes(true);	
 	Internal_StartCoverTransition();
+
+	if(DissolveComponent)
+	{
+		DissolveComponent->ResetDissolveState(true);
+	}
 }
 
 void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)

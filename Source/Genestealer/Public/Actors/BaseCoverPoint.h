@@ -7,6 +7,7 @@
 #include "API/CoverPoint.h"
 #include "API/Interactable.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/DissolveComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Utils/GameplayTagUtils.h"
@@ -41,6 +42,7 @@ public:
 
 	virtual bool HasOccupant() { return IsValid(OccupiedActor); }
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	virtual void ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -79,6 +81,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
+	UDissolveComponent* DissolveComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
+	USkeletalMeshComponent* DissolveMesh;
+	
 private:
 	void Internal_StartPeekFire();
 	void Internal_StopPeekFire() const;
@@ -110,14 +117,16 @@ private:
 	bool ActorAiming() const;
 	bool ActorFiring() const;
 
-private:
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
-
+	UPROPERTY()
+	UStaticMeshComponent* AssociatedMesh;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UCurveFloat* CoverTransitionCurve;
 	UPROPERTY()
 	UTimelineComponent* CoverTransitionTimeline;
+
+	bool bShouldPlayCoverDissolve;
 	
 	FTransform CachedTransform;
 	
