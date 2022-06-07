@@ -5,18 +5,16 @@
 #include "CoreMinimal.h"
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
+#include "Types/EventDeclarations.h"
 #include "API/Animatable.h"
 #include "API/Attackable.h"
 #include "API/CoverPoint.h"
 #include "API/Effectible.h"
 #include "API/Taggable.h"
 #include "Character/ALSCharacter.h"
-#include "Components/AGRAnimMasterComponent.h"
 #include "Utils/GameplayTagUtils.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerInCombatChanged, bool, bIsInCombat, AActor*, DamageCauser);
 
 UCLASS(Abstract, NotBlueprintable, config=Game)
 class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IEffectible, public IAnimatable
@@ -77,11 +75,12 @@ public:
 	////////////////////////////////
 	/// ABaseCharacter
 	////////////////////////////////
-	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	UFUNCTION(BlueprintCallable, Category = "Genestealer")
 	FORCEINLINE bool IsDying() const { return GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
-	UFUNCTION(BlueprintCallable, Category = "BaseCharacter")
+	UFUNCTION(BlueprintCallable, Category = "Genestealer")
 	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+	FORCEINLINE FCharacterInCombatChanged& OnCharacterInCombatChanged() { return CharacterInCombatChanged; }
 	bool IsInCombat();
 	void SetInCombat(bool bInNewState, AActor* DamageCauser);
 
@@ -105,7 +104,7 @@ protected:
 	UFUNCTION()
 	void HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayload& EventPayload);
 	UFUNCTION()
-	void HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWeapon, TScriptInterface<IWeapon> PreviousWeapon);
+	void HandleCurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload);
 	UFUNCTION()
 	virtual void HandleDeathEvent(const FDeathEventPayload& DeathEventPayload);
 	
@@ -136,7 +135,7 @@ protected:
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
 
-	FPlayerInCombatChanged PlayerInCombatChanged;
+	FCharacterInCombatChanged CharacterInCombatChanged;
 	
 private:
 	void Internal_StopAllAnimMontages() const;

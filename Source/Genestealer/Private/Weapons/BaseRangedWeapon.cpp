@@ -603,7 +603,7 @@ void ABaseRangedWeapon::StartReload()
 void ABaseRangedWeapon::BroadcastAmmoUsage()
 {
 	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / AmmoPerClip) * AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % AmmoPerClip;
-	OnAmmoAmountChanged().Broadcast(CurrentAmmoInClip, AmmoPerClip, TotalAmmo);
+	OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(CurrentAmmoInClip, AmmoPerClip, TotalAmmo));
 }
 
 void ABaseRangedWeapon::HandleFiring()

@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "API/Weapon.h"
+#include "Types/EventDeclarations.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
 class ABaseCharacter;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCurrentWeaponChanged, TScriptInterface<IWeapon>, NewWeapon, TScriptInterface<IWeapon>, PreviousWeapon);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewWeaponAdded, TScriptInterface<IWeapon>, AddedWeapon);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponRemoved, TScriptInterface<IWeapon>, RemovedWeapon);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GENESTEALER_API UInventoryComponent : public UActorComponent

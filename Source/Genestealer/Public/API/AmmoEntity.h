@@ -3,12 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types/EventDeclarations.h"
 #include "UObject/Interface.h"
 #include "AmmoEntity.generated.h"
 
-
-// Broadcasts CurrentAmmoInClip and CurrentAmmo
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAmmoAmountChanged, int32, CurrentAmmoInClip, int32, ClipCapacity, int32, CurrentAmmo);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))

@@ -133,6 +133,10 @@ FName UCombatUtils::GetNearestValidBoneForImpact(FName InBone)
 		return "calf_r";
 	}
 
+	if(InBone.IsEqual("head"))
+	{
+		return "spine_03";
+	}
 	return InBone;
 }
 

@@ -19,7 +19,9 @@ class GENESTEALER_API UCoreUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	public:
+public:
+	static UUIEventHub* GetUIEventHub(const UObject* ContextObject);
+	static float GetCoverPointValidDistance();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static TScriptInterface<IInteractable> GetTargetedActorByPlayerController(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")

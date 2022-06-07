@@ -189,7 +189,7 @@ void UInventoryComponent::AddWeapon(TScriptInterface<IWeapon> Weapon, EWeaponSlo
 				break;
 			default: ;
 			}
-			NewWeaponAdded.Broadcast(Weapon);
+			NewWeaponAdded.Broadcast(FNewWeaponAddedPayload(Weapon));
 		}
 	}
 }
@@ -284,7 +284,7 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 			NewWeapon->OnEquip(LastWeapon);		
 		}
 	}
-	CurrentWeaponChanged.Broadcast(NewWeapon, LastWeapon);
+	CurrentWeaponChanged.Broadcast(FCurrentWeaponChangedPayload(NewWeapon, LastWeapon));
 	
 	// Needed to catch this for the first BeginPlay loop
 	if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(NewWeapon.GetObject()))

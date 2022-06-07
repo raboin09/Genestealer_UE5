@@ -11,7 +11,12 @@
 
 ABasePlayerController* UCoreUtils::GetBasePlayerController(const UObject* ContextObject)
 {
-	if (ABasePlayerController* CastedCon = Cast<ABasePlayerController>(UGameplayStatics::GetPlayerController(ContextObject, 0)))
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(ContextObject, 0);
+	if(!PlayerController)
+	{
+		return nullptr;
+	}	
+	if (ABasePlayerController* CastedCon = Cast<ABasePlayerController>(PlayerController))
 	{
 		return CastedCon;
 	}
@@ -37,6 +42,20 @@ UInventoryComponent* UCoreUtils::GetPlayerInventoryComponent(const UObject* Cont
 		return CurrChar->GetInventoryComponent();
 	}
 	return nullptr;
+}
+
+UUIEventHub* UCoreUtils::GetUIEventHub(const UObject* ContextObject)
+{
+	if(const ABasePlayerController* PlayerCon = GetBasePlayerController(ContextObject))
+	{
+		return PlayerCon->UIEventHub;
+	}
+	return nullptr;
+}
+
+float UCoreUtils::GetCoverPointValidDistance()
+{
+	return 800.f;
 }
 
 TScriptInterface<IInteractable> UCoreUtils::GetTargetedActorByPlayerController(const UObject* ContextObject)
@@ -71,8 +90,7 @@ UHealthComponent* UCoreUtils::GetPlayerCharacterHealthComponent(const UObject* W
 
 UHealthComponent* UCoreUtils::GetHealthComponentFromActor(UObject* ContextObject)
 {
-	IAttackable* CurrChar = Cast<IAttackable>(ContextObject);
-	if (CurrChar)
+	if (const IAttackable* CurrChar = Cast<IAttackable>(ContextObject))
 	{
 		return CurrChar->GetHealthComponent();
 	}

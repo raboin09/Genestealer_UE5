@@ -6,12 +6,9 @@
 #include "InputActionValue.h"
 #include "API/Interactable.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/ALSPlayerController.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "BasePlayerController.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewActorTargeted, TScriptInterface<IInteractable>, NewlyTargetedActor);
 
 /**
  * 
@@ -27,13 +24,16 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	FORCEINLINE FNewActorTargeted& OnNewActorTargeted() { return NewActorTargeted; }
 	TScriptInterface<IInteractable> GetTargetedActor() const;
-	UPROPERTY()
-	ABasePlayerCharacter* PlayerCharacter;
+
 
 	UFUNCTION()
 	void CoverAction(const FInputActionValue& Value);
 	virtual void OnPossess(APawn* NewPawn) override;
 
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Genestealer")
+	class UUIEventHub* UIEventHub;
+	UPROPERTY()
+	ABasePlayerCharacter* PlayerCharacter;
 	
 #if !UE_BUILD_SHIPPING
 	void CreateSandboxUI()

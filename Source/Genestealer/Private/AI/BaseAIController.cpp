@@ -127,18 +127,18 @@ ACharacter* ABaseAIController::GetEnemy() const
 	return nullptr;
 }
 
-void ABaseAIController::SetIsInCombat(bool bIsInCombat, AActor* DamageCauser)
+void ABaseAIController::SetIsInCombat(const FCharacterInCombatChangedPayload& CharacterInCombatChangedPayload)
 {
 	if(BlackboardComponent)
 	{
 		const int32 RandPick = FMath::RandRange(0, 50);
-		BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, bIsInCombat);
+		BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, CharacterInCombatChangedPayload.bIsInCombat);
 		if(!GetEnemy() || RandPick == 7)
 		{
-			if(const IWeapon* Weapon = Cast<IWeapon>(DamageCauser))
+			if(const IWeapon* Weapon = Cast<IWeapon>(CharacterInCombatChangedPayload.DamageCauser))
 			{
 				SetEnemy(Weapon->GetOwningPawn());
-			} else if(const ABaseOverlapProjectile* Proj = Cast<ABaseOverlapProjectile>(DamageCauser))
+			} else if(const ABaseOverlapProjectile* Proj = Cast<ABaseOverlapProjectile>(CharacterInCombatChangedPayload.DamageCauser))
 			{
 				if(const IWeapon* OwnerWeapon = Cast<IWeapon>(Proj->GetOwner()))
 				{
@@ -147,14 +147,14 @@ void ABaseAIController::SetIsInCombat(bool bIsInCombat, AActor* DamageCauser)
 						SetEnemy(OwnerWeapon->GetOwningPawn());
 					}
 				}
-			} else if (ACharacter* CastedChar = Cast<ACharacter>(DamageCauser))
+			} else if (ACharacter* CastedChar = Cast<ACharacter>(CharacterInCombatChangedPayload.DamageCauser))
 			{
 				SetEnemy(CastedChar);
 			}	
 		}
 	}
 	
-	if(!bIsInCombat)
+	if(!CharacterInCombatChangedPayload.bIsInCombat)
 	{
 		ClearFocus(EAIFocusPriority::Gameplay);
 		SetEnemy(nullptr);

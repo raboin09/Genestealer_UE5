@@ -6,17 +6,23 @@
 #include "EnhancedInputComponent.h"
 #include "Actors/BaseCoverPoint.h"
 #include "Characters/BasePlayerCharacter.h"
+#include "Core/UIEventHub.h"
 #include "Genestealer/Genestealer.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Utils/CoreUtils.h"
 
 ABasePlayerController::ABasePlayerController()
 {
 	OutlineTraceRange = 3000.f;
+	if(!UIEventHub)
+	{
+		UIEventHub = Cast<UUIEventHub>(UUIEventHub::StaticClass()->GetDefaultObject());
+	}
 }
 
 void ABasePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
 #if !UE_BUILD_SHIPPING
 	CreateSandboxUI();
 #endif
@@ -41,7 +47,7 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 			{
 				NewActor->SwitchOutlineOnMesh(true);
 				CurrentInteractableActor = NewActor;
-				NewActorTargeted.Broadcast(CurrentInteractableActor);
+				NewActorTargeted.Broadcast(FNewActorTargetedPayload(CurrentInteractableActor));
 			}
 		} else {
 			if(CurrentInteractableActor && bOldActorAlive)
@@ -59,7 +65,7 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 		{
 			CurrentInteractableActor->SwitchOutlineOnMesh(false);
 			CurrentInteractableActor = nullptr;
-			NewActorTargeted.Broadcast(nullptr);
+			NewActorTargeted.Broadcast(FNewActorTargetedPayload(nullptr));
 		}
 	}
 }
@@ -100,7 +106,10 @@ bool ABasePlayerController::IsActorAlive(UObject* InObject) const
 	}
 	if(ABaseCoverPoint* CoverPoint = Cast<ABaseCoverPoint>(InObject))
 	{
-		return !CoverPoint->HasOccupant();
+		FVector CamLoc = FVector::ZeroVector;
+		FRotator CamRot;	
+		GetPlayerViewPoint(CamLoc, CamRot);
+		return !CoverPoint->HasOccupant() && UKismetMathLibrary::Vector_Distance(CamLoc, CoverPoint->GetActorLocation()) <= UCoreUtils::GetCoverPointValidDistance();
 	}
 	return false;
 }
@@ -117,4 +126,8 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 {
 	Super::OnPossess(NewPawn);
 	PlayerCharacter = Cast<ABasePlayerCharacter>(NewPawn);
+	if(UIEventHub)
+	{
+		UIEventHub->InitEventHub(this);
+	}
 }

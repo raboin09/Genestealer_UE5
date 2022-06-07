@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Utils/CombatUtils.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
@@ -67,6 +68,8 @@ void ABaseCharacter::RagdollEnd()
 {
 	Super::RagdollEnd();
 	GameplayTagContainer.RemoveTag(TAG_STATE_RAGDOLL);
+	InitCapsuleCollisionDefaults();
+	InitMeshCollisionDefaults();
 }
 
 void ABaseCharacter::RagdollStart()
@@ -102,11 +105,11 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Internal_AddDefaultTagsToContainer();
-	PlayerInCombatChanged.Broadcast(false, nullptr);
+	CharacterInCombatChanged.Broadcast(FCharacterInCombatChangedPayload(false, nullptr));
 	if(HealthComponent)
 	{
-		HealthComponent->OnCurrentWoundHealthChanged().AddUObject(this, &ABaseCharacter::HandleCurrentWoundChangedEvent);
-		HealthComponent->OnActorDeath().AddUObject(this, &ABaseCharacter::HandleDeathEvent);
+		HealthComponent->OnCurrentWoundHealthChanged().AddDynamic(this, &ABaseCharacter::HandleCurrentWoundChangedEvent);
+		HealthComponent->OnActorDeath().AddDynamic(this, &ABaseCharacter::HandleDeathEvent);
 		HealthComponent->InitHealthComponent(StartingHealth);
 	}
 	UEffectUtils::ApplyEffectsToActor(DefaultEffects, this);
@@ -159,8 +162,9 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	}
 }
 
-void ABaseCharacter::HandleCurrentWeaponChanged(TScriptInterface<IWeapon> NewWeapon, TScriptInterface<IWeapon> PreviousWeapon)
+void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload)
 {
+	TScriptInterface<IWeapon> NewWeapon = CurrentWeaponChangedPayload.NewWeapon;
 	if(!NewWeapon || !NewWeapon->GetWeaponMesh())
 		return;	
 	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("VB RHS_ik_hand_gun"));
@@ -502,7 +506,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	FRotator CamRot;
 	Controller->GetPlayerViewPoint(CamLoc, CamRot);
 	const FVector StartTrace = CamLoc;
-	const FVector EndTrace = StartTrace + (CamRot.Vector() * 800.f);
+	const FVector EndTrace = StartTrace + (CamRot.Vector() * UCoreUtils::GetCoverPointValidDistance());
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;
 	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
@@ -563,6 +567,6 @@ void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
 	
 	if(IsAlive())
 	{
-		PlayerInCombatChanged.Broadcast(bInNewState, DamageCauser);
+		CharacterInCombatChanged.Broadcast(FCharacterInCombatChangedPayload(bInNewState, DamageCauser));
 	}
 }

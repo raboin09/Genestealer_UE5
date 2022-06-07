@@ -158,7 +158,7 @@ protected:
 	USoundCue* K2_GetEffectSound();
 	virtual USoundCue* K2_GetEffectSound_Implementation();
 	
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Genestealer")
 	UBaseEffectData* EffectDataObj;
 	UPROPERTY(BlueprintReadOnly)
 	FEffectContext EffectContext;
