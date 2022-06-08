@@ -400,17 +400,6 @@ void ABaseWeapon::OnLeaveInventory()
 	}
 }
 
-void ABaseWeapon::PlayCameraShake()
-{
-	if(!GetOwningPawn() || !UFeedbackUtils::ShouldCameraShake())
-		return;
-	
-	if(ABasePlayerController* CurrCon = Cast<ABasePlayerController>(GetOwningPawn()->GetController()))
-	{
-		CurrCon->ClientStartCameraShake(FireCameraShake, CameraShakeScale);		
-	}
-}
-
 bool ABaseWeapon::IsWeaponOnCooldown() const
 {
 	const float GameTime = GetWorld()->GetTimeSeconds();

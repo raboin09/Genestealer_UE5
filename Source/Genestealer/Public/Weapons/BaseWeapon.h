@@ -62,7 +62,6 @@ protected:
     void StopWeaponAnimation(UAnimMontage* AnimMontage) const;
 	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	virtual void OnLeaveInventory() override;
-	virtual void PlayCameraShake();
 	virtual void DetermineWeaponState();
 	
 	virtual void FireWeapon() PURE_VIRTUAL(ABaseWeapon::FireWeapon,);

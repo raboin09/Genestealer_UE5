@@ -50,8 +50,10 @@ protected:
 	UFUNCTION()
 	virtual void ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UPROPERTY(EditInstanceOnly, Category="Genestealer")
-	FName AssociatedActorName;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	TSubclassOf<UCameraShakeBase> CoverHitCameraShake;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	UStaticMeshComponent* CoverMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float CoverWallOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
@@ -88,14 +90,15 @@ protected:
 	USkeletalMeshComponent* DissolveMesh;
 	
 private:
+	void InitCoverBox(UBoxComponent* InBox);
+	
 	void Internal_StartPeekFire();
 	void Internal_StopPeekFire() const;
 	
 	static void Internal_HandlePeekCoverOverlap(bool bLeftCoverPoint, AActor* OtherActor);
 	static void Internal_HandlePeekCoverOverlapEnd(bool bLeftCoverPoint, AActor* OtherActor);
 	void Internal_ActivateOverlapBoxes(bool bActivate) const;
-	void Internal_ApplyLeftEdgeTagToActor();
-	void Internal_ApplyRightEdgeTagToActor();
+	void Internal_ApplyEdgeTagToActor(bool bLeftEdge);
 
 	void Internal_ResetCharacterValuesOnCoverExit() const;
 	void Internal_SetCoverNormalRotationValues() const;
@@ -120,8 +123,6 @@ private:
 
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
-	UPROPERTY()
-	UStaticMeshComponent* AssociatedMesh;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UCurveFloat* CoverTransitionCurve;
 	UPROPERTY()

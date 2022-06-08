@@ -11,94 +11,98 @@
 #include "NavAreas/NavArea_Obstacle.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
+#include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
 ABaseCoverPoint::ABaseCoverPoint()
 {
 	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
-
-	CoverWallOffset = 40.f;
+	CoverWallOffset = 80.f;
+	
+	CoverMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CoverMesh"));
+	RootComponent = CoverMesh;
+	
 	MiddleCoverWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiddleCoverWall"));
 	MiddleCoverWall->SetHiddenInGame(true);
-	MiddleCoverWall->AddLocalOffset(FVector(0.f, -130.f, 50.f));
-	MiddleCoverWall->SetWorldScale3D(FVector(4.f, .1f, 1.3f));
+	MiddleCoverWall->AddWorldOffset(FVector(0.f, 60.f, 0.f));
+	MiddleCoverWall->SetUsingAbsoluteScale(true);
+	MiddleCoverWall->SetWorldScale3D(FVector(1.f, .1f, 1.f));
 	MiddleCoverWall->SetCollisionResponseToAllChannels(ECR_Ignore);
 	MiddleCoverWall->SetCollisionResponseToChannel(GENESTEALER_TRACE_INTERACTION, ECR_Block);
 	MiddleCoverWall->SetCollisionResponseToChannel(GENESTEALER_TRACE_COVER_WALL, ECR_Block);
+	MiddleCoverWall->SetupAttachment(CoverMesh);
 	bMiddleCoverEnabled = true;
 	
 	LeftCoverPeekBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverPeekBox"));
-	LeftCoverPeekBox->ShapeColor = FColor::Green;
-	LeftCoverPeekBox->SetBoxExtent(FVector(25, 25, 80));
-	LeftCoverPeekBox->SetupAttachment(RootComponent);
-	LeftCoverPeekBox->AreaClass = UNavArea_Obstacle::StaticClass();
-	LeftCoverPeekBox->AddLocalOffset(FVector(-44.f, 250.f, 30.f));
-	LeftCoverPeekBox->SetWorldScale3D(FVector(.25f, 10.f, 1.f));
-	LeftCoverPeekBox->SetupAttachment(MiddleCoverWall);
-	LeftCoverPeekBox->SetCollisionObjectType(ECC_WorldDynamic);
-	LeftCoverPeekBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	LeftCoverPeekBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	LeftCoverPeekBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	LeftCoverPeekBox->IgnoreActorWhenMoving(this, true);
+	InitCoverBox(LeftCoverPeekBox);
 	bLeftCoverEnabled = true;
 
-	LeftCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverEdgeBox"));
-	LeftCoverEdgeBox->ShapeColor = FColor::Red;
-	LeftCoverEdgeBox->SetBoxExtent(FVector(25, 25, 80));
-	LeftCoverEdgeBox->SetupAttachment(RootComponent);
-	LeftCoverEdgeBox->AreaClass = UNavArea_Obstacle::StaticClass();
-	LeftCoverEdgeBox->AddLocalOffset(FVector(-50.f, 250.f, 30.f));
-	LeftCoverEdgeBox->SetWorldScale3D(FVector(.05f, 10.f, 1.f));
-	LeftCoverEdgeBox->SetupAttachment(MiddleCoverWall);
-	LeftCoverEdgeBox->SetCollisionObjectType(ECC_WorldDynamic);
-	LeftCoverEdgeBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	LeftCoverEdgeBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	LeftCoverEdgeBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	LeftCoverEdgeBox->IgnoreActorWhenMoving(this, true);
-	
 	RightCoverPeekBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverPeekBox"));
-	RightCoverPeekBox->ShapeColor = FColor::Green;
-	RightCoverPeekBox->SetBoxExtent(FVector(25, 25, 80));
-	RightCoverPeekBox->SetupAttachment(RootComponent);
-	RightCoverPeekBox->AreaClass = UNavArea_Obstacle::StaticClass();
-	RightCoverPeekBox->AddLocalOffset(FVector(44.f, 250.f, 30.f));
-	RightCoverPeekBox->SetWorldScale3D(FVector(.25f, 10.f, 1.f));
-	RightCoverPeekBox->SetupAttachment(MiddleCoverWall);
-	RightCoverPeekBox->SetCollisionObjectType(ECC_WorldDynamic);
-	RightCoverPeekBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	RightCoverPeekBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	RightCoverPeekBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	RightCoverPeekBox->IgnoreActorWhenMoving(this, true);
+	InitCoverBox(RightCoverPeekBox);
 	bRightCoverEnabled = true;
+	
+	LeftCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverEdgeBox"));
+	InitCoverBox(LeftCoverEdgeBox);
 
 	RightCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverEdgeBox"));
-	RightCoverEdgeBox->ShapeColor = FColor::Red;
-	RightCoverEdgeBox->SetBoxExtent(FVector(25, 25, 80));
-	RightCoverEdgeBox->SetupAttachment(RootComponent);
-	RightCoverEdgeBox->AreaClass = UNavArea_Obstacle::StaticClass();
-	RightCoverEdgeBox->AddLocalOffset(FVector(50.f, 250.f, 30.f));
-	RightCoverEdgeBox->SetWorldScale3D(FVector(.05f, 10.f, 1.f));
-	RightCoverEdgeBox->SetupAttachment(MiddleCoverWall);
-	RightCoverEdgeBox->SetCollisionObjectType(ECC_WorldDynamic);
-	RightCoverEdgeBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	RightCoverEdgeBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	RightCoverEdgeBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	RightCoverEdgeBox->IgnoreActorWhenMoving(this, true);
+	InitCoverBox(RightCoverEdgeBox);
 
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RotationTimeline"));
 	DissolveComponent = CreateDefaultSubobject<UDissolveComponent>(TEXT("DissolveComponent"));
+	
 	DissolveMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DissolveMesh"));
-	DissolveMesh->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
 	DissolveMesh->SetupAttachment(MiddleCoverWall);
+	DissolveMesh->AddWorldOffset(FVector(0.f, 600.f, -60.f));
+	DissolveMesh->SetUsingAbsoluteScale(true);
+	DissolveMesh->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
+}
+
+void ABaseCoverPoint::InitCoverBox(UBoxComponent* InBox)
+{
+	if(!InBox)
+	{
+		return;
+	}
+	
+	if(InBox == LeftCoverPeekBox)
+	{
+		InBox->ShapeColor = FColor::Green;
+		InBox->AddWorldOffset(FVector( -57.5f, 600.f, 0.f));
+		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
+	} else if(InBox == RightCoverPeekBox)
+	{
+		InBox->ShapeColor = FColor::Green;
+		InBox->AddWorldOffset(FVector( 57.5f, 600.f, 0.f));
+		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
+	} else if(InBox == LeftCoverEdgeBox)
+	{
+		InBox->ShapeColor = FColor::Red;
+		InBox->SetBoxExtent(FVector(3.f, 15.f, 40.f));
+		InBox->AddWorldOffset(FVector( -50.f, 200.f, 0.f));
+	} else if(InBox == RightCoverEdgeBox)
+	{
+		InBox->ShapeColor = FColor::Red;
+		InBox->SetBoxExtent(FVector(3.f, 15.5, 40.f));
+		InBox->AddWorldOffset(FVector( 50.f, 200.f, 0.f));
+	}
+	InBox->SetUsingAbsoluteScale(true);
+	InBox->SetupAttachment(MiddleCoverWall);
+	InBox->AreaClass = UNavArea_Obstacle::StaticClass();
+	InBox->SetCollisionObjectType(ECC_WorldDynamic);
+	InBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	InBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	InBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	InBox->IgnoreActorWhenMoving(this, true);
+	InBox->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
 }
 
 void ABaseCoverPoint::SwitchOutlineOnMesh(bool bShouldOutline)
 {
-	if(AssociatedMesh)
+	if(CoverMesh)
 	{
 		const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Gray);
-		AssociatedMesh->SetRenderCustomDepth(bShouldOutline);
-		AssociatedMesh->SetCustomDepthStencilValue(OutlineColorInt);
+		CoverMesh->SetRenderCustomDepth(bShouldOutline);
+		CoverMesh->SetCustomDepthStencilValue(OutlineColorInt);
 	}
 
 	if(!DissolveComponent)
@@ -151,13 +155,6 @@ void ABaseCoverPoint::BeginPlay()
 	FOnTimelineEvent CoverLerpFinishedEvent;
 	CoverLerpFinishedEvent.BindDynamic(this, &ABaseCoverPoint::Internal_CoverTransitionFinished);
 	CoverTransitionTimeline->SetTimelineFinishedFunc(CoverLerpFinishedEvent);
-
-	TArray<AActor*> FoundActor;
-	UGameplayStatics::GetAllActorsWithTag(this, AssociatedActorName, FoundActor);
-	if(FoundActor.Num() > 0 && FoundActor[0])
-	{
-		AssociatedMesh = FoundActor[0]->FindComponentByClass<UStaticMeshComponent>();
-	}
 	
 	if(DissolveComponent)
 	{
@@ -343,10 +340,10 @@ void ABaseCoverPoint::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		Internal_HandlePeekCoverOverlap(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_AddTags, this, &ABaseCoverPoint::Internal_ApplyLeftEdgeTagToActor, DelayBeforeTagsApply, false);
+		Internal_ApplyEdgeTagToActor(true);
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_AddTags, this, &ABaseCoverPoint::Internal_ApplyRightEdgeTagToActor, DelayBeforeTagsApply, false);
+		Internal_ApplyEdgeTagToActor(false);
 	}
 }
 
@@ -376,6 +373,7 @@ void ABaseCoverPoint::Internal_StartPeekRollout(const UShapeComponent* TargetPee
 {
 	Internal_SetCoverAimingRotationValues(bRightCameraShoulder);
 	TargetCoverLocation = TargetPeekBox->GetComponentLocation();
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_ROLLEDOUT);
 	Internal_StartCoverTransition();
 }
 
@@ -383,6 +381,7 @@ void ABaseCoverPoint::Internal_StartPeekRollback()
 {
 	TargetCoverLocation = CachedTransform.GetLocation();
 	TargetCoverRotation = CachedTransform.Rotator();
+	UGameplayTagUtils::RemoveTagFromActor(OccupiedActor, TAG_COVER_ROLLEDOUT);
 	Internal_SetCoverNormalRotationValues();
 	Internal_StartCoverTransition();
 }
@@ -435,7 +434,7 @@ void ABaseCoverPoint::Internal_ActivateOverlapBoxes(bool bActivate) const
 	RightCoverEdgeBox->SetGenerateOverlapEvents(bActivate);
 }
 
-void ABaseCoverPoint::Internal_ApplyLeftEdgeTagToActor()
+void ABaseCoverPoint::Internal_ApplyEdgeTagToActor(bool bLeftEdge)
 {
 	if(!OccupiedActor)
 	{
@@ -443,18 +442,7 @@ void ABaseCoverPoint::Internal_ApplyLeftEdgeTagToActor()
 	}
 	
 	CachedTransform = OccupiedActor->GetActorTransform();
-	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_LEFTEDGE);
-}
-
-void ABaseCoverPoint::Internal_ApplyRightEdgeTagToActor()
-{
-	if(!OccupiedActor)
-	{
-		return;
-	}
-	
-	CachedTransform = OccupiedActor->GetActorTransform();
-	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_RIGHTEDGE);
+	UGameplayTagUtils::AddTagToActor(OccupiedActor, bLeftEdge ? TAG_COVER_LEFTEDGE : TAG_COVER_RIGHTEDGE);
 }
 
 void ABaseCoverPoint::Internal_ResetCharacterValuesOnCoverExit() const
@@ -533,6 +521,7 @@ void ABaseCoverPoint::Internal_CoverTransitionFinished()
 		CharMoveComp->SetPlaneConstraintFromVectors(MiddleCoverWall->GetForwardVector(), MiddleCoverWall->GetUpVector());
 		CharMoveComp->SetPlaneConstraintEnabled(true);
 	}
+	UFeedbackUtils::TryPlayCameraShake(OccupiedActor, CoverHitCameraShake);
 }
 
 bool ABaseCoverPoint::ActorInLeftEdge() const

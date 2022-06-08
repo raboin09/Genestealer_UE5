@@ -140,15 +140,14 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		return;
 	}
 
-	if(EventPayload.DamageHitReactEvent.bOnlyHitReactOnDeath)
-	{
-		return;
-	}
-
 	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 	SetInCombat(true, EventPayload.InstigatingActor);
 	GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
-	
+
+	if(EventPayload.DamageHitReactEvent.bOnlyHitReactOnDeath)
+	{
+		return;
+	}	
 	LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
@@ -348,19 +347,20 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 	{
 		bHasRightInput = false;
 	}
-	
-	if(GetTagContainer().HasTag(TAG_STATE_STUNNED))
+
+	const TArray BaseTagsToCheck = {TAG_COVER_ROLLEDOUT, TAG_STATE_STUNNED};
+	if(GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(BaseTagsToCheck)))
 	{
 		return false;
 	}
 
-	const TArray RightTagsToCheck = {TAG_COVER_RIGHTEDGE, TAG_COVER_RIGHTPEEK, TAG_COVER_LEFTPEEK};
+	const TArray RightTagsToCheck = {TAG_COVER_RIGHTEDGE};
 	if(bHasRightInput && GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(RightTagsToCheck)))
 	{
 		return false;
 	}
 
-	const TArray LeftTagsToCheck = {TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTPEEK, TAG_COVER_LEFTPEEK};
+	const TArray LeftTagsToCheck = {TAG_COVER_LEFTEDGE};
 	if(!bHasRightInput && GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(LeftTagsToCheck)))
 	{
 		return false;
@@ -541,7 +541,7 @@ void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 
 void ABaseCharacter::Internal_SetOutOfCombat()
 {
-	GameplayTagContainer.RemoveTag(TAG_STATE_IN_COMBAT);
+	SetInCombat(false, nullptr);
 }
 
 bool ABaseCharacter::IsInCombat()

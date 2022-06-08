@@ -19,11 +19,10 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 	if(InController)
 	{
 		InController->OnNewActorTargeted().AddDynamic(this, &UUIEventHub::UIEventHandler_NewActorTargeted);
-	}
-	
-	if(ABaseCharacter* CurrChar = UCoreUtils::GetPlayerCharacter(InController))
-	{
-		CurrChar->OnCharacterInCombatChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CharacterInCombatChanged);
+		if(InController->PlayerCharacter)
+		{
+			InController->PlayerCharacter->OnCharacterInCombatChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CharacterInCombatChanged);	
+		}
 	}
 
 	if(UHealthComponent* CurrHealthComp = UCoreUtils::GetPlayerCharacterHealthComponent(InController))
@@ -53,12 +52,12 @@ void UUIEventHub::UIEventHandler_CharacterInCombatChanged(const FCharacterInComb
 
 void UUIEventHub::UIEventHandler_NewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI New Target");
+	
 }
 
 void UUIEventHub::UIEventHandler_AmmoChanged(const FAmmoAmountChangedPayload& AmmoAmountChangedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI Ammo Changed");
+	
 }
 
 void UUIEventHub::UIEventHandler_CurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload)
@@ -78,5 +77,5 @@ void UUIEventHub::UIEventHandler_WeaponRemoved(const FWeaponRemovedPayload& Weap
 
 void UUIEventHub::UIEventHandler_CurrentHealthChanged(const FCurrentWoundEventPayload& CurrentWoundEventPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI Health");
+	
 }

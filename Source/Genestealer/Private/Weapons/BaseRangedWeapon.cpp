@@ -15,6 +15,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Utils/CoreUtils.h"
+#include "Utils/FeedbackUtils.h"
 
 bool ABaseRangedWeapon::CanReload()
 {
@@ -99,7 +100,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 	{
 		PlayWeaponSound(FireSound);
 	}
-	PlayCameraShake();
+	UFeedbackUtils::TryPlayCameraShake(GetOwningPawn(), FireCameraShake, CameraShakeScale);
 	bSecondaryWeaponsTurn = !bSecondaryWeaponsTurn;
 	if(PlayData.MontageToPlay)
 	{
