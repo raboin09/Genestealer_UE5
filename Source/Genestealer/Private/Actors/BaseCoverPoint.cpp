@@ -17,7 +17,8 @@
 ABaseCoverPoint::ABaseCoverPoint()
 {
 	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
-	CoverWallOffset = 80.f;
+	CoverWallOffset = 40.f;
+	bShouldPlayCameraShake = true;
 	
 	CoverMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CoverMesh"));
 	RootComponent = CoverMesh;
@@ -207,6 +208,7 @@ void ABaseCoverPoint::VacateCover(ABaseCharacter* InActor)
 	Internal_ResetCharacterValuesOnCoverExit();
 	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 	OccupiedActor = nullptr;
+	bShouldPlayCameraShake = true;
 	Internal_ActivateOverlapBoxes(false);	
 }
 
@@ -507,6 +509,12 @@ void ABaseCoverPoint::Internal_CoverTransitionUpdate(float Alpha)
 	TargetTransform.SetRotation(FQuat(TargetCoverRotation));
 	const FTransform& NewActorTransform = UKismetMathLibrary::TLerp(OccupiedActorTransform, TargetTransform, Alpha, ELerpInterpolationMode::QuatInterp);
 	OccupiedActor->SetActorLocationAndRotation(NewActorTransform.GetTranslation(), NewActorTransform.GetRotation(), true);
+
+	if(UKismetMathLibrary::Vector_Distance(OccupiedActorTransform.GetLocation(), TargetCoverLocation) <= DistanceWhenCameraShakePlays && bShouldPlayCameraShake)
+	{
+		bShouldPlayCameraShake = false;
+		UFeedbackUtils::TryPlayCameraShake(OccupiedActor, CoverHitCameraShake);
+	}
 }
 
 void ABaseCoverPoint::Internal_CoverTransitionFinished()
@@ -521,35 +529,4 @@ void ABaseCoverPoint::Internal_CoverTransitionFinished()
 		CharMoveComp->SetPlaneConstraintFromVectors(MiddleCoverWall->GetForwardVector(), MiddleCoverWall->GetUpVector());
 		CharMoveComp->SetPlaneConstraintEnabled(true);
 	}
-	UFeedbackUtils::TryPlayCameraShake(OccupiedActor, CoverHitCameraShake);
-}
-
-bool ABaseCoverPoint::ActorInLeftEdge() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTEDGE);
-}
-
-bool ABaseCoverPoint::ActorInLeftPeek() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTPEEK);
-}
-
-bool ABaseCoverPoint::ActorInRightEdge() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTEDGE);
-}
-
-bool ABaseCoverPoint::ActorInRightPeek() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTPEEK);
-}
-
-bool ABaseCoverPoint::ActorAiming() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_STATE_AIMING);
-}
-
-bool ABaseCoverPoint::ActorFiring() const
-{
-	return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_STATE_FIRING);
 }

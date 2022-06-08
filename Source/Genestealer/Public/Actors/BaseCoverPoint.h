@@ -16,7 +16,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class GENESTEALER_API ABaseCoverPoint : public ABaseActor, public ICoverPoint, public IInteractable
 {
 	GENERATED_BODY()
@@ -57,8 +57,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float CoverWallOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	float DelayBeforeTagsApply = .1f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float DelayBeforePeekShoot = .2f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	float DelayBeforeCrouchToStandShoot = .4f;
@@ -88,7 +86,9 @@ protected:
 	UDissolveComponent* DissolveComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	USkeletalMeshComponent* DissolveMesh;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	float DistanceWhenCameraShakePlays = 100.f;
 private:
 	void InitCoverBox(UBoxComponent* InBox);
 	
@@ -114,12 +114,12 @@ private:
 	UFUNCTION()
 	void Internal_CoverTransitionFinished();
 
-	bool ActorInLeftEdge() const;
-	bool ActorInLeftPeek() const;
-	bool ActorInRightEdge() const;
-	bool ActorInRightPeek() const;
-	bool ActorAiming() const;
-	bool ActorFiring() const;
+	FORCEINLINE bool ActorInLeftEdge() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTEDGE); }
+	FORCEINLINE bool ActorInLeftPeek() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTPEEK); }
+	FORCEINLINE bool ActorInRightEdge() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTEDGE); }
+	FORCEINLINE bool ActorInRightPeek() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTPEEK); }
+	FORCEINLINE bool ActorAiming() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_STATE_AIMING); }
+	FORCEINLINE bool ActorFiring() const { return UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_STATE_FIRING); }
 
 	UPROPERTY()
 	ABaseCharacter* OccupiedActor;
@@ -129,6 +129,7 @@ private:
 	UTimelineComponent* CoverTransitionTimeline;
 
 	bool bShouldPlayCoverDissolve;
+	bool bShouldPlayCameraShake;
 	
 	FTransform CachedTransform;
 	
