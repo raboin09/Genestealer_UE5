@@ -76,8 +76,6 @@ public:
 	/// ABaseCharacter
 	////////////////////////////////
 	UFUNCTION(BlueprintCallable, Category = "Genestealer")
-	FORCEINLINE bool IsDying() const { return GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
-	UFUNCTION(BlueprintCallable, Category = "Genestealer")
 	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	FORCEINLINE FCharacterInCombatChanged& OnCharacterInCombatChanged() { return CharacterInCombatChanged; }

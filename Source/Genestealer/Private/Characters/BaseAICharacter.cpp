@@ -53,7 +53,7 @@ float ABaseAICharacter::GetWeaponRange() const
 
 void ABaseAICharacter::SwitchOutlineOnMesh(bool bShouldOutline)
 {
-	if(!IsDying() && InteractionComponent)
+	if(IsAlive() && InteractionComponent)
 	{
 		InteractionComponent->SwitchOutlineOnAllMeshes(bShouldOutline);
 	}

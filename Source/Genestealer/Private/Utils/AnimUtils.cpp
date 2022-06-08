@@ -18,5 +18,5 @@ void UAnimUtils::AnimUtils_CopyCurves(UObject* AnimToCopy, UAnimSequence* AnimSo
 	UAnimSequence* CastedAnimToCopy = Cast<UAnimSequence>(AnimToCopy);
 	if(!CastedAnimToCopy || !AnimSource) return;
 	CastedAnimToCopy->Modify();
-	CastedAnimToCopy->RawCurveData = AnimSource->GetCurveData();
+	// CastedAnimToCopy->RawCurveData = AnimSource->GetCurveData();
 }

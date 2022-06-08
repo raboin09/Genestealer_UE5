@@ -176,7 +176,7 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 
 void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
 {
-	if (IsDying())
+	if (!IsAlive())
 	{
 		return;
 	}

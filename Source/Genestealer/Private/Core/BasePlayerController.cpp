@@ -4,9 +4,9 @@
 #include "Core/BasePlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
-#include "Actors/BaseCoverPoint.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "Core/UIEventHub.h"
+#include "Actors/BaseCoverActor.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Utils/CoreUtils.h"
@@ -104,7 +104,7 @@ bool ABasePlayerController::IsActorAlive(UObject* InObject) const
 			return HealthComponent->IsAlive();
 		}
 	}
-	if(ABaseCoverPoint* CoverPoint = Cast<ABaseCoverPoint>(InObject))
+	if(ABaseCoverActor* CoverPoint = Cast<ABaseCoverActor>(InObject))
 	{
 		FVector CamLoc = FVector::ZeroVector;
 		FRotator CamRot;	
