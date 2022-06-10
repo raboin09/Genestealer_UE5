@@ -111,7 +111,7 @@ void ABaseOverlapProjectile::PlayFlybySound()
 		{
 			if(GetDistanceTo(CurrChar) <= FlybyRange && UKismetMathLibrary::DegAcos(GetDotProductTo(CurrChar)) >= 90.f)
 			{
-				UAudioManager::PlaySoundAtLocation(this, FlyBySound, GetRootComponent()->GetComponentLocation());
+				UAudioManager::SpawnSoundAtLocation(this, FlyBySound, GetRootComponent()->GetComponentLocation());
 				bFlybyPlayed = true;
 			}
 		}

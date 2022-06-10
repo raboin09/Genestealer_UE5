@@ -12,7 +12,8 @@
 				"Engine",
 				"AIModule",
 				"ALSV4_CPP",
-				"CoreUObject"
+				"CoreUObject",
+				"UMG"
 			]
 		}
 	],

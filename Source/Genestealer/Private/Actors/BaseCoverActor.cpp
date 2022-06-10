@@ -2,12 +2,14 @@
 
 
 #include "Actors/BaseCoverActor.h"
+
 #include "Characters/BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NavAreas/NavArea_Obstacle.h"
+#include "Sound/SoundCue.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/FeedbackUtils.h"
@@ -199,7 +201,7 @@ void ABaseCoverActor::VacateCover(ABaseCharacter* InActor)
 		return;
 	}
 
-	if(UCharacterMovementComponent* CharMoveComp = InActor->FindComponentByClass<UCharacterMovementComponent>())
+	if(UCharacterMovementComponent* CharMoveComp = InActor->GetCharacterMovement())
 	{
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
@@ -220,7 +222,7 @@ void ABaseCoverActor::StartCoverFire()
 		return;
 	}
 
-	if(ActorInLeftEdge())
+	if(ActorInLeftEdge() && bLeftCoverEnabled)
 	{
 		if(ActorInLeftPeek())
 		{
@@ -229,7 +231,7 @@ void ABaseCoverActor::StartCoverFire()
 		{
 			Internal_TryPeekRolloutAndFire(LeftCoverPeekBox, false);	
 		}
-	} else if(ActorInRightEdge())
+	} else if(ActorInRightEdge() && bRightCoverEnabled)
 	{
 		if(ActorInRightPeek())
 		{
@@ -263,7 +265,7 @@ void ABaseCoverActor::StopCoverFire()
 		return;
 	}
 	
-	if(ActorInLeftEdge() || ActorInRightEdge())
+	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
 	{
 		if(!ActorAiming())
 		{
@@ -297,10 +299,10 @@ void ABaseCoverActor::StartCoverAim()
 		return;
 	}
 
-	if(ActorInLeftEdge())
+	if(ActorInLeftEdge() && bLeftCoverEnabled)
 	{
 		Internal_StartPeekRollout(LeftCoverPeekBox, false);
-	} else if(ActorInRightEdge())
+	} else if(ActorInRightEdge() && bRightCoverEnabled)
 	{
 		Internal_StartPeekRollout(RightCoverPeekBox, true);
 	} else if(bCrouchingCover)
@@ -317,7 +319,7 @@ void ABaseCoverActor::StopCoverAim()
 		return;
 	}
 
-	if(ActorInLeftEdge() || ActorInRightEdge())
+	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
 	{
 		Internal_AdjustStance(true);
 		Internal_StartPeekRollback();
@@ -527,10 +529,10 @@ void ABaseCoverActor::Internal_StartCoverTransition()
 	
 	if(CharToCoverDistance <= MinDistanceToPlayCameraShake)
 	{
-		bShouldPlayCameraShake = false;
+		bShouldPlayCoverHitFeedback = false;
 	} else
 	{
-		bShouldPlayCameraShake = true;
+		bShouldPlayCoverHitFeedback = true;
 		CameraShakeScale = UKismetMathLibrary::MapRangeClamped(CharToCoverDistance, MinDistanceToPlayCameraShake, MaxDistance, .1f, 1.f);
 	}
 	
@@ -552,10 +554,11 @@ void ABaseCoverActor::Internal_CoverTransitionUpdate(float Alpha)
 	const FTransform& NewActorTransform = UKismetMathLibrary::TLerp(OccupiedActorTransform, TargetTransform, Alpha, ELerpInterpolationMode::QuatInterp);
 	OccupiedActor->SetActorLocationAndRotation(NewActorTransform.GetTranslation(), NewActorTransform.GetRotation(), true);
 
-	if(UKismetMathLibrary::Vector_Distance(OccupiedActorTransform.GetLocation(), TargetCoverLocation) <= DistanceWhenCameraShakePlays && bShouldPlayCameraShake)
+	if(UKismetMathLibrary::Vector_Distance(OccupiedActorTransform.GetLocation(), TargetCoverLocation) <= DistanceWhenCameraShakePlays && bShouldPlayCoverHitFeedback)
 	{
-		bShouldPlayCameraShake = false;
+		bShouldPlayCoverHitFeedback = false;
 		UFeedbackUtils::TryPlayCameraShake(OccupiedActor, CoverHitCameraShake, CameraShakeScale);
+		UAudioManager::SpawnSoundAtLocation(this, HitCoverFoley, TargetCoverLocation);
 	}
 }
 
@@ -566,7 +569,7 @@ void ABaseCoverActor::Internal_CoverTransitionFinished()
 		return;
 	}
 	
-	if(UCharacterMovementComponent* CharMoveComp = OccupiedActor->FindComponentByClass<UCharacterMovementComponent>())
+	if(UCharacterMovementComponent* CharMoveComp = OccupiedActor->GetCharacterMovement())
 	{
 		CharMoveComp->SetPlaneConstraintFromVectors(MiddleCoverWall->GetForwardVector(), MiddleCoverWall->GetUpVector());
 		CharMoveComp->SetPlaneConstraintEnabled(true);

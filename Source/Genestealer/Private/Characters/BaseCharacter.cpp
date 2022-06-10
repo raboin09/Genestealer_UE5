@@ -174,7 +174,7 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 	}
 }
 
-void ABaseCharacter::HandleDeathEvent(const FDeathEventPayload& DeathEventPayload)
+void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload)
 {
 	if (!IsAlive())
 	{
@@ -509,7 +509,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	const FVector EndTrace = StartTrace + (CamRot.Vector() * UCoreUtils::GetCoverPointValidDistance());
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;
-	UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
+	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);
 	if(!HitResult.bBlockingHit)
 	{
 		return;

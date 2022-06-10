@@ -104,7 +104,7 @@ protected:
 	UFUNCTION()
 	void HandleCurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload);
 	UFUNCTION()
-	virtual void HandleDeathEvent(const FDeathEventPayload& DeathEventPayload);
+	virtual void HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload);
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	UHealthComponent* HealthComponent;

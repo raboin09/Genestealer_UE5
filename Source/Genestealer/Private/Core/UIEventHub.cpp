@@ -13,8 +13,7 @@ UUIEventHub::UUIEventHub()
 }
 
 void UUIEventHub::InitEventHub(ABasePlayerController* InController)
-{
-
+{	
 	// IMPORTANT: Use the InController as a ContextObject, using this object doesn't work here
 	if(InController)
 	{
@@ -28,6 +27,7 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 	if(UHealthComponent* CurrHealthComp = UCoreUtils::GetPlayerCharacterHealthComponent(InController))
 	{
 		CurrHealthComp->OnCurrentWoundHealthChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CurrentHealthChanged);
+		CurrHealthComp->OnMaxWoundsChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_MaxWoundsChanged);
 	}
 	
 	if(UInventoryComponent* InventoryComponent = UCoreUtils::GetPlayerInventoryComponent(InController))
@@ -47,35 +47,45 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 
 void UUIEventHub::UIEventHandler_CharacterInCombatChanged(const FCharacterInCombatChangedPayload& CharacterInCombatChangedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI Combat State Changed");
+	CharacterInCombatChanged.Broadcast(CharacterInCombatChangedPayload);
 }
 
 void UUIEventHub::UIEventHandler_NewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload)
 {
-	
+	NewActorTargeted.Broadcast(NewActorTargetedPayload);
 }
 
 void UUIEventHub::UIEventHandler_AmmoChanged(const FAmmoAmountChangedPayload& AmmoAmountChangedPayload)
 {
-	
+	AmmoAmountChanged.Broadcast(AmmoAmountChangedPayload);
 }
 
 void UUIEventHub::UIEventHandler_CurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI Weapon Changed");
+	CurrentWeaponChanged.Broadcast(CurrentWeaponChangedPayload);
 }
 
 void UUIEventHub::UIEventHandler_NewWeaponAdded(const FNewWeaponAddedPayload& NewWeaponAddedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI New Weapon");
+	NewWeaponAdded.Broadcast(NewWeaponAddedPayload);
 }
 
 void UUIEventHub::UIEventHandler_WeaponRemoved(const FWeaponRemovedPayload& WeaponRemovedPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "UI Weapon Removed");
+	WeaponRemoved.Broadcast(WeaponRemovedPayload);
 }
 
 void UUIEventHub::UIEventHandler_CurrentHealthChanged(const FCurrentWoundEventPayload& CurrentWoundEventPayload)
 {
-	
+	CurrentWoundHealthChanged.Broadcast(CurrentWoundEventPayload);
+}
+
+void UUIEventHub::UIEventHandler_MaxWoundsChanged(const FMaxWoundsEventPayload& MaxWoundsChangedEventPayload)
+{
+	MaxWoundsChanged.Broadcast(MaxWoundsChangedEventPayload);
+}
+
+void UUIEventHub::UIEventHandler_ActorDeath(const FActorDeathEventPayload& ActorDeathEventPayload)
+{
+	ActorDeath.Broadcast(ActorDeathEventPayload);
 }

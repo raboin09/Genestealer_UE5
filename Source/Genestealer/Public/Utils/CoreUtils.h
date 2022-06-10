@@ -9,6 +9,7 @@
 #include "Core/BaseGameInstance.h"
 #include "Core/BasePlayerController.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "UI/BaseHUD.h"
 #include "CoreUtils.generated.h"
 
 /**
@@ -20,7 +21,9 @@ class GENESTEALER_API UCoreUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	static ABaseHUD* GetBaseHUD(const UObject* ContextObject);
 	static UUIEventHub* GetUIEventHub(const UObject* ContextObject);
+	static float GetPlayerControllerSphereTraceRadius(const UObject* ContextObject);
 	static float GetCoverPointValidDistance();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static TScriptInterface<IInteractable> GetTargetedActorByPlayerController(const UObject* ContextObject);

@@ -30,7 +30,7 @@ public:
 	void CoverAction(const FInputActionValue& Value);
 	virtual void OnPossess(APawn* NewPawn) override;
 
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Genestealer")
+	UPROPERTY()
 	class UUIEventHub* UIEventHub;
 	UPROPERTY()
 	ABasePlayerCharacter* PlayerCharacter;

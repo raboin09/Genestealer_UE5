@@ -118,7 +118,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNewActorTargeted, const FNewActorTa
 // DEATH EVENT
 ///////////////////////////
 USTRUCT(BlueprintType)
-struct FDeathEventPayload
+struct FActorDeathEventPayload
 {
 	GENERATED_BODY()
 	
@@ -131,7 +131,7 @@ struct FDeathEventPayload
 	UPROPERTY()
 	FDamageHitReactEvent HitReactEvent;
 };
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActorDeath, const FDeathEventPayload&, DeathEventPayload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActorDeath, const FActorDeathEventPayload&, DeathEventPayload);
 
 ///////////////////////////
 // MAX WOUNDS EVENT

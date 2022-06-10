@@ -14,10 +14,6 @@
 ABasePlayerController::ABasePlayerController()
 {
 	OutlineTraceRange = 3000.f;
-	if(!UIEventHub)
-	{
-		UIEventHub = Cast<UUIEventHub>(UUIEventHub::StaticClass()->GetDefaultObject());
-	}
 }
 
 void ABasePlayerController::BeginPlay()
@@ -85,7 +81,7 @@ TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 		IgnoreActors.Add(GetPawn());
 		
 		FHitResult Hit(ForceInit);
-		UKismetSystemLibrary::SphereTraceSingle(this, OutStartTrace, OutEndTrace, 15.f, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_INTERACTION), false, IgnoreActors, EDrawDebugTrace::None, Hit, true
+		UKismetSystemLibrary::SphereTraceSingle(this, OutStartTrace, OutEndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_INTERACTION), false, IgnoreActors, EDrawDebugTrace::None, Hit, true
 			, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(Hit.GetActor() && Hit.GetActor()->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
 		{
@@ -126,6 +122,7 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 {
 	Super::OnPossess(NewPawn);
 	PlayerCharacter = Cast<ABasePlayerCharacter>(NewPawn);
+	UIEventHub = NewObject<UUIEventHub>(this, UUIEventHub::StaticClass());
 	if(UIEventHub)
 	{
 		UIEventHub->InitEventHub(this);

@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MaterialDissolver.h"
 #include "Actors/BaseActor.h"
 #include "API/CoverPoint.h"
 #include "API/Interactable.h"
 #include "Characters/BaseCharacter.h"
-#include "Characters/MaterialDissolver.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Utils/GameplayTagUtils.h"
 #include "BaseCoverActor.generated.h"
 
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class GENESTEALER_API ABaseCoverActor : public ABaseActor, public ICoverPoint, public IInteractable
 {
 	GENERATED_BODY()
@@ -76,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer|Audio")
+	USoundCue* HitCoverFoley;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
 	TSubclassOf<AMaterialDissolver> MaterialDissolverClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
@@ -131,7 +134,7 @@ private:
 	
 	float CameraShakeScale;
 	bool bShouldPlayCoverDissolve;
-	bool bShouldPlayCameraShake;
+	bool bShouldPlayCoverHitFeedback;
 	
 	FTransform CachedTransform;
 	

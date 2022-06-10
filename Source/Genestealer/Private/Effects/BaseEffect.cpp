@@ -47,7 +47,7 @@ void ABaseEffect::Internal_PlayEffectSound()
 {
 	if(K2_GetEffectSound())
 	{
-		UAudioManager::PlaySoundAtLocation(this, K2_GetEffectSound(), GetActorLocation());
+		UAudioManager::SpawnSoundAtLocation(this, K2_GetEffectSound(), GetActorLocation());
 	}
 }
 

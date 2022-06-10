@@ -19,7 +19,13 @@ public:
 	ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 protected:
 	virtual void GL_HandleFireAction(bool bValue) override;
+	virtual void GL_HandleAimAction(bool bValue) override;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds")
+	USoundCue* AimInSound;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds")
+	USoundCue* AimOutSound;
+	
 	UPROPERTY()
 	UTimelineComponent* LockOnInterpTimeline;
 	UPROPERTY(EditDefaultsOnly)

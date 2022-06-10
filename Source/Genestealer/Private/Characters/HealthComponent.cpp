@@ -42,7 +42,7 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 		CurrentHealthChanged.Broadcast(WoundEventPayload);		
 	} else
 	{
-		FDeathEventPayload DeathEventPayload;
+		FActorDeathEventPayload DeathEventPayload;
 		DeathEventPayload.DyingActor = ReceivingActor;
 		DeathEventPayload.KillingActor = InstigatingActor;
 		DeathEventPayload.HitReactEvent = HitReactEvent;

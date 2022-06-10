@@ -44,6 +44,15 @@ UInventoryComponent* UCoreUtils::GetPlayerInventoryComponent(const UObject* Cont
 	return nullptr;
 }
 
+ABaseHUD* UCoreUtils::GetBaseHUD(const UObject* ContextObject)
+{
+	if(ABaseHUD * BaseHUD = Cast<ABaseHUD>(GetBasePlayerController(ContextObject)))
+	{
+		return BaseHUD;
+	}
+	return nullptr;
+}
+
 UUIEventHub* UCoreUtils::GetUIEventHub(const UObject* ContextObject)
 {
 	if(const ABasePlayerController* PlayerCon = GetBasePlayerController(ContextObject))
@@ -51,6 +60,11 @@ UUIEventHub* UCoreUtils::GetUIEventHub(const UObject* ContextObject)
 		return PlayerCon->UIEventHub;
 	}
 	return nullptr;
+}
+
+float UCoreUtils::GetPlayerControllerSphereTraceRadius(const UObject* ContextObject)
+{
+	return 15.f;
 }
 
 float UCoreUtils::GetCoverPointValidDistance()

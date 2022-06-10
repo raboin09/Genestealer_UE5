@@ -5,17 +5,14 @@
 
 #include "Kismet/GameplayStatics.h"
 
-UAudioComponent* UAudioManager::SpawnSoundAttached(USoundBase* Sound, USceneComponent* ParentComponent)
+UAudioComponent* UAudioManager::SpawnSoundAttached(USoundBase* Sound, USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, bool bStopWhenAttachedToDestroyed,
+	float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings, USoundConcurrency* ConcurrencySettings, bool bAutoDestroy)
 {
-	UAudioComponent* AC = nullptr;
-	if (Sound)
-	{
-		AC = UGameplayStatics::SpawnSoundAttached(Sound, ParentComponent);
-	}
-	return AC;
+	return UGameplayStatics::SpawnSoundAttached(Sound, AttachToComponent, AttachPointName, Location, LocationType, bStopWhenAttachedToDestroyed, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings, ConcurrencySettings, bAutoDestroy);
 }
 
-void UAudioManager::PlaySoundAtLocation(const UObject* ContextObj, USoundBase* Sound, const FVector& Location)
+UAudioComponent* UAudioManager::SpawnSoundAtLocation(const UObject* WorldContextObject, USoundBase* Sound, FVector Location, FRotator Rotation, float VolumeMultiplier, float PitchMultiplier, float StartTime, USoundAttenuation* AttenuationSettings,
+                                                     USoundConcurrency* ConcurrencySettings, bool bAutoDestroy)
 {
-	UGameplayStatics::PlaySoundAtLocation(ContextObj, Sound, Location);
+	return UGameplayStatics::SpawnSoundAtLocation(WorldContextObject, Sound, Location, Rotation, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings, ConcurrencySettings, bAutoDestroy);
 }

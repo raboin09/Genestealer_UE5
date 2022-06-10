@@ -163,7 +163,7 @@ void ABaseRangedWeapon::Internal_PlayShellEffects() const
 
 void ABaseRangedWeapon::HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat)
 {
-	UAudioManager::PlaySoundAtLocation(this, ShellImpactSound, Location);
+	UAudioManager::SpawnSoundAtLocation(this, ShellImpactSound, Location);
 }
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
