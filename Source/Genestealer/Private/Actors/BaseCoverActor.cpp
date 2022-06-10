@@ -49,6 +49,14 @@ ABaseCoverActor::ABaseCoverActor()
 	RightCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverEdgeBox"));
 	RightCoverEdgeBox->SetupAttachment(MiddleCoverWall);
 	InitCoverBox(RightCoverEdgeBox);
+
+	LeftCoverRollbackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverRollbackBox"));
+	LeftCoverRollbackBox->SetupAttachment(MiddleCoverWall);
+	InitCoverBox(LeftCoverRollbackBox);
+
+	RightCoverRollbackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverRollbackBox"));
+	RightCoverRollbackBox->SetupAttachment(MiddleCoverWall);
+	InitCoverBox(RightCoverRollbackBox);
 	
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoverTransitionTimeline"));
 	
@@ -72,12 +80,12 @@ void ABaseCoverActor::InitCoverBox(UBoxComponent* InBox)
 	if(InBox == LeftCoverPeekBox)
 	{
 		InBox->ShapeColor = FColor::Green;
-		InBox->AddWorldOffset(FVector( -77.5f, 200.f, 0.f));
+		InBox->AddWorldOffset(FVector( -77.5f, 500.f, 0.f));
 		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
 	} else if(InBox == RightCoverPeekBox)
 	{
 		InBox->ShapeColor = FColor::Green;
-		InBox->AddWorldOffset(FVector( 77.5f, 200.f, 0.f));
+		InBox->AddWorldOffset(FVector( 77.5f, 500.f, 0.f));
 		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
 	} else if(InBox == LeftCoverEdgeBox)
 	{
@@ -89,7 +97,18 @@ void ABaseCoverActor::InitCoverBox(UBoxComponent* InBox)
 		InBox->ShapeColor = FColor::Red;
 		InBox->SetBoxExtent(FVector(3.f, 15.5, 40.f));
 		InBox->AddWorldOffset(FVector( 50.f, 200.f, 0.f));
+	} else if(InBox == LeftCoverRollbackBox)
+	{
+		InBox->ShapeColor = FColor::Blue;
+		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
+		InBox->AddWorldOffset(FVector( -40.f, 300.f, 0.f));
+	} else if(InBox == RightCoverRollbackBox)
+	{
+		InBox->ShapeColor = FColor::Blue;
+		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
+		InBox->AddWorldOffset(FVector( 40.f, 300.f, 0.f));
 	}
+	
 	InBox->SetUsingAbsoluteScale(true);
 	InBox->SetupAttachment(MiddleCoverWall);
 	InBox->AreaClass = UNavArea_Obstacle::StaticClass();
@@ -201,7 +220,7 @@ void ABaseCoverActor::VacateCover(ABaseCharacter* InActor)
 		return;
 	}
 
-	if(UCharacterMovementComponent* CharMoveComp = InActor->GetCharacterMovement())
+	if(UCharacterMovementComponent* CharMoveComp = InActor->FindComponentByClass<UCharacterMovementComponent>())
 	{
 		CharMoveComp->SetPlaneConstraintEnabled(false);
 	}
@@ -222,7 +241,7 @@ void ABaseCoverActor::StartCoverFire()
 		return;
 	}
 
-	if(ActorInLeftEdge() && bLeftCoverEnabled)
+	if(ActorInLeftEdge())
 	{
 		if(ActorInLeftPeek())
 		{
@@ -231,7 +250,7 @@ void ABaseCoverActor::StartCoverFire()
 		{
 			Internal_TryPeekRolloutAndFire(LeftCoverPeekBox, false);	
 		}
-	} else if(ActorInRightEdge() && bRightCoverEnabled)
+	} else if(ActorInRightEdge())
 	{
 		if(ActorInRightPeek())
 		{
@@ -265,7 +284,7 @@ void ABaseCoverActor::StopCoverFire()
 		return;
 	}
 	
-	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
+	if(ActorInLeftEdge() || ActorInRightEdge())
 	{
 		if(!ActorAiming())
 		{
@@ -299,10 +318,10 @@ void ABaseCoverActor::StartCoverAim()
 		return;
 	}
 
-	if(ActorInLeftEdge() && bLeftCoverEnabled)
+	if(ActorInLeftEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT))
 	{
 		Internal_StartPeekRollout(LeftCoverPeekBox, false);
-	} else if(ActorInRightEdge() && bRightCoverEnabled)
+	} else if(ActorInRightEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT))
 	{
 		Internal_StartPeekRollout(RightCoverPeekBox, true);
 	} else if(bCrouchingCover)
@@ -318,8 +337,8 @@ void ABaseCoverActor::StopCoverAim()
 	{
 		return;
 	}
-
-	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
+	
+	if(ActorInLeftEdge() || ActorInRightEdge())
 	{
 		Internal_AdjustStance(true);
 		Internal_StartPeekRollback();
@@ -373,15 +392,26 @@ void ABaseCoverActor::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActo
 		Internal_HandlePeekCoverOverlapEnd(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTEDGE);
+		if(!UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_ROLLEDOUT))
+		{
+			UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTEDGE);	
+		}
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_RIGHTEDGE);
+		if(!UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_ROLLEDOUT))
+		{
+			UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_RIGHTEDGE);	
+		}
 	}
 }
 
 void ABaseCoverActor::Internal_StartPeekRollout(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder)
 {
+	if(!CoverTransitionTimeline)
+	{
+		return;
+	}
+	
 	Internal_SetCoverAimingRotationValues(bRightCameraShoulder);
 	TargetCoverLocation = TargetPeekBox->GetComponentLocation();
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_COVER_ROLLEDOUT);
@@ -390,7 +420,18 @@ void ABaseCoverActor::Internal_StartPeekRollout(const UShapeComponent* TargetPee
 
 void ABaseCoverActor::Internal_StartPeekRollback()
 {
-	TargetCoverLocation = CachedTransform.GetLocation();
+	if(UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTPEEK) && LeftCoverRollbackBox)
+	{
+		UKismetSystemLibrary::PrintString(this, "L Rollback");
+		TargetCoverLocation = LeftCoverRollbackBox->GetComponentLocation();
+	} else if(UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTPEEK) && RightCoverRollbackBox)
+	{
+		UKismetSystemLibrary::PrintString(this, "R Rollback");
+		TargetCoverLocation = RightCoverRollbackBox->GetComponentLocation();
+	} else
+	{
+		TargetCoverLocation = CachedTransform.GetLocation();
+	}
 	TargetCoverRotation = CachedTransform.Rotator();
 	UGameplayTagUtils::RemoveTagFromActor(OccupiedActor, TAG_COVER_ROLLEDOUT);
 	Internal_SetCoverNormalRotationValues();
@@ -545,7 +586,6 @@ void ABaseCoverActor::Internal_CoverTransitionUpdate(float Alpha)
 	{
 		return;
 	}
-
 	const FTransform& OccupiedActorTransform = OccupiedActor->GetActorTransform();
 	FTransform TargetTransform;
 	

@@ -67,12 +67,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* LeftCoverPeekBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UBoxComponent* LeftCoverRollbackBox;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bLeftCoverEnabled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* RightCoverEdgeBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* RightCoverPeekBox;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UBoxComponent* RightCoverRollbackBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
