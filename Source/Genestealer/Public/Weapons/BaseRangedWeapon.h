@@ -79,7 +79,7 @@ protected:
 	bool bRaycastFromWeaponMeshInsteadOfPawnMesh = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bAimOriginIsPlayerEyesInsteadOfWeapon = true;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")
 	bool bInfiniteAmmo = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Ammo")

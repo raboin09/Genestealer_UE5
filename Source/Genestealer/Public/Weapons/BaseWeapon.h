@@ -147,6 +147,8 @@ protected:
 	bool bWantsToFire;
 	UPROPERTY(Transient)
 	bool bPendingEquip;
+	UPROPERTY(Transient)
+	int32 BurstCounter;
 	
 	FTimerHandle TimerHandle_HandleFiring;
 	
@@ -159,8 +161,7 @@ private:
 	UInventoryComponent* OwningInventory;
 	UPROPERTY(Transient)
 	UAudioComponent* FireStartAudio;	
-	UPROPERTY(Transient)
-	int32 BurstCounter;
+
 
 	FTimerHandle TimerHandle_OnEquipFinished;
 	FTimerHandle TimerHandle_FireBlendIn;

@@ -21,13 +21,13 @@ public:
 	void ResetDissolveState(bool bShouldDissolve = true);
 	
 protected:
-	UPROPERTY(EditAnywhere, Category="Genestealer|Dissolve")
+	UPROPERTY(EditAnywhere, Category="Genestealer")
 	float StartingDissolveValue = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Dissolve")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	FName DissolveParameterName;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Dissolve")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	FName ColorParameterName;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Dissolve")
+	UPROPERTY(EditAnywhere, Category="Genestealer")
 	UCurveFloat* DissolveCurveFloat;
 
 private:

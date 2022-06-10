@@ -121,15 +121,20 @@ void ABaseCoverActor::InteractWithActor(AActor* InstigatingActor)
 	
 }
 
-void ABaseCoverActor::BeginPlay()
+void ABaseCoverActor::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
 	MaterialDissolver = USpawnUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
 	USpawnUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
 	if(MaterialDissolver)
 	{
 		MaterialDissolver->InitDissolveableMesh(DissolveMesh);
 	}
+}
+
+void ABaseCoverActor::BeginPlay()
+{
+	Super::BeginPlay();
 
 	LeftCoverPeekBox->OnComponentBeginOverlap.AddDynamic(this, &ABaseCoverActor::ActorBeginOverlap);
 	LeftCoverPeekBox->OnComponentEndOverlap.AddDynamic(this, &ABaseCoverActor::ActorEndOverlap);

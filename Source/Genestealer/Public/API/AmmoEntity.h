@@ -7,7 +7,6 @@
 #include "UObject/Interface.h"
 #include "AmmoEntity.generated.h"
 
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UAmmoEntity : public UInterface

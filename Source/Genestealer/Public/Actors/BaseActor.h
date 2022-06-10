@@ -13,7 +13,7 @@ class GENESTEALER_API ABaseActor : public AActor, public ITaggable
 	GENERATED_BODY()
 	
 public:	
-	ABaseActor(); 
+	ABaseActor();
 
 	////////////////////////////////
 	/// ITaggable override
@@ -24,7 +24,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|DefaultTags")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	TArray<FGameplayTag> DefaultGameplayTags;
 
 private:

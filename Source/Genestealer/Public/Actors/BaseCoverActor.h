@@ -39,6 +39,7 @@ public:
 
 	virtual bool HasOccupant() { return IsValid(OccupiedActor); }
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()

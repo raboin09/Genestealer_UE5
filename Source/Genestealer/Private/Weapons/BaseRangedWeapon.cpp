@@ -91,7 +91,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 
 	if (bLoopedFireSound)
 	{
-		if (FireAudio == nullptr)
+		if (!FireAudio)
 		{
 			FireAudio = PlayWeaponSound(FireSound);
 		}
@@ -612,6 +612,10 @@ void ABaseRangedWeapon::HandleFiring()
 	if (GetCurrentAmmo() == 0 && !bRefiring)
 	{
 		PlayWeaponSound(OutOfAmmoSound);
+		if(BurstCounter > 0)
+		{
+			OnBurstFinished();
+		}
 	}	
 	else if (GetCurrentAmmoInClip() <= 0 && CanReload())
 	{

@@ -200,17 +200,17 @@ bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 	if(!TempWeapon)
 		return false;
 
-	if(const UObject* PistolTempObj = AlternateWeapon.GetObject())
+	if(const UObject* AltTempObj = AlternateWeapon.GetObject())
 	{
-		if(PistolTempObj->GetClass() == TempWeapon->GetClass())
+		if(AltTempObj->GetClass() == TempWeapon->GetClass())
 		{
 			return true;
 		}
 	}
 
-	if(const UObject* RifleTempObj = PrimaryWeapon.GetObject())
+	if(const UObject* PrimaryTempObj = PrimaryWeapon.GetObject())
 	{
-		if(RifleTempObj->GetClass() == TempWeapon->GetClass())
+		if(PrimaryTempObj->GetClass() == TempWeapon->GetClass())
 		{
 			return true;
 		}
@@ -221,12 +221,23 @@ bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 
 void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 AmmoRoundsToGive)
 {
-	if(!HasWeapon(WeaponClass))
+	if(WeaponClass == GetPrimaryWeaponClass())
 	{
-		return;
+		if (const TScriptInterface<IAmmoEntity> PrimaryWeaponAmmo = PrimaryWeapon.GetObject())
+		{
+			PrimaryWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
+			UKismetSystemLibrary::PrintString(this, "Giving Primary " + FString::FromInt(AmmoRoundsToGive));
+		}
 	}
 	
-	UKismetSystemLibrary::PrintString(this, "TODO Giving Ammo");
+	if(WeaponClass == GetPrimaryWeaponClass())
+	{
+		if (const TScriptInterface<IAmmoEntity> AltWeaponAmmo = AlternateWeapon.GetObject())
+		{
+			AltWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
+			UKismetSystemLibrary::PrintString(this, "Giving Alt " + FString::FromInt(AmmoRoundsToGive));
+		}
+	}
 }
 
 EWeaponState UInventoryComponent::GetCurrentWeaponState() const

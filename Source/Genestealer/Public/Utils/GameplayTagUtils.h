@@ -31,6 +31,7 @@
 #define TAG_STATE_CANNOT_GET_IN_COVER FGameplayTag::RequestGameplayTag("State.CannotGetInCover")
 #define TAG_STATE_IN_COMBAT FGameplayTag::RequestGameplayTag("State.InCombat")
 #define TAG_STATE_ATTACK_COMMITTED FGameplayTag::RequestGameplayTag("State.AttackCommitted")
+#define TAG_STATE_ACTIVE FGameplayTag::RequestGameplayTag("State.Active")
 
 #define TAG_STATE_COMBO_WINDOW_ENABLED FGameplayTag::RequestGameplayTag("State.ComboWindowEnabled")
 #define TAG_STATE_COMBO_ACTIVATED FGameplayTag::RequestGameplayTag("State.ComboActivated")
