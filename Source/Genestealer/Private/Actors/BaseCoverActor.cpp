@@ -34,29 +34,29 @@ ABaseCoverActor::ABaseCoverActor()
 	
 	LeftCoverPeekBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverPeekBox"));
 	LeftCoverPeekBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(LeftCoverPeekBox);
+	InitCoverBox(LeftCoverPeekBox, FColor::Green, FVector( -77.5f, 500.f, 0.f), FVector(25.f, 25.f, 40.f));
 	bLeftCoverEnabled = true;
 	
 	RightCoverPeekBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverPeekBox"));
 	RightCoverPeekBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(RightCoverPeekBox);	
+	InitCoverBox(RightCoverPeekBox, FColor::Green, FVector( 77.5f, 500.f, 0.f), FVector(25.f, 25.f, 40.f));	
 	bRightCoverEnabled = true;
 	
 	LeftCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverEdgeBox"));
 	LeftCoverEdgeBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(LeftCoverEdgeBox);
+	InitCoverBox(LeftCoverEdgeBox, FColor::Red, FVector( -50.f, 200.f, 0.f), FVector(3.f, 15.f, 40.f));
 	
 	RightCoverEdgeBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverEdgeBox"));
 	RightCoverEdgeBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(RightCoverEdgeBox);
+	InitCoverBox(RightCoverEdgeBox, FColor::Red, FVector( 50.f, 200.f, 0.f), FVector(3.f, 15.f, 40.f));
 
 	LeftCoverRollbackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCoverRollbackBox"));
 	LeftCoverRollbackBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(LeftCoverRollbackBox);
+	InitCoverBox(LeftCoverRollbackBox, FColor::Blue, FVector( -40.f, 300.f, 0.f), FVector(25.f, 25.f, 40.f));
 
 	RightCoverRollbackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightCoverRollbackBox"));
 	RightCoverRollbackBox->SetupAttachment(MiddleCoverWall);
-	InitCoverBox(RightCoverRollbackBox);
+	InitCoverBox(RightCoverRollbackBox, FColor::Blue, FVector( 40.f, 300.f, 0.f), FVector(25.f, 25.f, 40.f));
 	
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoverTransitionTimeline"));
 	
@@ -70,45 +70,16 @@ ABaseCoverActor::ABaseCoverActor()
 	CoverWallOffset = 40.f;
 }
 
-void ABaseCoverActor::InitCoverBox(UBoxComponent* InBox)
+void ABaseCoverActor::InitCoverBox(UBoxComponent* InBox, FColor InBoxColor, FVector Offset, FVector BoxExtent)
 {
 	if(!InBox)
 	{
 		return;
 	}
 	
-	if(InBox == LeftCoverPeekBox)
-	{
-		InBox->ShapeColor = FColor::Green;
-		InBox->AddWorldOffset(FVector( -77.5f, 500.f, 0.f));
-		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
-	} else if(InBox == RightCoverPeekBox)
-	{
-		InBox->ShapeColor = FColor::Green;
-		InBox->AddWorldOffset(FVector( 77.5f, 500.f, 0.f));
-		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
-	} else if(InBox == LeftCoverEdgeBox)
-	{
-		InBox->ShapeColor = FColor::Red;
-		InBox->SetBoxExtent(FVector(3.f, 15.f, 40.f));
-		InBox->AddWorldOffset(FVector( -50.f, 200.f, 0.f));
-	} else if(InBox == RightCoverEdgeBox)
-	{
-		InBox->ShapeColor = FColor::Red;
-		InBox->SetBoxExtent(FVector(3.f, 15.5, 40.f));
-		InBox->AddWorldOffset(FVector( 50.f, 200.f, 0.f));
-	} else if(InBox == LeftCoverRollbackBox)
-	{
-		InBox->ShapeColor = FColor::Blue;
-		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
-		InBox->AddWorldOffset(FVector( -40.f, 300.f, 0.f));
-	} else if(InBox == RightCoverRollbackBox)
-	{
-		InBox->ShapeColor = FColor::Blue;
-		InBox->SetBoxExtent(FVector(25.f, 25.f, 40.f));
-		InBox->AddWorldOffset(FVector( 40.f, 300.f, 0.f));
-	}
-	
+	InBox->ShapeColor = InBoxColor;
+	InBox->AddWorldOffset(Offset);
+	InBox->SetBoxExtent(BoxExtent);
 	InBox->SetUsingAbsoluteScale(true);
 	InBox->SetupAttachment(MiddleCoverWall);
 	InBox->AreaClass = UNavArea_Obstacle::StaticClass();
@@ -422,11 +393,9 @@ void ABaseCoverActor::Internal_StartPeekRollback()
 {
 	if(UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_LEFTPEEK) && LeftCoverRollbackBox)
 	{
-		UKismetSystemLibrary::PrintString(this, "L Rollback");
 		TargetCoverLocation = LeftCoverRollbackBox->GetComponentLocation();
 	} else if(UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_RIGHTPEEK) && RightCoverRollbackBox)
 	{
-		UKismetSystemLibrary::PrintString(this, "R Rollback");
 		TargetCoverLocation = RightCoverRollbackBox->GetComponentLocation();
 	} else
 	{

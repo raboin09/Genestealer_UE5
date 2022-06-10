@@ -21,13 +21,8 @@ class GENESTEALER_API ABaseHUD : public AHUD
 {
 	GENERATED_BODY()
 
-	
-public:
-	FORCEINLINE UUIUWHealthDisplay* GetHealthDisplay() const { return HealthDisplay; }
-
 protected:
 	virtual void BeginPlay() override;
-	virtual void PostInitializeComponents() override;
 
 	UPROPERTY(EditDefaultsOnly, Category="UI|Defaults")
 	float TimeUntilUIHidden;
@@ -36,14 +31,34 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
 	TSubclassOf<UUIUWHealthDisplay> HealthDisplayClass;
 	
-private:	
+private:
+	
+	template<typename T>
+	FORCEINLINE T* Internal_CreateWidget(TSubclassOf<T> WidgetClass) const
+	{
+		if(!WidgetClass)
+		{
+			return nullptr;
+		}
+
+		if(T* TempWidget = CreateWidget<T>(Controller, WidgetClass))
+		{
+			TempWidget->AddToViewport();
+			return TempWidget;
+		}
+	
+		return nullptr;	
+	}
+	
+	UPROPERTY()
+	ABasePlayerController* Controller;
 	
 	UPROPERTY()
 	UUIUWDamageDisplay* DamageDisplay;
 	UPROPERTY()
 	UUIUWHealthDisplay* HealthDisplay;
+	
 	UPROPERTY()
 	FTimerHandle HideDisplaysTimer;
-	UPROPERTY()
-	ABasePlayerController* Controller;
+	
 };

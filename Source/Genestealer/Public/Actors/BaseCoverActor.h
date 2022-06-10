@@ -95,7 +95,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer|Camera")
 	float DistanceWhenCameraShakePlays = 100.f;
 private:
-	void InitCoverBox(UBoxComponent* InBox);
+	void InitCoverBox(UBoxComponent* InBox, FColor InBoxColor, FVector Offset, FVector BoxExtent);
 	
 	void Internal_StartPeekFire();
 	void Internal_StopPeekFire() const;

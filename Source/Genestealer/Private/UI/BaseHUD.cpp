@@ -8,28 +8,7 @@ void ABaseHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	Controller = UCoreUtils::GetBasePlayerController(this);
-	if(HealthDisplayClass)
-	{
-		HealthDisplay = CreateWidget<UUIUWHealthDisplay>(Controller, HealthDisplayClass);
-		if(HealthDisplay)
-		{
-			HealthDisplay->AddToViewport();
-		}
-	}
 	
-	if(DamageDisplayClass)
-	{
-		DamageDisplay = CreateWidget<UUIUWDamageDisplay>(Controller, DamageDisplayClass);
-		if(DamageDisplay)
-		{
-			DamageDisplay->AddToViewport();
-		}
-	}
-
-
-}
-
-void ABaseHUD::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
+	HealthDisplay = Internal_CreateWidget<UUIUWHealthDisplay>(HealthDisplayClass);
+	DamageDisplay = Internal_CreateWidget<UUIUWDamageDisplay>(DamageDisplayClass);
 }
