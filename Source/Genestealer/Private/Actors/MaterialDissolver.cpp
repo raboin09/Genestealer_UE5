@@ -18,22 +18,22 @@ void AMaterialDissolver::InitDissolveableMesh(UMeshComponent* InMesh)
 	Internal_TimelineDissolveUpdate(StartingDissolveValue);
 }
 
-void AMaterialDissolver::StartAppearTimeline()
+void AMaterialDissolver::StartAppearTimeline(bool bPlayFromStart)
 {
 	if(!DissolveTimeline)
 	{
 		return;
 	}
-	DissolveTimeline->Play();
+	bPlayFromStart ? DissolveTimeline->PlayFromStart() : DissolveTimeline->Play();
 }
 
-void AMaterialDissolver::StartDissolveTimeline()
+void AMaterialDissolver::StartDissolveTimeline(bool bReverseFromEnd)
 {
 	if(!DissolveTimeline)
 	{
 		return;
 	}
-	DissolveTimeline->Reverse();
+	bReverseFromEnd ? DissolveTimeline->ReverseFromEnd() : DissolveTimeline->Reverse();
 }
 
 void AMaterialDissolver::ResetDissolveState(bool bShouldDissolve)

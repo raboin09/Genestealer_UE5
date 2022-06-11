@@ -58,3 +58,18 @@ void ABaseAICharacter::SwitchOutlineOnMesh(bool bShouldOutline)
 		InteractionComponent->SwitchOutlineOnAllMeshes(bShouldOutline);
 	}
 }
+
+void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload)
+{
+	if(InventoryComponent)
+	{
+		InventoryComponent->DestroyInventory(true, true);
+		// InventoryComponent->StopFiring();
+		// if(const TScriptInterface<IWeapon> CurrWeapon = InventoryComponent->GetEquippedWeapon().GetObject())
+		// {
+		// 	CurrWeapon->StartWeaponRagdoll();
+		// }
+		//
+	}
+	Super::HandleDeathEvent(DeathEventPayload);
+}

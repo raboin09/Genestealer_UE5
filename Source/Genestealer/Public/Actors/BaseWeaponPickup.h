@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseOverlapPickup.h"
+#include "API/Weapon.h"
 #include "BaseWeaponPickup.generated.h"
 
 
@@ -15,14 +16,14 @@ class GENESTEALER_API ABaseWeaponPickup : public ABaseOverlapPickup
 public:
 	
 	ABaseWeaponPickup();
-	
+
 	virtual UMeshComponent* GetMesh() const override;
+	FORCEINLINE virtual void SetAssociatedWeaponActor(TScriptInterface<IWeapon> InAssociatedWeaponActor) { AssociatedWeaponActor = InAssociatedWeaponActor; } 
 
 protected:
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
 	virtual bool CanPickup(ACharacter* PotentialChar) override;
-	
-private:
+
 	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UStaticMeshComponent* SummonedStaticMesh;
 	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
@@ -34,4 +35,8 @@ private:
 	UParticleSystemComponent* HologramParticleSystem;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UStaticMeshComponent* LightingMesh;
+
+private:
+	UPROPERTY()
+	TScriptInterface<IWeapon> AssociatedWeaponActor;
 };

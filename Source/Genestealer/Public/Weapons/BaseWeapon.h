@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseActor.h"
+#include "Actors/BaseWeaponPickup.h"
 #include "API/Animatable.h"
 #include "API/Weapon.h"
 #include "Components/SphereComponent.h"
@@ -36,7 +37,7 @@ public:
 	virtual void StopFire() override;
 	virtual bool CanFire() const override;
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) override;
-	virtual void StartWeaponRagdoll() override;
+	virtual void StartWeaponRagdoll(bool bSpawnPickup = true) override;
 	virtual bool IsWeaponOnCooldown() const override;
 	FORCEINLINE virtual bool ShouldForceAimOnFire() const override { return bForceAimOnFire; }
 	FORCEINLINE virtual EWeaponType GetWeaponType() const override { return WeaponType; }
@@ -155,6 +156,7 @@ protected:
 private:	
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
+	void Internal_HideMesh(bool bShouldHide);
 	void InitWeaponMesh(UMeshComponent* InMeshComp);
 	
 	UPROPERTY()

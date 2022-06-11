@@ -49,7 +49,7 @@ void ABaseOverlapPickup::HandleOverlapEvent(AActor* OtherActor, const FHitResult
 				PickupBase->SetVisibility(false);
 				if(MaterialDissolver)
 				{
-					MaterialDissolver->StartDissolveTimeline();
+					MaterialDissolver->StartDissolveTimeline(true);
 				}
 			}
 			Super::HandleOverlapEvent(OtherActor, HitResult);	
@@ -78,7 +78,7 @@ void ABaseOverlapPickup::PostInitializeComponents()
 	USpawnUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
 	if(MaterialDissolver)
 	{
-		MaterialDissolver->InitDissolveableMesh(PickupBase);
+		MaterialDissolver->InitDissolveableMesh(GetMesh());
 	}
 	
 	if(RotatingMovementComponent)

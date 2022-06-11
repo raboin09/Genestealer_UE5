@@ -1,8 +1,11 @@
 
 #include "Weapons/BaseWeapon.h"
+
+#include "Actors/BaseWeaponPickup.h"
 #include "Sound/SoundCue.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Core/BasePlayerController.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,6 +13,7 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
+#include "Utils/SpawnUtils.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -59,18 +63,12 @@ void ABaseWeapon::BeginPlay()
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
+	Internal_HideMesh(true);
 }
 
 void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 {
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(false);
-	}
+	Internal_HideMesh(false);
 	bPendingEquip = true;
 	DetermineWeaponState();
 
@@ -121,10 +119,7 @@ void ABaseWeapon::OnEquipFinished()
 void ABaseWeapon::OnUnEquip()
 {
 	K2_OnUnEquip();
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
+	Internal_HideMesh(true);
 	bIsEquipped = false;
 	StopFire();
 
@@ -193,12 +188,10 @@ void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
 	}
 }
 
-void ABaseWeapon::StartWeaponRagdoll()
+void ABaseWeapon::StartWeaponRagdoll(bool bSpawnPickup)
 {
-	Internal_StartMeshRagdoll(WeaponSkeletalMesh);
-	Internal_StartMeshRagdoll(WeaponStaticMesh);
-	Internal_StartMeshRagdoll(SecondaryWeaponStaticMesh);
-	Internal_StartMeshRagdoll(SecondaryWeaponSkeletalMesh);
+	Internal_StartMeshRagdoll(GetWeaponMesh());
+	// TODO Alternate Mesh
 }
 
 UMeshComponent* ABaseWeapon::GetWeaponMesh() const
@@ -300,10 +293,17 @@ void ABaseWeapon::Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const
 	{
 		return;
 	}
-	// InMeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 	InMeshComp->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	InMeshComp->SetCollisionProfileName("BlockAll");
 	InMeshComp->SetSimulatePhysics(true);
+}
+
+void ABaseWeapon::Internal_HideMesh(bool bShouldHide)
+{
+	// if(GetWeaponMesh())
+	// {
+	// 	GetWeaponMesh()->SetHiddenInGame(bShouldHide);
+	// }
 }
 
 void ABaseWeapon::ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit)
@@ -384,20 +384,15 @@ void ABaseWeapon::StopWeaponAnimation(UAnimMontage* AnimMontage) const
 void ABaseWeapon::OnEnterInventory(ACharacter* NewOwner)
 {
 	SetOwningPawn(NewOwner);
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
+	Internal_HideMesh(true);
 	K2_OnEnterInventory();
 }
 
 void ABaseWeapon::OnLeaveInventory()
 {
+	StopFire();
+	StartWeaponRagdoll();
 	SetOwningPawn(nullptr);
-	if(GetWeaponMesh())
-	{
-		GetWeaponMesh()->SetHiddenInGame(true);
-	}
 }
 
 bool ABaseWeapon::IsWeaponOnCooldown() const

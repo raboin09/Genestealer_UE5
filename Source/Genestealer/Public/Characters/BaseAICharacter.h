@@ -37,6 +37,8 @@ public:
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 
 protected:
+	virtual void HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload) override;
+	
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	UBehaviorTree* DefaultBehaviorTree;
 

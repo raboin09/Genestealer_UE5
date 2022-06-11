@@ -24,8 +24,6 @@ protected:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
-	FTransform FabrikHandL;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
 	bool bAiming = false;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Genestealer")
 	bool bFiring = false;

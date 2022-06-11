@@ -20,7 +20,7 @@ public:
 	UInventoryComponent();
 	
 	void SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass);
-	void DestroyInventory();
+	void DestroyInventory(bool bRagdollWeapon, bool bSpawnWeaponPickup);
 	bool DoesCurrentWeaponForceAimOnFire() const;
 	bool CanWeaponAim() const;
 	TSubclassOf<AActor> GetAlternateWeaponClass() const;

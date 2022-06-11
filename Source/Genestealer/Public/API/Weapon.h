@@ -23,6 +23,7 @@ enum class EWeaponType : uint8
 	NONE,
 	Melee,
 	Heavy,
+	Pistol,
 	Rifle
 };
 
@@ -71,7 +72,7 @@ public:
 	virtual ACharacter* GetOwningPawn() const PURE_VIRTUAL(IWeapon::GetOwningPawn, return nullptr;);
 	virtual void SetOwningPawn(ACharacter* IncomingCharacter) PURE_VIRTUAL(IWeapon::SetOwningPawn,);
 
-	virtual void StartWeaponRagdoll() PURE_VIRTUAL(IWeapon::StartWeaponRagdoll,);
+	virtual void StartWeaponRagdoll(bool bSpawnPickup = true) PURE_VIRTUAL(IWeapon::StartWeaponRagdoll,);
 	virtual void DestroyWeapon() PURE_VIRTUAL(IWeapon::DestroyWeapon,);
 
 	UFUNCTION(BlueprintCallable)

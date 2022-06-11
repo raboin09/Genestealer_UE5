@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BaseWeaponPickup.h"
+#include "Actors/BaseWeaponPickup.h"
 
 #include "Characters/InventoryComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -36,6 +36,10 @@ void ABaseWeaponPickup::ConsumePickup(ACharacter* ConsumingChar)
 		if(UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(ConsumingChar))
 		{
 			InventoryComponent->GiveWeaponClassAmmo(WeaponPickupClass, 20);
+			if(AssociatedWeaponActor)
+			{
+				AssociatedWeaponActor->DestroyWeapon();
+			}
 		}
 	}
 }

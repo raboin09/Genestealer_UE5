@@ -121,6 +121,7 @@ void ABaseCharacter::PreInitializeComponents()
 	if(InventoryComponent)
 	{
 		InventoryComponent->OnCurrentWeaponChanged().AddDynamic(this, &ABaseCharacter::HandleCurrentWeaponChanged);
+		InventoryComponent->OnNewWeaponAdded().AddDynamic(this, &ABaseCharacter::HandleNewWeaponAddedEvent);
 	}
 }
 
@@ -161,9 +162,40 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	}
 }
 
+void ABaseCharacter::HandleNewWeaponAddedEvent(const FNewWeaponAddedPayload& EventPayload)
+{
+	const TScriptInterface<IWeapon> AddedWeapon = EventPayload.AddedWeapon;
+	if(AddedWeapon && AddedWeapon->GetWeaponMesh())
+	{
+		FName SocketAttach = "WeaponBack_R";
+		if(AddedWeapon->GetWeaponType() == EWeaponType::Pistol)
+		{
+			SocketAttach = "WeaponSide_R";
+		} else if(AddedWeapon->GetWeaponType() == EWeaponType::Melee)
+		{
+			SocketAttach = "WeaponBack_L";
+		}
+		AddedWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);
+	}
+}
+
 void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPayload& CurrentWeaponChangedPayload)
 {
-	TScriptInterface<IWeapon> NewWeapon = CurrentWeaponChangedPayload.NewWeapon;
+	const TScriptInterface<IWeapon> OldWeapon = CurrentWeaponChangedPayload.PreviousWeapon;
+	if(OldWeapon && OldWeapon->GetWeaponMesh())
+	{
+		FName SocketAttach = "WeaponBack_R";
+		if(OldWeapon->GetWeaponType() == EWeaponType::Pistol)
+		{
+			SocketAttach = "WeaponSide_R";
+		} else if(OldWeapon->GetWeaponType() == EWeaponType::Melee)
+		{
+			SocketAttach = "WeaponBack_L";
+		}
+		OldWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);
+	}
+	
+	const TScriptInterface<IWeapon> NewWeapon = CurrentWeaponChangedPayload.NewWeapon;
 	if(!NewWeapon || !NewWeapon->GetWeaponMesh())
 		return;	
 	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("VB RHS_ik_hand_gun"));
@@ -179,15 +211,6 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	if (!IsAlive())
 	{
 		return;
-	}
-
-	if(InventoryComponent)
-	{
-		InventoryComponent->StopFiring();
-		if(const TScriptInterface<IWeapon> CurrWeapon = InventoryComponent->GetEquippedWeapon().GetObject())
-		{
-			CurrWeapon->StartWeaponRagdoll();
-		}
 	}
 	
 	ClearHeldObject();

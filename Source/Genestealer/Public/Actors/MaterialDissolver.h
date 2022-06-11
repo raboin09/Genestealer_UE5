@@ -16,8 +16,8 @@ public:
 	AMaterialDissolver();
 	
 	void InitDissolveableMesh(UMeshComponent* InMesh);
-	void StartAppearTimeline();
-	void StartDissolveTimeline();
+	void StartAppearTimeline(bool bPlayFromStart = false);
+	void StartDissolveTimeline(bool bReverseFromEnd = false);
 	void ResetDissolveState(bool bShouldDissolve = true);
 	
 protected:

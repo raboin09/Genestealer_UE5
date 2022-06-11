@@ -24,12 +24,12 @@ public:
 	//////////////////////////////////////
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
+	FORCEINLINE virtual UShapeComponent* GetCollisionComponent() const override { return CollisionComp; }
 	
 protected:
 	virtual void PostInitializeComponents() override;
 	
 	virtual void HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult) override;
-	FORCEINLINE virtual UShapeComponent* GetCollisionComponent() const override { return CollisionComp; }	
 	FORCEINLINE virtual UMeshComponent* GetMesh() const override { return PickupBase; }
 	virtual bool CanPickup(ACharacter* PotentialChar) PURE_VIRTUAL(ABaseOverlapPickup::CanPickup, return false;)
 	virtual void ConsumePickup(ACharacter* ConsumingChar) PURE_VIRTUAL(ABaseOverlapPickup::ConsumePickup,)

@@ -54,17 +54,15 @@ void UInventoryComponent::Internal_SpawnWeaponFromClass(TSubclassOf<AActor> Weap
 	}
 }
 
-void UInventoryComponent::DestroyInventory()
+void UInventoryComponent::DestroyInventory(bool bRagdollWeapon, bool bSpawnWeaponPickup)
 {
 	if(PrimaryWeapon)
 	{
-		PrimaryWeapon->StopFire();
 		Internal_RemoveWeapon(PrimaryWeapon, EWeaponSlot::Primary);
 	}
 	
 	if(AlternateWeapon)
 	{
-		AlternateWeapon->StopFire();
 		Internal_RemoveWeapon(AlternateWeapon, EWeaponSlot::Alternate);
 	}	
 
