@@ -13,9 +13,10 @@ class GENESTEALER_API ABaseExplodingProjectile : public ABaseOverlapProjectile
 
 public:
 	ABaseExplodingProjectile();
+	
+protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-protected:
 	virtual void HandleActorDeath() override;
 	virtual void K2_HandleImpact_Implementation(const FHitResult& HitResult) override;
 	virtual void OnImpact(const FHitResult& HitResult) override;
@@ -29,7 +30,7 @@ protected:
 
 private:
 	void Internal_ExplodeAllActorsInRadius();
-	bool Internal_TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor) const;
+	bool Internal_TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor);
 	FHitResult Internal_TraceToLocation(const FVector& StartTrace, const FVector& EndTrace) const;
 
 	UPROPERTY(Transient)

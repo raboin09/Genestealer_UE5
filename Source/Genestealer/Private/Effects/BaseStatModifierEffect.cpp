@@ -3,6 +3,7 @@
 
 #include "Effects/BaseStatModifierEffect.h"
 #include "Characters/HealthComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
@@ -33,7 +34,15 @@ void ABaseStatModifier::K2_ApplyStatChange_Implementation(float ModifiedStatValu
 		{
 			FDamageHitReactEvent HitReactEvent;
 			HitReactEvent.DamageTaken = CalculateHeadshotDamage(ModifiedStatValue);
-			HitReactEvent.HitDirection = EffectContext.InstigatingActor ?  EffectContext.InstigatingActor->GetActorForwardVector().GetSafeNormal() : FVector::ZeroVector;
+			if(EffectContext.InstigatingActor && EffectContext.ReceivingActor)
+			{
+				const FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(EffectContext.InstigatingActor->GetActorLocation(), EffectContext.ReceivingActor->GetActorLocation());
+				HitReactEvent.HitDirection = LookAt.Vector().GetSafeNormal();
+			} else
+			{
+				HitReactEvent.HitDirection = EffectContext.InstigatingActor ?  EffectContext.InstigatingActor->GetActorForwardVector().GetSafeNormal() : FVector::ZeroVector;
+				// HitReactEvent.HitDirection = EffectContext.HitDirection;
+			}
 			HitReactEvent.HitResult = EffectContext.SurfaceHit;
 			HitReactEvent.bOnlyHitReactOnDeath = StatEffectDataObj->bOnlyHitReactOnDeath;
 			HitReactEvent.HitReactType = StatEffectDataObj->HitImpulse;

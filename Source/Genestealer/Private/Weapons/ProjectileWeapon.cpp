@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Actors/BaseOverlapProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/SpawnUtils.h"
 
 void AProjectileWeapon::FireWeapon()
@@ -25,7 +26,8 @@ void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, 
 	OutSpawnOrigin = GetRaycastOriginLocation();
 	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
 	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
-	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RadiusOfAimAdjust); Impact.bBlockingHit)
+	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this); 
+	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RaycastCircleRadius); Impact.bBlockingHit)
 	{
 		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
 		bool bWeaponPenetration = false;
@@ -38,7 +40,7 @@ void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, 
 		{
 			FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
 			FVector MuzzleEndTrace = OutSpawnOrigin;
-			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RadiusOfAimAdjust); MuzzleImpact.bBlockingHit)
+			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
 			{
 				bWeaponPenetration = true;
 			}

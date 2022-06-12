@@ -20,8 +20,6 @@ protected:
 	virtual TArray<TSubclassOf<AActor>> GetAdditionalEffectsToApplyToProjectile() const { return WeaponEffects; };
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	float RadiusOfAimAdjust = 10.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	TSubclassOf<class ABaseOverlapProjectile> ProjectileClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(EditCondition = "ProjectileClass != nullptr", EditConditionHides))
 	bool bSlowDownProjectileOnAIShooters = true;

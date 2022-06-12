@@ -160,7 +160,7 @@ void ABaseCoverActor::BeginPlay()
 	bShouldPlayCoverDissolve = true;
 }
 
-void ABaseCoverActor::OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal)
+void ABaseCoverActor::OccupyMount(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal)
 {
 	if(OccupiedActor || !InActor)
 	{
@@ -189,7 +189,7 @@ void ABaseCoverActor::OccupyCover(ABaseCharacter* InActor, const FVector& InTarg
 	}
 }
 
-void ABaseCoverActor::VacateCover(ABaseCharacter* InActor)
+void ABaseCoverActor::VacateMount(ABaseCharacter* InActor)
 {
 	if(!OccupiedActor || OccupiedActor != InActor)
 	{
@@ -210,7 +210,7 @@ void ABaseCoverActor::VacateCover(ABaseCharacter* InActor)
 	Internal_ActivateOverlapBoxes(false);	
 }
 
-void ABaseCoverActor::StartCoverFire()
+void ABaseCoverActor::StartMountedFire()
 {
 	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
 	{
@@ -252,7 +252,7 @@ void ABaseCoverActor::StartCoverFire()
 	}
 }
 
-void ABaseCoverActor::StopCoverFire()
+void ABaseCoverActor::StopMountedFire()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
@@ -287,7 +287,7 @@ void ABaseCoverActor::StopCoverFire()
 	}
 }
 
-void ABaseCoverActor::StartCoverAim()
+void ABaseCoverActor::StartMountedAim()
 {
 	if(!OccupiedActor)
 	{
@@ -307,7 +307,7 @@ void ABaseCoverActor::StartCoverAim()
 	OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
 }
 
-void ABaseCoverActor::StopCoverAim()
+void ABaseCoverActor::StopMountedAim()
 {
 	if(!OccupiedActor)
 	{

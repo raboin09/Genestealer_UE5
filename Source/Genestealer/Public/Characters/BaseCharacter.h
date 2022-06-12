@@ -8,7 +8,7 @@
 #include "Types/EventDeclarations.h"
 #include "API/Animatable.h"
 #include "API/Attackable.h"
-#include "API/CoverPoint.h"
+#include "API/Mountable.h"
 #include "API/Effectible.h"
 #include "API/Taggable.h"
 #include "Character/ALSCharacter.h"
@@ -146,8 +146,9 @@ private:
 	
 	void InitCapsuleCollisionDefaults() const;
 	void InitMeshCollisionDefaults() const;
-	
-	FORCEINLINE bool Internal_CanGetInCover() { return !GetTagContainer().HasTag(TAG_STATE_CANNOT_GET_IN_COVER); }
+
+	FORCEINLINE bool IsMounted() const { return CurrentMount != nullptr; }
+	FORCEINLINE bool CanGetInCover() { return !GetTagContainer().HasTag(TAG_STATE_CANNOT_MOUNT); }
 	void Internal_CoverDodgeTryStart();
 	void Internal_CoverDodgeTryEnd();
 
@@ -181,6 +182,7 @@ private:
 	EHitReactType LastKnownHitReact;
 	UPROPERTY(Transient)
 	bool bHasRightInput;
+	
 	UPROPERTY(Transient)
-	TScriptInterface<ICoverPoint> CurrentCoverPoint;
+	TScriptInterface<IMountable> CurrentMount;
 };

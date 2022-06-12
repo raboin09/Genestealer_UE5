@@ -42,8 +42,6 @@ protected:
 	UProjectileMovementComponent* MovementComp;
 	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UParticleSystemComponent* ParticleComp;
-	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
-	UNiagaraComponent* NiagaraComp;
 	UPROPERTY(VisibleDefaultsOnly)
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleDefaultsOnly)
@@ -51,10 +49,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	float DeathBuffer = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	USoundCue* FlyBySound;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	UNiagaraSystem* NiagaraSystem;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float FlybyRange;
 private:
+	UPROPERTY(Transient)
+	UNiagaraComponent* NiagaraComponent; 
 	UPROPERTY(Transient)
 	bool bFlybyPlayed;
 	UPROPERTY(Transient)

@@ -74,10 +74,10 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 
 	if(WeaponType == EWeaponType::Heavy)
 	{
-		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_CANNOT_GET_IN_COVER);
+		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_CANNOT_MOUNT);
 	} else
 	{
-		UGameplayTagUtils::RemoveTagFromActor(OwningPawn, TAG_STATE_CANNOT_GET_IN_COVER);
+		UGameplayTagUtils::RemoveTagFromActor(OwningPawn, TAG_STATE_CANNOT_MOUNT);
 	}
 	
 	if (LastWeapon)

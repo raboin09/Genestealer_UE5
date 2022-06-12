@@ -85,7 +85,7 @@ void ABaseCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
 
 bool ABaseCharacter::CanSprint() const
 {
-	if(IsInCover())
+	if(IsMounted())
 	{
 		return false;
 	}
@@ -94,7 +94,7 @@ bool ABaseCharacter::CanSprint() const
 
 EALSGait ABaseCharacter::GetAllowedGait() const
 {
-	if(IsInCover())
+	if(IsMounted())
 	{
 		return EALSGait::Walking;
 	}
@@ -274,7 +274,7 @@ float ABaseCharacter::Internal_PlayMontage(const FAnimMontagePlayData& AnimMonta
 
 void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, const float ImpulseScale, const FName BoneName, bool bVelocityChange)
 {
-	if(IsInCover())
+	if(IsMounted())
 	{
 		Internal_CoverDodgeTryEnd();
 	}
@@ -406,9 +406,9 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			return;
 		}
 		
-		if(CurrentCoverPoint && IsInCover())
+		if(CurrentMount && IsMounted())
 		{
-			CurrentCoverPoint->StartCoverFire();
+			CurrentMount->StartMountedFire();
 		} else
 		{
 			InventoryComponent->StartFiring();
@@ -426,9 +426,9 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 		}
 	} else
 	{		
-		if(CurrentCoverPoint && IsInCover())
+		if(CurrentMount && IsMounted())
 		{
-			CurrentCoverPoint->StopCoverFire();
+			CurrentMount->StopMountedFire();
 		} else
 		{
 			InventoryComponent->StopFiring();
@@ -448,12 +448,12 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 
 void ABaseCharacter::GL_HandleCoverDodgeAction()
 {
-	if(!Internal_CanGetInCover())
+	if(!CanGetInCover())
 	{
 		return;
 	}
 	
-	if(!CurrentCoverPoint)
+	if(!CurrentMount)
 	{
 		Internal_CoverDodgeTryStart();
 	} else
@@ -471,9 +471,9 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 	    }
 	    
 		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
-		if(IsInCover() && CurrentCoverPoint)
+		if(IsMounted())
 		{
-			CurrentCoverPoint->StartCoverAim();
+			CurrentMount->StartMountedAim();
 		} else
 		{
 			SetRotationMode(EALSRotationMode::Aiming, true, true);
@@ -481,7 +481,7 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 	} else
 	{
 		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
-		if(IsFiring() && !IsInCover())
+		if(IsFiring() && !IsMounted())
 		{
 			SetRotationMode(EALSRotationMode::Aiming, true, true);
 			if(CameraBehavior)
@@ -491,9 +491,9 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 			return;
 		}
 		
-		if(IsInCover() && CurrentCoverPoint)
+		if(IsMounted() && CurrentMount)
 		{
-			CurrentCoverPoint->StopCoverAim();
+			CurrentMount->StopMountedAim();
 		} else
 		{
 			SetRotationMode(EALSRotationMode::LookingDirection);
@@ -503,7 +503,7 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 
 void ABaseCharacter::GL_HandleSprintAction(bool bValue)
 {
-	if(IsInCover() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
+	if(IsMounted() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
 	{
 		return;
 	}
@@ -537,24 +537,29 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	{
 		return;
 	}
-	
-	if(ICoverPoint* CoverPoint = Cast<ICoverPoint>(HitResult.GetActor()))
+
+	if(!UGameplayTagUtils::ActorHasGameplayTag(HitResult.GetActor(), TAG_ACTOR_COVER))
 	{
-		CoverPoint->OccupyCover(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
-		TScriptInterface<ICoverPoint> NewCover;
+		return;
+	}
+	
+	if(IMountable* CoverPoint = Cast<IMountable>(HitResult.GetActor()))
+	{
+		CoverPoint->OccupyMount(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
+		TScriptInterface<IMountable> NewCover;
 		NewCover.SetObject(HitResult.GetActor());
 		NewCover.SetInterface(CoverPoint);
-		CurrentCoverPoint = NewCover;
-	}	
+		CurrentMount = NewCover;
+	}
 }
 
 void ABaseCharacter::Internal_CoverDodgeTryEnd()
 {
-	if(CurrentCoverPoint)
+	if(CurrentMount && IsInCover())
 	{
-		CurrentCoverPoint->VacateCover(this);	
+		CurrentMount->VacateMount(this);	
 	}
-	CurrentCoverPoint = nullptr;
+	CurrentMount = nullptr;
 }
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()

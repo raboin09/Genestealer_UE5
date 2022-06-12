@@ -3,6 +3,7 @@
 
 #include "Actors/BaseOverlapProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "API/Effectible.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Components/AudioComponent.h"
@@ -42,11 +43,6 @@ ABaseOverlapProjectile::ABaseOverlapProjectile()
 	ParticleComp->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	ParticleComp->LODMethod = PARTICLESYSTEMLODMETHOD_ActivateAutomatic;
 
-	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComp"));
-	NiagaraComp->bAutoActivate = true;
-	NiagaraComp->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	NiagaraComp->SetupAttachment(SummonedMesh);
-
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	SetRemoteRoleForBackwardsCompat(ROLE_SimulatedProxy);
@@ -77,6 +73,12 @@ void ABaseOverlapProjectile::PostInitializeComponents()
 	{
 		CollisionComp->IgnoreActorWhenMoving(GetInstigator(), true);
 		CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
+	}
+	if(NiagaraSystem && GetOwner())
+	{
+		NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraSystem, SummonedMesh, "", FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+		NiagaraComponent->bAutoActivate = true;
+		NiagaraComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	}
 }
 
@@ -170,6 +172,17 @@ void ABaseOverlapProjectile::HandleActorDeath()
 		ProjAudioComp->FadeOut(0.1f, 0.f);
 	}
 
+	if(NiagaraComponent)
+	{
+		NiagaraComponent->Deactivate();
+	}
+	
 	MovementComp->StopMovementImmediately();
-	Destroy();
+	if(DeathBuffer > 0.f)
+	{
+		SetLifeSpan(DeathBuffer);	
+	} else
+	{
+		Destroy();
+	}
 }

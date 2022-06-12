@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "MaterialDissolver.h"
 #include "Actors/BaseActor.h"
-#include "API/CoverPoint.h"
+#include "API/Mountable.h"
 #include "API/Interactable.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/BoxComponent.h"
@@ -14,7 +14,7 @@
 #include "BaseCoverActor.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class GENESTEALER_API ABaseCoverActor : public ABaseActor, public ICoverPoint, public IInteractable
+class GENESTEALER_API ABaseCoverActor : public ABaseActor, public IMountable, public IInteractable
 {
 	GENERATED_BODY()
 
@@ -28,16 +28,20 @@ public:
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
 
 	////////////////////////////////
-	/// ICoverPoint override
+	/// IMountable override
 	////////////////////////////////
-	virtual void OccupyCover(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal) override;
-	virtual void VacateCover(ABaseCharacter* InActor) override;
-	virtual void StartCoverFire() override;
-	virtual void StopCoverFire() override;
-	virtual void StartCoverAim() override;
-	virtual void StopCoverAim() override;
+	virtual void OccupyMount(ABaseCharacter* InActor, const FVector& InTargetCoverLocation, const FVector& InHitNormal) override;
+	virtual void VacateMount(ABaseCharacter* InActor) override;
+	virtual void StartMountedFire() override;
+	virtual void StopMountedFire() override;
+	virtual void StartMountedAim() override;
+	virtual void StopMountedAim() override;
 
+	////////////////////////////////
+	/// ABaseCoverActor
+	////////////////////////////////
 	virtual bool HasOccupant() { return IsValid(OccupiedActor); }
+	
 protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;

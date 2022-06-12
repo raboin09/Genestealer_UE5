@@ -72,9 +72,9 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 	EffectContext.InstigatingActor = InstigatingActor;
 	EffectContext.ReceivingActor = Impact.GetActor();
 	EffectContext.SurfaceHit = Impact;
+	EffectContext.HitDirection = Impact.ImpactNormal;
 	EffectActor->SetEffectContext(EffectContext);
-	USpawnUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);	
-	// EffectActor->AttachToComponent(Impact.GetComponent(), FAttachmentTransformRules::KeepWorldTransform);
+	USpawnUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
 	return EffectActor;
 }
 

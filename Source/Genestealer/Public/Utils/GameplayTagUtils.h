@@ -28,7 +28,7 @@
 #define TAG_STATE_READY FGameplayTag::RequestGameplayTag("State.Ready")
 #define TAG_STATE_RAGDOLL FGameplayTag::RequestGameplayTag("State.Ragdoll")
 #define TAG_STATE_IN_COVER FGameplayTag::RequestGameplayTag("State.InCover")
-#define TAG_STATE_CANNOT_GET_IN_COVER FGameplayTag::RequestGameplayTag("State.CannotGetInCover")
+#define TAG_STATE_CANNOT_MOUNT FGameplayTag::RequestGameplayTag("State.CannotMount")
 #define TAG_STATE_IN_COMBAT FGameplayTag::RequestGameplayTag("State.InCombat")
 #define TAG_STATE_ATTACK_COMMITTED FGameplayTag::RequestGameplayTag("State.AttackCommitted")
 #define TAG_STATE_ACTIVE FGameplayTag::RequestGameplayTag("State.Active")
