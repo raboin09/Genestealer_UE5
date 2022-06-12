@@ -30,6 +30,7 @@ public:
 	FORCEINLINE FActorDeath& OnActorDeath() { return ActorDeath; }
 	FORCEINLINE FCurrentWoundHealthChanged& OnCurrentWoundHealthChanged() { return CurrentWoundHealthChanged; }
 	FORCEINLINE FCharacterInCombatChanged& OnCharacterInCombatChanged() { return CharacterInCombatChanged; }
+	FORCEINLINE FPlayerAimingChanged& OnPlayerAimingChanged() { return PlayerAimingChanged; }
 
 	///////////////////////////////////////////////////////////////
 	// UI Event listeners coming from various Actors and Components
@@ -39,6 +40,8 @@ protected:
 	// ABaseCharacter
 	UFUNCTION()
 	virtual void UIEventHandler_CharacterInCombatChanged(const FCharacterInCombatChangedPayload& CharacterInCombatChangedPayload);
+	UFUNCTION()
+	virtual void UIEventHandler_PlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload);
 	
 	// ABasePlayerController
 	UFUNCTION()
@@ -66,6 +69,7 @@ protected:
 
 private:
 	FCurrentWoundHealthChanged CurrentWoundHealthChanged;
+	FPlayerAimingChanged PlayerAimingChanged;
 	FCharacterInCombatChanged CharacterInCombatChanged;
 	FMaxWoundsChanged MaxWoundsChanged;
 	FActorDeath ActorDeath;

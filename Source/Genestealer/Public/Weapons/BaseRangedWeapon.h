@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Effects/BaseEffect.h"
 #include "NiagaraComponent.h"
-#include "API/AmmoEntity.h"
+#include "API/RangedEntity.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseRangedWeapon.generated.h"
 
@@ -20,7 +20,7 @@ enum class EWeaponVFXAdjustmentType : uint8
 };
 
 UCLASS(Abstract, NotBlueprintable)
-class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IAmmoEntity
+class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IRangedEntity
 {
 	GENERATED_BODY()
 
@@ -28,6 +28,24 @@ public:
 	virtual bool CanReload() override;
     
 protected:
+	///////////////////////////////
+	// IRangedEntity overrides
+	///////////////////////////////
+	FORCEINLINE virtual bool CheckChildFireCondition() override { return GetCurrentAmmoInClip() > 0 || HasInfiniteClip(); }
+	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return HasInfiniteAmmo() ? 1 : CurrentAmmo; }
+	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
+	FORCEINLINE virtual int32 GetMaxAmmo() override { return HasInfiniteAmmo() ? 1 : MaxAmmo; }
+	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
+	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
+	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
+	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
+	FORCEINLINE virtual UTexture2D* GetCrosshair() const override { return Crosshair; }
+	virtual void BroadcastAmmoUsage() override;
+	virtual void GiveAmmo(int AddAmount) override;
+	
+	///////////////////////////////
+	// IWeapon overrides
+	///////////////////////////////
 	virtual void BeginPlay() override;
 	virtual void StartReload() override;
 	virtual void StopReload() override;
@@ -36,12 +54,11 @@ protected:
 	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) override;
 	virtual float SimulateWeaponFire() override;
 	virtual void StopSimulatingWeaponFire() override;
-	virtual void GiveAmmo(int AddAmount) override;
 	virtual void OnUnEquip() override;
 	virtual bool CanFire() const override;
-	virtual void BroadcastAmmoUsage() override;
 	virtual void HandleFiring() override;
 	virtual void DetermineWeaponState() override;
+
 	
 	virtual FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact);
 	virtual void UseAmmo();
@@ -61,6 +78,8 @@ protected:
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
+	UTexture2D* Crosshair;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon", meta = (EditCondition = "WeaponType != EWeaponType::Rifle && WeaponType != EWeaponType::Heavy"))
 	bool bAkimbo = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
@@ -185,13 +204,4 @@ private:
 
 	FTimerHandle TimerHandle_StopReload;
 	FTimerHandle TimerHandle_ReloadWeapon;
-public:
-	FORCEINLINE virtual bool CheckChildFireCondition() override { return GetCurrentAmmoInClip() > 0 || HasInfiniteClip(); }
-	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return HasInfiniteAmmo() ? 1 : CurrentAmmo; }
-	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
-	FORCEINLINE virtual int32 GetMaxAmmo() override { return HasInfiniteAmmo() ? 1 : MaxAmmo; }
-	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
-	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
-	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
-	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 };

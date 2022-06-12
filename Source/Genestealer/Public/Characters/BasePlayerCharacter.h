@@ -17,6 +17,9 @@ class GENESTEALER_API ABasePlayerCharacter : public ABaseCharacter
 
 public:
 	ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer);
+
+	FORCEINLINE FPlayerAimingChanged& OnPlayerAimingChanged() { return PlayerAimingChanged; }
+	
 protected:
 	virtual void GL_HandleFireAction(bool bValue) override;
 	virtual void GL_HandleAimAction(bool bValue) override;
@@ -30,4 +33,7 @@ protected:
 	UTimelineComponent* LockOnInterpTimeline;
 	UPROPERTY(EditDefaultsOnly)
 	ULockOnComponent* LockOnComponent;
+
+private:
+	FPlayerAimingChanged PlayerAimingChanged;
 };

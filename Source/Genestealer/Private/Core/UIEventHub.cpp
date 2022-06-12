@@ -3,7 +3,7 @@
 
 #include "Core/UIEventHub.h"
 
-#include "API/AmmoEntity.h"
+#include "API/RangedEntity.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
 
@@ -20,7 +20,8 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 		InController->OnNewActorTargeted().AddDynamic(this, &UUIEventHub::UIEventHandler_NewActorTargeted);
 		if(InController->PlayerCharacter)
 		{
-			InController->PlayerCharacter->OnCharacterInCombatChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CharacterInCombatChanged);	
+			InController->PlayerCharacter->OnCharacterInCombatChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CharacterInCombatChanged);
+			InController->PlayerCharacter->OnPlayerAimingChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_PlayerAimingChanged);
 		}
 	}
 
@@ -37,7 +38,7 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 		InventoryComponent->OnCurrentWeaponChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_CurrentWeaponChanged);
 		if(const TScriptInterface<IWeapon> CurrentWeapon = InventoryComponent->GetEquippedWeapon())
 		{
-			if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(CurrentWeapon.GetObject()))
+			if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(CurrentWeapon.GetObject()))
 			{
 				AmmoEntity->OnAmmoAmountChanged().AddDynamic(this, &UUIEventHub::UIEventHandler_AmmoChanged);	
 			}
@@ -48,6 +49,11 @@ void UUIEventHub::InitEventHub(ABasePlayerController* InController)
 void UUIEventHub::UIEventHandler_CharacterInCombatChanged(const FCharacterInCombatChangedPayload& CharacterInCombatChangedPayload)
 {
 	CharacterInCombatChanged.Broadcast(CharacterInCombatChangedPayload);
+}
+
+void UUIEventHub::UIEventHandler_PlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload)
+{
+	PlayerAimingChanged.Broadcast(PlayerAimingChangedPayload);
 }
 
 void UUIEventHub::UIEventHandler_NewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload)

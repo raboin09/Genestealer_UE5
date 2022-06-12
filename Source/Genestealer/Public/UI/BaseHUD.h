@@ -21,6 +21,9 @@ class GENESTEALER_API ABaseHUD : public AHUD
 {
 	GENERATED_BODY()
 
+public:
+	virtual void DrawHUD() override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -32,6 +35,11 @@ protected:
 	TSubclassOf<UUIUWHealthDisplay> HealthDisplayClass;
 	
 private:
+
+	UFUNCTION()
+	void HandleNewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload);
+	UFUNCTION()
+	void HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload);
 	
 	template<typename T>
 	FORCEINLINE T* Internal_CreateWidget(TSubclassOf<T> WidgetClass) const
@@ -49,7 +57,8 @@ private:
 	
 		return nullptr;	
 	}
-	
+
+private:
 	UPROPERTY()
 	ABasePlayerController* Controller;
 	
@@ -57,8 +66,14 @@ private:
 	UUIUWDamageDisplay* DamageDisplay;
 	UPROPERTY()
 	UUIUWHealthDisplay* HealthDisplay;
-	
+
+	UPROPERTY()
+	bool bShouldDrawCrosshair;
 	UPROPERTY()
 	FTimerHandle HideDisplaysTimer;
+	UPROPERTY()
+	UTexture2D* CurrentCrosshair;
+	UPROPERTY()
+	FLinearColor CurrentCrosshairColor = FLinearColor::White;
 	
 };

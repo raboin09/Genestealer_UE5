@@ -45,4 +45,8 @@ void ABasePlayerCharacter::GL_HandleAimAction(bool bValue)
 			UAudioManager::SpawnSoundAtLocation(this, AimOutSound, GetHeadLocation());
 		}
 	}
+	FPlayerAimingChangedPayload PlayerAimingChangedPayload;
+	PlayerAimingChangedPayload.bIsAiming = bValue;
+	PlayerAimingChangedPayload.CrosshairTexture = InventoryComponent ? InventoryComponent->GetCrosshair() : nullptr;
+	PlayerAimingChanged.Broadcast(PlayerAimingChangedPayload);
 }

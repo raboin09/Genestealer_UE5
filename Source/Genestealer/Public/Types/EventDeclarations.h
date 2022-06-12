@@ -181,9 +181,9 @@ struct FCurrentWoundEventPayload
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrentWoundHealthChanged, const FCurrentWoundEventPayload&, CurrentWoundEventPayload);
 
-///////////////////////////
+///////////////////////////////////////
 // PLAYER IN COMBAT CHANGED EVENT
-///////////////////////////
+///////////////////////////////////////
 USTRUCT(BlueprintType)
 struct FCharacterInCombatChangedPayload
 {
@@ -201,3 +201,20 @@ struct FCharacterInCombatChangedPayload
 	AActor* DamageCauser;
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCharacterInCombatChanged, const FCharacterInCombatChangedPayload&, PlayerInCombatChangedPayload);
+
+///////////////////////////////////////
+// PLAYER AIMING EVENT
+///////////////////////////////////////
+USTRUCT(BlueprintType)
+struct FPlayerAimingChangedPayload
+{
+	GENERATED_BODY()
+	FPlayerAimingChangedPayload(): bIsAiming(false), CrosshairTexture(nullptr) { }	
+	FPlayerAimingChangedPayload(bool bInIsAiming, UTexture2D* InCrosshairTexture = nullptr) : bIsAiming(bInIsAiming), CrosshairTexture(InCrosshairTexture) { }
+
+	UPROPERTY()
+	bool bIsAiming;
+	UPROPERTY()
+	UTexture2D* CrosshairTexture;
+};
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerAimingChanged, const FPlayerAimingChangedPayload&, PlayerAimingChangedPayload);

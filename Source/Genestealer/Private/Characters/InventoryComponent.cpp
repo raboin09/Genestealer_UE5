@@ -1,6 +1,6 @@
 #include "Characters/InventoryComponent.h"
 
-#include "API/AmmoEntity.h"
+#include "API/RangedEntity.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
@@ -121,6 +121,15 @@ void UInventoryComponent::EquipPrimaryWeapon()
 	}
 }
 
+UTexture2D* UInventoryComponent::GetCrosshair() const
+{
+	if(const IRangedEntity* RangedEntity = Cast<IRangedEntity>(CurrentWeapon.GetObject()))
+	{
+		return RangedEntity->GetCrosshair();
+	}
+	return nullptr;
+}
+
 TScriptInterface<IWeapon> UInventoryComponent::Internal_FindWeapon(TSubclassOf<AActor> WeaponClass)
 {
 	if(HasWeapon(WeaponClass))
@@ -164,7 +173,7 @@ void UInventoryComponent::OnTargetingChange(bool bIsTargeting)
 
 void UInventoryComponent::StartReload()
 {
-	if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(CurrentWeapon.GetObject()))
+	if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(CurrentWeapon.GetObject()))
 	{
 		AmmoEntity->StartReload();
 	}
@@ -221,7 +230,7 @@ void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 A
 {
 	if(WeaponClass == GetPrimaryWeaponClass())
 	{
-		if (const TScriptInterface<IAmmoEntity> PrimaryWeaponAmmo = PrimaryWeapon.GetObject())
+		if (const TScriptInterface<IRangedEntity> PrimaryWeaponAmmo = PrimaryWeapon.GetObject())
 		{
 			PrimaryWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
 			UKismetSystemLibrary::PrintString(this, "Giving Primary " + FString::FromInt(AmmoRoundsToGive));
@@ -230,7 +239,7 @@ void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 A
 	
 	if(WeaponClass == GetPrimaryWeaponClass())
 	{
-		if (const TScriptInterface<IAmmoEntity> AltWeaponAmmo = AlternateWeapon.GetObject())
+		if (const TScriptInterface<IRangedEntity> AltWeaponAmmo = AlternateWeapon.GetObject())
 		{
 			AltWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
 			UKismetSystemLibrary::PrintString(this, "Giving Alt " + FString::FromInt(AmmoRoundsToGive));
@@ -296,7 +305,7 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 	CurrentWeaponChanged.Broadcast(FCurrentWeaponChangedPayload(NewWeapon, LastWeapon));
 	
 	// Needed to catch this for the first BeginPlay loop
-	if(IAmmoEntity* AmmoEntity = Cast<IAmmoEntity>(NewWeapon.GetObject()))
+	if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(NewWeapon.GetObject()))
 	{
 		AmmoEntity->BroadcastAmmoUsage();
 	}

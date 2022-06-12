@@ -161,6 +161,24 @@ FRotator UCombatUtils::GetRotationFromComponentHit(const FHitResult& Impact)
 	return NewQuat.Rotator();
 }
 
+bool UCombatUtils::AreActorsAllies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor)
+{
+	if(AActor* CastedActor = Cast<AActor>(FirstActor.GetObject()))
+	{
+		return AreActorsAllies(CastedActor, SecondActor);
+	}
+	return false;
+}
+
+bool UCombatUtils::AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor)
+{
+	if(AActor* CastedActor = Cast<AActor>(FirstActor.GetObject()))
+	{
+		return AreActorsEnemies(CastedActor, SecondActor);
+	}
+	return false;
+}
+
 bool UCombatUtils::AreActorsAllies(AActor* FirstActor, AActor* SecondActor)
 {
 	IAttackable* CastedChar = Cast<IAttackable>(FirstActor);
