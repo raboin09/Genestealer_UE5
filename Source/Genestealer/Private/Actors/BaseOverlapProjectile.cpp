@@ -103,6 +103,11 @@ void ABaseOverlapProjectile::InitVelocity(const FVector& ShootDirection) const
 	}
 }
 
+void ABaseOverlapProjectile::K2_HandleImpact_Implementation(const FHitResult& HitResult)
+{
+	ApplyHitEffects(HitResult);
+}
+
 void ABaseOverlapProjectile::PlayFlybySound()
 {
 	if(bFlybyIsInFront)
@@ -125,22 +130,20 @@ void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 		HandleActorDeath();
 		return;
 	}
-	if(const UClass* HitActorClass = HitResult.GetActor()->GetClass(); !HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	const UClass* HitActorClass = HitResult.GetActor()->GetClass();
+	if(!HitActorClass)
+	{
+		return;
+	}
+
+	if(HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	{
+		K2_HandleImpact(HitResult);
+	} else
 	{
 		ApplyMissEffects(HitResult);
-	} else  
-	{
-		Impact(HitResult);
 	}
 	HandleActorDeath();
-}
-
-void ABaseOverlapProjectile::Impact(const FHitResult& Impact)
-{
-	FTransform OutTrans;
-	OutTrans.SetLocation(Impact.ImpactPoint);
-	OutTrans.SetRotation(Impact.ImpactPoint.Rotation().Quaternion());
-	ApplyHitEffects(Impact);
 }
 
 void ABaseOverlapProjectile::ApplyHitEffects(const FHitResult& Impact) const

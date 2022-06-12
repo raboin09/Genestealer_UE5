@@ -9,10 +9,10 @@
 
 ABaseStatModifier::ABaseStatModifier()
 {
-	if(!StatEffectDataObj)
-	{
-		StatEffectDataObj = Cast<UBaseStatsModifierData>(UBaseStatsModifierData::StaticClass()->GetDefaultObject());
-	}
+	// if(!StatEffectDataObj)
+	// {
+	// 	StatEffectDataObj = Cast<UBaseStatsModifierData>(UBaseStatsModifierData::StaticClass()->GetDefaultObject());
+	// }
 }
 
 void ABaseStatModifier::K2_ActivateEffect_Implementation()

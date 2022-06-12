@@ -18,10 +18,10 @@ ABaseEffect::ABaseEffect()
 {
  	PrimaryActorTick.bCanEverTick = false;
 	SetAutoDestroyWhenFinished(false);
-	if(!EffectDataObj)
-	{
-		EffectDataObj = Cast<UBaseEffectData>(UBaseEffectData::StaticClass()->GetDefaultObject());
-	}
+	// if(!EffectDataObj)
+	// {
+	// 	EffectDataObj = Cast<UBaseEffectData>(UBaseEffectData::StaticClass()->GetDefaultObject());
+	// }
 }
 
 void ABaseEffect::EndPlay(const EEndPlayReason::Type EndPlayReason)

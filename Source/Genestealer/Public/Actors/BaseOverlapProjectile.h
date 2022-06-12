@@ -27,31 +27,34 @@ public:
 	void InitVelocity(const FVector& ShootDirection) const;
 
 	FORCEINLINE void AddAdditionalEffectsToApply(TArray<TSubclassOf<AActor>> AdditionalEffectsToApply) { ProjectileEffectsToApply.Append(AdditionalEffectsToApply);}
-	
-private:
-	void PlayFlybySound();
-	
+
+protected:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Genestealer")
+	void K2_HandleImpact(const FHitResult& HitResult);
+	virtual void K2_HandleImpact_Implementation(const FHitResult& HitResult);
+	void PlayFlybySound();	
 	UFUNCTION()
-	void OnImpact(const FHitResult& HitResult);
+	virtual void OnImpact(const FHitResult& HitResult);
+	virtual void HandleActorDeath();
+	void ApplyMissEffects(const FHitResult Impact);
 	
-	UPROPERTY(VisibleDefaultsOnly, Category="Overlap|Projectile")
+	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UProjectileMovementComponent* MovementComp;
-	UPROPERTY(VisibleDefaultsOnly, Category="Overlap|Projectile")
+	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UParticleSystemComponent* ParticleComp;
-	UPROPERTY(VisibleDefaultsOnly, Category="Overlap|Projectile")
+	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UNiagaraComponent* NiagaraComp;
 	UPROPERTY(VisibleDefaultsOnly)
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* SummonedMesh;
-	
-protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer" )
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	USoundCue* FlyBySound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	float FlybyRange;
+private:
 	UPROPERTY(Transient)
 	bool bFlybyPlayed;
 	UPROPERTY(Transient)
@@ -59,9 +62,6 @@ protected:
 	UPROPERTY(Transient)
 	bool bFlybyIsInFront;
 
-	virtual void Impact(const FHitResult& Impact);
 	void ApplyHitEffects(const FHitResult& Impact) const;
-	void ApplyMissEffects(const FHitResult Impact);
-	virtual void HandleActorDeath();
 	virtual void BeginPlay() override;
 };
