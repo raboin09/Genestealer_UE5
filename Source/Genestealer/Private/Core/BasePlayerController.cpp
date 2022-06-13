@@ -9,6 +9,7 @@
 #include "Actors/BaseCoverActor.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 
 ABasePlayerController::ABasePlayerController()
@@ -39,7 +40,7 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 				CurrentInteractableActor->SwitchOutlineOnMesh(false);	
 			}
 
-			if(bNewActorAlive)
+			if(bNewActorAlive && ShouldOutlineInteractable(NewActor))
 			{
 				NewActor->SwitchOutlineOnMesh(true);
 				CurrentInteractableActor = NewActor;
@@ -91,6 +92,17 @@ TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 	return nullptr;
 }
 
+void ABasePlayerController::HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload)
+{
+	bShouldOutlineCombatants = PlayerAimingChangedPayload.bIsAiming;
+	if(!bShouldOutlineCombatants && CurrentInteractableActor)
+	{
+		CurrentInteractableActor->SwitchOutlineOnMesh(false);
+		CurrentInteractableActor = nullptr;
+		NewActorTargeted.Broadcast(FNewActorTargetedPayload(CurrentInteractableActor));
+	}
+}
+
 bool ABasePlayerController::IsActorAlive(UObject* InObject) const
 {
 	if(const AActor* CastedActor = Cast<AActor>(InObject))
@@ -110,6 +122,23 @@ bool ABasePlayerController::IsActorAlive(UObject* InObject) const
 	return false;
 }
 
+bool ABasePlayerController::ShouldOutlineInteractable(TScriptInterface<IInteractable> InInteractable) const
+{
+	if(UCombatUtils::IsActorNeutral(InInteractable))
+	{
+		return true;
+	}
+
+	if(!bShouldOutlineCombatants)
+	{
+		return false;
+	}
+	
+	const bool bIsAlly = UCombatUtils::AreActorsAllies(InInteractable, PlayerCharacter);
+	const bool bIsEnemy = UCombatUtils::AreActorsEnemies(InInteractable, PlayerCharacter);
+	return bIsAlly || bIsEnemy;
+}
+
 void ABasePlayerController::CoverAction(const FInputActionValue& Value)
 {
 	if (PlayerCharacter)
@@ -126,5 +155,10 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 	if(UIEventHub)
 	{
 		UIEventHub->InitEventHub(this);
+	}
+	
+	if(PlayerCharacter)
+	{
+		PlayerCharacter->OnPlayerAimingChanged().AddDynamic(this, &ABasePlayerController::HandlePlayerAimingChanged);
 	}
 }

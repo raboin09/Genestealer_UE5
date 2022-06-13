@@ -29,8 +29,7 @@ ABaseOverlapProjectile::ABaseOverlapProjectile()
 	CollisionComp->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->bTraceComplexOnMove = true;
-	
-	RootComponent = CollisionComp;
+	SetRootComponent(CollisionComp);
 
 	SummonedMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SummonedMesh"));
 	SummonedMesh->SetupAttachment(RootComponent);

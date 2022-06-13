@@ -51,6 +51,11 @@ float ABaseAICharacter::GetWeaponRange() const
 	return InventoryComponent->GetEquippedWeapon()->GetWeaponRange();
 }
 
+void ABaseAICharacter::InteractWithActor(AActor* InstigatingActor)
+{
+	
+}
+
 void ABaseAICharacter::SwitchOutlineOnMesh(bool bShouldOutline)
 {
 	if(IsAlive() && InteractionComponent)
@@ -64,12 +69,6 @@ void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEven
 	if(InventoryComponent)
 	{
 		InventoryComponent->DestroyInventory(true, true);
-		// InventoryComponent->StopFiring();
-		// if(const TScriptInterface<IWeapon> CurrWeapon = InventoryComponent->GetEquippedWeapon().GetObject())
-		// {
-		// 	CurrWeapon->StartWeaponRagdoll();
-		// }
-		//
 	}
 	Super::HandleDeathEvent(DeathEventPayload);
 }

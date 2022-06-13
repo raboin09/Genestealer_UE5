@@ -64,7 +64,7 @@ UUIEventHub* UCoreUtils::GetUIEventHub(const UObject* ContextObject)
 
 float UCoreUtils::GetPlayerControllerSphereTraceRadius(const UObject* ContextObject)
 {
-	return 15.f;
+	return 10.f;
 }
 
 float UCoreUtils::GetCoverPointValidDistance()

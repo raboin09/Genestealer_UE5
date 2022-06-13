@@ -217,6 +217,11 @@ void ABaseCoverActor::StartMountedFire()
 		return;
 	}
 
+	if(OccupiedActor->GetInventoryComponent()->GetCurrentWeaponType() == EWeaponType::Melee)
+	{
+		return;
+	}
+
 	if(ActorInLeftEdge())
 	{
 		if(ActorInLeftPeek())
@@ -290,6 +295,11 @@ void ABaseCoverActor::StopMountedFire()
 void ABaseCoverActor::StartMountedAim()
 {
 	if(!OccupiedActor)
+	{
+		return;
+	}
+
+	if(OccupiedActor->GetInventoryComponent()->GetCurrentWeaponType() == EWeaponType::Melee)
 	{
 		return;
 	}

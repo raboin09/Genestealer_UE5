@@ -58,7 +58,6 @@ private:
 		return nullptr;	
 	}
 
-private:
 	UPROPERTY()
 	ABasePlayerController* Controller;
 	

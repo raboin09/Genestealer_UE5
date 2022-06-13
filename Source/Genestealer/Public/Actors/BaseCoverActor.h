@@ -26,6 +26,7 @@ public:
 	////////////////////////////////
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
+	virtual EAffiliation GetInteractableAffiliation() const override { return EAffiliation::Neutral; }
 
 	////////////////////////////////
 	/// IMountable override

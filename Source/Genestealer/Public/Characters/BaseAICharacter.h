@@ -32,10 +32,13 @@ public:
 	virtual void Aim(bool bStartAiming) override;
 	virtual float GetWeaponRange() const override;
 
+	////////////////////////////////
 	// Interactable overrides
-	virtual void InteractWithActor(AActor* InstigatingActor) override { };
+	////////////////////////////////
+	virtual void InteractWithActor(AActor* InstigatingActor) override;
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
-
+	virtual EAffiliation GetInteractableAffiliation() const override { return CurrentAffiliation; }
+	
 protected:
 	virtual void HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload) override;
 	

@@ -93,10 +93,10 @@ FAnimMontagePlayData AMeleeWeapon::Internal_GetPlayData() const
 {
 	FAnimMontagePlayData PlayData;	
 	PlayData.MontageToPlay = FireAnim;
-	if(OwningPawn && OwningPawn->IsPlayerControlled())
-	{
-		PlayData.bForceInPlace = true;
-	}
+	// if(OwningPawn && OwningPawn->IsPlayerControlled())
+	// {
+	// 	PlayData.bForceInPlace = true;
+	// }
 	PlayData.MontageSection = Internal_GetNextMontageSection();
 	return PlayData;
 }

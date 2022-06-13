@@ -4,6 +4,7 @@
 #include "Utils/CombatUtils.h"
 
 #include "API/Attackable.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 float UCombatUtils::GetHitImpulseValue(EHitReactType InHit)
 {
@@ -163,18 +164,20 @@ FRotator UCombatUtils::GetRotationFromComponentHit(const FHitResult& Impact)
 
 bool UCombatUtils::AreActorsAllies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor)
 {
-	if(AActor* CastedActor = Cast<AActor>(FirstActor.GetObject()))
+	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
+	if(FirstActor && CastedOwner)
 	{
-		return AreActorsAllies(CastedActor, SecondActor);
+		return FirstActor->GetInteractableAffiliation() == CastedOwner->GetAffiliation();
 	}
 	return false;
 }
 
 bool UCombatUtils::AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor)
 {
-	if(AActor* CastedActor = Cast<AActor>(FirstActor.GetObject()))
+	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
+	if(FirstActor && CastedOwner)
 	{
-		return AreActorsEnemies(CastedActor, SecondActor);
+		return FirstActor->GetInteractableAffiliation() != CastedOwner->GetAffiliation();
 	}
 	return false;
 }
@@ -203,10 +206,18 @@ bool UCombatUtils::AreActorsEnemies(AActor* FirstActor, AActor* SecondActor)
 
 bool UCombatUtils::IsActorNeutral(AActor* FirstActor)
 {
-	IAttackable* CastedChar = Cast<IAttackable>(FirstActor);
-	if(CastedChar)
+	if(const IAttackable* CastedChar = Cast<IAttackable>(FirstActor))
 	{
 		return CastedChar->GetAffiliation() == EAffiliation::Neutral;
+	}
+	return false;
+}
+
+bool UCombatUtils::IsActorNeutral(TScriptInterface<IInteractable> FirstActor)
+{
+	if(FirstActor)
+	{
+		return FirstActor->GetInteractableAffiliation() == EAffiliation::Neutral;
 	}
 	return false;
 }

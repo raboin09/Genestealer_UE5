@@ -96,7 +96,7 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 		const float StateScale = CurrentChargeState + 1;
 		Projectile->SetActorScale3D(FVector(StateScale, StateScale, StateScale));
 	}
-	// K2_PlayCooldownEffects(CurrentChargeState + TimeBetweenShots);
+	
 	if(CurrentChargeState > 0)
 	{
 		K2_PlayCooldownEffects(TimeBetweenShots);

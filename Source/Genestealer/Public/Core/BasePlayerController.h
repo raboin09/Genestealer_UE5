@@ -52,9 +52,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Gladius|Defaults")
 	float OutlineTraceRange;
 private:
-	
+	UFUNCTION()
+	void HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload);
 	bool IsActorAlive(UObject* InObject) const;
-	
+	bool ShouldOutlineInteractable(TScriptInterface<IInteractable> InInteractable) const;
+
+	bool bShouldOutlineCombatants = false;
 	FGameplayTagContainer GameplayTagContainer;
 	TScriptInterface<IInteractable> CurrentInteractableActor;
 	FNewActorTargeted NewActorTargeted;

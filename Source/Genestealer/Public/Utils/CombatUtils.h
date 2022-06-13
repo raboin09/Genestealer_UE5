@@ -30,6 +30,7 @@ public:
 	static bool AreActorsEnemies(AActor* FirstActor, AActor* SecondActor);
 	static bool AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor);
 	static bool IsActorNeutral(AActor* FirstActor);
+	static bool IsActorNeutral(TScriptInterface<IInteractable> FirstActor);
 	static int32 GetOutlineIntFromColor(const EOutlineColor InColor);
 	static int32 GetOutlineIntFromAffiliation(const EAffiliation InAffiliation);
 };

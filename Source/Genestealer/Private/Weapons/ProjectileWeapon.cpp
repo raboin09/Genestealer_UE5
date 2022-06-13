@@ -26,7 +26,7 @@ void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, 
 	OutSpawnOrigin = GetRaycastOriginLocation();
 	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
 	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
-	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this); 
+	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this) * 1.5f; 
 	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RaycastCircleRadius); Impact.bBlockingHit)
 	{
 		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
