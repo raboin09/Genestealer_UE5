@@ -2,7 +2,6 @@
 
 
 #include "Actors/BaseOverlapPickup.h"
-
 #include "Genestealer/Genestealer.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
@@ -13,19 +12,19 @@ ABaseOverlapPickup::ABaseOverlapPickup()
 	bDiesAfterOverlap = true;
 	bActivateOnStart = true;
 	
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(50.0f);
+	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
+	CollisionComp->InitSphereRadius(15.f);
 	CollisionComp->bTraceComplexOnMove = true;
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComp->SetCollisionObjectType(GENESTEALER_TRACE_INTERACTION);
 	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	CollisionComp->SetCollisionResponseToChannel(GENESTEALER_TRACE_INTERACTION, ECR_Block);
-	RootComponent = CollisionComp;
+	CollisionComp->CanCharacterStepUpOn = ECB_No;
+	SetRootComponent(CollisionComp);
 
 	PickupBase = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupBaseMesh"));
-	PickupBase->SetupAttachment(CollisionComp);
+	PickupBase->SetupAttachment(RootComponent);
 	PickupBase->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	PickupBase->SetCollisionResponseToAllChannels(ECR_Ignore);
 

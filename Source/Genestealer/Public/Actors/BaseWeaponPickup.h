@@ -18,8 +18,7 @@ public:
 	ABaseWeaponPickup();
 
 	virtual UMeshComponent* GetMesh() const override;
-	FORCEINLINE virtual void SetAssociatedWeaponActor(TScriptInterface<IWeapon> InAssociatedWeaponActor) { AssociatedWeaponActor = InAssociatedWeaponActor; } 
-
+	
 protected:
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
 	virtual bool CanPickup(ACharacter* PotentialChar) override;
@@ -35,8 +34,4 @@ protected:
 	UParticleSystemComponent* HologramParticleSystem;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UStaticMeshComponent* LightingMesh;
-
-private:
-	UPROPERTY()
-	TScriptInterface<IWeapon> AssociatedWeaponActor;
 };

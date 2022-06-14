@@ -19,6 +19,8 @@
 ABaseCoverActor::ABaseCoverActor()
 {
 	CoverMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CoverMesh"));
+	CoverMesh->SetCollisionResponseToChannel(GENESTEALER_TRACE_COVER_WALL, ECR_Block);
+	CoverMesh->ComponentTags.Add(TAG_NAME_COVERMESH);
 	SetRootComponent(CoverMesh);
 	
 	MiddleCoverWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiddleCoverWall"));

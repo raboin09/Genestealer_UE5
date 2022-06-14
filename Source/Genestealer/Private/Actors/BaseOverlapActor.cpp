@@ -13,10 +13,14 @@ ABaseOverlapActor::ABaseOverlapActor()
 void ABaseOverlapActor::BeginPlay()
 {
 	Super::BeginPlay();
-	GetCollisionComponent()->OnComponentBeginOverlap.AddDynamic(this, &ABaseOverlapActor::ActorBeginOverlap);
-	GetCollisionComponent()->OnComponentEndOverlap.AddDynamic(this, &ABaseOverlapActor::ActorEndOverlap);
-	GetCollisionComponent()->IgnoreActorWhenMoving(this, true);
-	GetCollisionComponent()->IgnoreComponentWhenMoving(GetMesh(), true);
+	if(UShapeComponent* ShapeComponent = GetCollisionComponent())
+	{
+		ShapeComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseOverlapActor::ActorBeginOverlap);
+		ShapeComponent->OnComponentEndOverlap.AddDynamic(this, &ABaseOverlapActor::ActorEndOverlap);
+		ShapeComponent->IgnoreActorWhenMoving(this, true);
+		ShapeComponent->IgnoreComponentWhenMoving(GetMesh(), true);
+	}
+
 	if(!bActivateOnStart)
 	{
 		Deactivate();	
@@ -49,8 +53,11 @@ void ABaseOverlapActor::Activate()
 	if (!IsActive()) {
 		HitActors.Empty();
 		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ACTIVE);
-		GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		GetCollisionComponent()->SetGenerateOverlapEvents(true);
+		if(UShapeComponent* ShapeComponent = GetCollisionComponent())
+		{
+			ShapeComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			ShapeComponent->SetGenerateOverlapEvents(true);
+		}
 	}
 }
 
@@ -58,8 +65,11 @@ void ABaseOverlapActor::Deactivate()
 {
 	if (IsActive()) {
 		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
-		GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetCollisionComponent()->SetGenerateOverlapEvents(false);
+		if(UShapeComponent* ShapeComponent = GetCollisionComponent())
+		{
+			ShapeComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			ShapeComponent->SetGenerateOverlapEvents(false);
+		}
 		HitActors.Empty();
 	}
 }

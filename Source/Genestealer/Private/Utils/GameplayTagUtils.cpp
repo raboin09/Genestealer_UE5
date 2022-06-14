@@ -7,6 +7,15 @@
 #include "API/Taggable.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+bool UGameplayTagUtils::ComponentHasNameTag(UActorComponent* InComp, FName InTag)
+{
+	if(InComp)
+	{
+		return InComp->ComponentHasTag(InTag);
+	}
+	return false;
+}
+
 bool UGameplayTagUtils::ActorHasAnyGameplayTags(AActor* InActor, TArray<FGameplayTag> InTags, bool bExact)
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))

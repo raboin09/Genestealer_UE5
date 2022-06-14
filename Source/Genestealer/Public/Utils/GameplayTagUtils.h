@@ -47,11 +47,16 @@
 
 #define TAG_OVERLAYPOSE_2H_PISTOL FGameplayTag::RequestGameplayTag("Animation.Overlay.2H_Pistol")
 
+// Used to separate the CoverMesh from the traceable wall on cover objects
+#define TAG_NAME_COVERMESH FName("CoverMesh")
+
 UCLASS()
 class GENESTEALER_API UGameplayTagUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")
+	static bool ComponentHasNameTag(UActorComponent* InComp, FName InTag);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")
 	static bool ActorHasAnyGameplayTags(AActor* InActor, TArray<FGameplayTag> InTags, bool bExact = false);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|GameplayTagUtils")

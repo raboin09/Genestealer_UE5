@@ -167,6 +167,15 @@ bool UCombatUtils::AreActorsAllies(TScriptInterface<IInteractable> FirstActor, A
 	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
 	if(FirstActor && CastedOwner)
 	{
+		if(IsActorNeutral(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorNeutral(SecondActor))
+		{
+			return false;
+		}
 		return FirstActor->GetInteractableAffiliation() == CastedOwner->GetAffiliation();
 	}
 	return false;
@@ -177,6 +186,16 @@ bool UCombatUtils::AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, 
 	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
 	if(FirstActor && CastedOwner)
 	{
+		if(IsActorNeutral(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorNeutral(SecondActor))
+		{
+			return false;
+		}
+		
 		return FirstActor->GetInteractableAffiliation() != CastedOwner->GetAffiliation();
 	}
 	return false;
@@ -188,6 +207,16 @@ bool UCombatUtils::AreActorsAllies(AActor* FirstActor, AActor* SecondActor)
 	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
 	if(CastedChar && CastedOwner)
 	{
+		if(IsActorNeutral(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorNeutral(SecondActor))
+		{
+			return false;
+		}
+		
 		return CastedChar->GetAffiliation() == CastedOwner->GetAffiliation();
 	}
 	return false;
@@ -199,6 +228,15 @@ bool UCombatUtils::AreActorsEnemies(AActor* FirstActor, AActor* SecondActor)
 	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
 	if(CastedChar && CastedOwner)
 	{
+		if(IsActorNeutral(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorNeutral(SecondActor))
+		{
+			return false;
+		}
 		return CastedChar->GetAffiliation() != CastedOwner->GetAffiliation();
 	}
 	return false;

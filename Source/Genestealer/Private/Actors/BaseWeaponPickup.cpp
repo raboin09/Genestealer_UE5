@@ -36,10 +36,6 @@ void ABaseWeaponPickup::ConsumePickup(ACharacter* ConsumingChar)
 		if(UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(ConsumingChar))
 		{
 			InventoryComponent->GiveWeaponClassAmmo(WeaponPickupClass, 20);
-			if(AssociatedWeaponActor)
-			{
-				AssociatedWeaponActor->DestroyWeapon();
-			}
 		}
 	}
 }

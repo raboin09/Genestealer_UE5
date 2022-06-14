@@ -542,6 +542,12 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	{
 		return;
 	}
+
+	// We want to ignore it if the component hit is a different side than the invisible cover middle wall
+	if(UGameplayTagUtils::ComponentHasNameTag(HitResult.GetComponent(), TAG_NAME_COVERMESH))
+	{
+		return;
+	}
 	
 	if(IMountable* CoverPoint = Cast<IMountable>(HitResult.GetActor()))
 	{

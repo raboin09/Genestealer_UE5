@@ -233,16 +233,14 @@ void UInventoryComponent::GiveWeaponClassAmmo(const UClass* WeaponClass, int32 A
 		if (const TScriptInterface<IRangedEntity> PrimaryWeaponAmmo = PrimaryWeapon.GetObject())
 		{
 			PrimaryWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
-			UKismetSystemLibrary::PrintString(this, "Giving Primary " + FString::FromInt(AmmoRoundsToGive));
 		}
 	}
 	
-	if(WeaponClass == GetPrimaryWeaponClass())
+	if(WeaponClass == GetAlternateWeaponClass())
 	{
 		if (const TScriptInterface<IRangedEntity> AltWeaponAmmo = AlternateWeapon.GetObject())
 		{
 			AltWeaponAmmo->GiveAmmo(AmmoRoundsToGive);
-			UKismetSystemLibrary::PrintString(this, "Giving Alt " + FString::FromInt(AmmoRoundsToGive));
 		}
 	}
 }
