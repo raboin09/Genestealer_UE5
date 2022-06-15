@@ -22,7 +22,7 @@ void ABasePlayerCharacter::GL_HandleFireAction(bool bValue)
 	{
 		const bool bValidWeaponType = TempWeapon->GetWeaponType() == EWeaponType::Melee;
 		const bool bWeaponOnCooldown = TempWeapon->IsWeaponOnCooldown();
-		if(bValidWeaponType && !bWeaponOnCooldown)
+		if(bValidWeaponType && !bWeaponOnCooldown && !IsInCover())
 		{
 			LockOnComponent->InterpToBestTargetForMeleeAttack();
 		}

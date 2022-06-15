@@ -21,6 +21,7 @@
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	MovementModel.DataTable = LoadObject<UDataTable>(this , TEXT("DataTable'/Game/_Genestealer/Data/Genestealer_MovementModel.Genestealer_MovementModel'"));
 	MovementModel.RowName = "Responsive";
 	
 	InitCapsuleCollisionDefaults();
@@ -46,6 +47,7 @@ void ABaseCharacter::InitCapsuleCollisionDefaults() const
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_TRACE_INTERACTION, ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
@@ -55,7 +57,9 @@ void ABaseCharacter::InitMeshCollisionDefaults() const
 {
 	GetMesh()->SetCollisionObjectType(ECC_Pawn);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionResponseToChannels(ECR_Block); 
+	GetMesh()->SetCollisionResponseToChannels(ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(GENESTEALER_TRACE_WEAPON, ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Block);
 }
 

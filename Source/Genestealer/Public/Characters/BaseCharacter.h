@@ -3,13 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthComponent.h"
 #include "InventoryComponent.h"
 #include "Types/EventDeclarations.h"
 #include "API/Animatable.h"
 #include "API/Attackable.h"
 #include "API/Mountable.h"
-#include "API/Effectible.h"
 #include "API/Taggable.h"
 #include "Character/ALSCharacter.h"
 #include "Utils/GameplayTagUtils.h"
@@ -17,7 +15,7 @@
 #include "BaseCharacter.generated.h"
 
 UCLASS(Abstract, NotBlueprintable, config=Game)
-class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IEffectible, public IAnimatable
+class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IAnimatable
 {
 	GENERATED_BODY()
 	
@@ -60,17 +58,13 @@ public:
 	FORCEINLINE virtual FVector GetHeadLocation() const override { return GetMesh()->GetSocketLocation("head"); }
 	FORCEINLINE virtual FVector GetChestLocation() const override { return GetMesh()->GetSocketLocation("spine_02");}
 	FORCEINLINE virtual FVector GetPelvisLocation() const override { return GetMesh()->GetSocketLocation("pelvis");}
-
+	FORCEINLINE virtual UEffectContainerComponent* GetEffectContainerComponent() const override { return EffectContainerComponent; }
+	
 	////////////////////////////////
 	/// ITaggable override
 	////////////////////////////////
 	UFUNCTION()
 	virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
-
-	////////////////////////////////
-	/// IEffectible override
-	////////////////////////////////
-	FORCEINLINE virtual UEffectContainerComponent* GetEffectContainerComponent() const override { return EffectContainerComponent; }
 
 	////////////////////////////////
 	/// ABaseCharacter

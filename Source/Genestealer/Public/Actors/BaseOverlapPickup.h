@@ -53,7 +53,8 @@ protected:
 private:
 	UPROPERTY()
 	AMaterialDissolver* MaterialDissolver;
-
+	UPROPERTY()
+	class UInteractionComponent* InteractionComponent;
 	
 	UFUNCTION()
 	virtual void Internal_PlayPickupEffects();

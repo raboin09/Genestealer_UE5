@@ -224,7 +224,7 @@ void ABaseCoverActor::StartMountedFire()
 		return;
 	}
 
-	if(ActorInLeftEdge())
+	if(ActorInLeftEdge() && bLeftCoverEnabled)
 	{
 		if(ActorInLeftPeek())
 		{
@@ -233,7 +233,7 @@ void ABaseCoverActor::StartMountedFire()
 		{
 			Internal_TryPeekRolloutAndFire(LeftCoverPeekBox, false);	
 		}
-	} else if(ActorInRightEdge())
+	} else if(ActorInRightEdge() && bRightCoverEnabled)
 	{
 		if(ActorInRightPeek())
 		{
@@ -242,7 +242,7 @@ void ABaseCoverActor::StartMountedFire()
 		{
 			Internal_TryPeekRolloutAndFire(RightCoverPeekBox, true);	
 		}
-	} else
+	} else if (bMiddleCoverEnabled && bCrouchingCover)
 	{
 		if(ActorAiming())
 		{
@@ -306,17 +306,19 @@ void ABaseCoverActor::StartMountedAim()
 		return;
 	}
 
-	if(ActorInLeftEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT))
+	if(ActorInLeftEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT) && bLeftCoverEnabled)
 	{
 		Internal_StartPeekRollout(LeftCoverPeekBox, false);
-	} else if(ActorInRightEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT))
+		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+	} else if(ActorInRightEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT) && bRightCoverEnabled)
 	{
 		Internal_StartPeekRollout(RightCoverPeekBox, true);
-	} else if(bCrouchingCover)
+		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+	} else if(bCrouchingCover && bMiddleCoverEnabled)
 	{
 		Internal_AdjustStance(false);
+		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
 	}
-	OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
 }
 
 void ABaseCoverActor::StopMountedAim()
@@ -519,6 +521,9 @@ void ABaseCoverActor::Internal_SetCoverNormalRotationValues() const
 	if(bCrouchingCover)
 	{
 		Internal_AdjustStance(true);
+	} else
+	{
+		Internal_AdjustStance(false);
 	}
 	
 	OccupiedActor->SetRightShoulder(true);

@@ -4,7 +4,6 @@
 #include "Actors/BaseOverlapProjectile.h"
 
 #include "NiagaraFunctionLibrary.h"
-#include "API/Effectible.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Components/AudioComponent.h"
 #include "Genestealer/Genestealer.h"
@@ -137,7 +136,7 @@ void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 		return;
 	}
 
-	if(HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	if(HitActorClass->ImplementsInterface(UAttackable::StaticClass()))
 	{
 		K2_HandleImpact(HitResult);
 	} else

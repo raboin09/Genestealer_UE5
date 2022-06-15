@@ -18,6 +18,7 @@ ABaseExplodingProjectile::ABaseExplodingProjectile()
 	ExplosionRadius->SetSphereRadius(128.f);
 	ExplosionRadius->SetCollisionResponseToAllChannels(ECR_Ignore);
 	ExplosionRadius->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	ExplosionRadius->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 	ExplosionRadius->SetGenerateOverlapEvents(true);
 }
 
@@ -27,6 +28,7 @@ void ABaseExplodingProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		Internal_ExplodeAllActorsInRadius();
 	}
+	UKismetSystemLibrary::PrintString(this, "EndPlay");
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -81,9 +83,10 @@ void ABaseExplodingProjectile::Internal_ExplodeAllActorsInRadius()
 	bExplodedAlready = true;
 	TArray<AActor*> OverlappingActors;
 	ExplosionRadius->GetOverlappingActors(OverlappingActors);
-	
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionNiagara, GetActorLocation(), GetActorRotation());
-	UAudioManager::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation(), GetActorRotation());
+
+	UKismetSystemLibrary::PrintString(this, "Sound Play");
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetOwner(), ExplosionNiagara, GetActorLocation(), GetActorRotation());
+	UAudioManager::SpawnSoundAtLocation(GetOwner(), ExplosionSound, GetActorLocation(), GetActorRotation());
 
 	const FVector StartTrace = GetActorLocation();
 	

@@ -4,6 +4,7 @@
 #include "Actors/BaseWeaponPickup.h"
 #include "Sound/SoundCue.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/EffectContainerComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/BasePlayerController.h"
@@ -313,7 +314,7 @@ void ABaseWeapon::ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool
 		return;
 	}
 	const UClass* HitActorClass = Impact.GetActor()->GetClass();
-	if(!HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	if(!HitActorClass->ImplementsInterface(UAttackable::StaticClass()))
 	{
 		PlayWeaponMissEffectFX(Impact, bShouldRotateHit);
 	} else

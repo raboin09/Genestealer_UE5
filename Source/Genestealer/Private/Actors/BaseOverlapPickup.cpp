@@ -3,7 +3,7 @@
 
 #include "Actors/BaseOverlapPickup.h"
 #include "Genestealer/Genestealer.h"
-#include "Utils/CombatUtils.h"
+#include "Characters/InteractionComponent.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/SpawnUtils.h"
 
@@ -31,6 +31,8 @@ ABaseOverlapPickup::ABaseOverlapPickup()
 	RotatingMovementComponent = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("RotatingComponent"));
 	RotatingMovementComponent->bRotationInLocalSpace = true;
 	RotatingMovementComponent->RotationRate = FRotator(0.f, 90.f, 0.f);
+
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 	
 	DeathBuffer = 2.f;
 }
@@ -58,10 +60,9 @@ void ABaseOverlapPickup::HandleOverlapEvent(AActor* OtherActor, const FHitResult
 
 void ABaseOverlapPickup::SwitchOutlineOnMesh(bool bShouldOutline)
 {
-	if(PickupBase)
+	if(InteractionComponent)
 	{
-		PickupBase->SetRenderCustomDepth(bShouldOutline);
-		PickupBase->SetCustomDepthStencilValue(UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Purple));
+		InteractionComponent->SwitchOutlineOnAllMeshes(bShouldOutline);
 	}
 }
 

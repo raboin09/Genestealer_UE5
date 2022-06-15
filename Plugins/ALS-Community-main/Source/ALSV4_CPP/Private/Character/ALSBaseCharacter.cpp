@@ -654,23 +654,23 @@ void AALSBaseCharacter::GetCameraParameters(float& TPFOVOut, float& FPFOVOut, bo
 void AALSBaseCharacter::RagdollUpdate(float DeltaTime)
 {
 	GetMesh()->bOnlyAllowAutonomousTickPose = false;
-	
+
 	// Set the Last Ragdoll Velocity.
 	const FVector NewRagdollVel = GetMesh()->GetPhysicsLinearVelocity(NAME_root);
 	LastRagdollVelocity = (NewRagdollVel != FVector::ZeroVector || IsLocallyControlled())
-		                      ? NewRagdollVel
-		                      : LastRagdollVelocity / 2;
-	
+							  ? NewRagdollVel
+							  : LastRagdollVelocity / 2;
+
 	// Use the Ragdoll Velocity to scale the ragdoll's joint strength for physical animation.
 	const float SpringValue = FMath::GetMappedRangeValueClamped<float, float>({0.0f, 1000.0f}, {0.0f, 25000.0f},
-	                                                            LastRagdollVelocity.Size());
+																LastRagdollVelocity.Size());
 	GetMesh()->SetAllMotorsAngularDriveParams(SpringValue, 0.0f, 0.0f, false);
-	
+
 	// Disable Gravity if falling faster than -4000 to prevent continual acceleration.
 	// This also prevents the ragdoll from going through the floor.
 	const bool bEnableGrav = LastRagdollVelocity.Z > -4000.0f;
 	GetMesh()->SetEnableGravity(bEnableGrav);
-	
+
 	// Update the Actor location to follow the ragdoll.
 	SetActorLocationDuringRagdoll(DeltaTime);
 }
@@ -745,6 +745,7 @@ void AALSBaseCharacter::SetActorLocationDuringRagdoll(float DeltaTime)
 		// 	(TargetRagdollLocation - GetMesh()->GetSocketLocation(RagdollSocketPullName)) * ServerRagdollPull,
 		// 	RagdollSocketPullName, true);
 	}
+
 	SetActorLocationAndTargetRotation(bRagdollOnGround ? NewRagdollLoc : TargetRagdollLocation, TargetRagdollRotation);
 }
 

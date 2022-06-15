@@ -568,12 +568,13 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	TArray<AActor*> IgnoreActors; 
 	IgnoreActors.Add(GetInstigator());
 	auto DrawDebugTrace = EDrawDebugTrace::None;
+	auto WeaponTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility); //bUseWeaponTraceType ? UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON) : UEngineTypes::ConvertToTraceType(ECC_Visibility);
 	if(bLineTrace)
 	{
-		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace,  UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
+		UKismetSystemLibrary::LineTraceSingle(this, StartTrace, EndTrace, WeaponTraceType, false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);
 	} else
 	{
-		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, CircleRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, CircleRadius, WeaponTraceType, false, IgnoreActors, DrawDebugTrace, Hit, true, FLinearColor::Red, FLinearColor::Green, 10.f);	
 	}
 	return Hit;
 }

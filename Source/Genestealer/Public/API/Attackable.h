@@ -13,6 +13,7 @@ enum class EAffiliation : uint8
 {
 	Allies,
 	Enemies,
+	Destructible,
 	Neutral,
 	All
 };
@@ -35,6 +36,8 @@ public:
 	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAttackable::GetAffiliation, return EAffiliation::Neutral;)
 	virtual UHealthComponent* GetHealthComponent() const PURE_VIRTUAL(IAttackable::GetHealthComponent, return nullptr;)
 	virtual FVector GetHeadLocation() const PURE_VIRTUAL(IAttackable::GetHeadLocation, return FVector::ZeroVector;)
+	UFUNCTION(BlueprintCallable, Category = "Attackable")
 	virtual FVector GetChestLocation() const PURE_VIRTUAL(IAttackable::GetChestLocation, return FVector::ZeroVector;)
 	virtual FVector GetPelvisLocation() const PURE_VIRTUAL(IAttackable::GetPelvisLocation, return FVector::ZeroVector;)
+	virtual class UEffectContainerComponent* GetEffectContainerComponent() const PURE_VIRTUAL(IAttackable::GetEffectContainerComponent, return nullptr;)
 };

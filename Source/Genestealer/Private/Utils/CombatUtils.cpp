@@ -279,6 +279,7 @@ int32 UCombatUtils::GetOutlineIntFromAffiliation(const EAffiliation InAffiliatio
 	{
 	case EAffiliation::Allies: return 252;
 	case EAffiliation::Enemies: return 254;
+	case EAffiliation::Destructible: return 254;
 	case EAffiliation::Neutral: return 255;
 	default: return 255;
 	}

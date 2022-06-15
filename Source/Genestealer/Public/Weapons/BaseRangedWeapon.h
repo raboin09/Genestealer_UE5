@@ -84,6 +84,10 @@ protected:
 	bool bAkimbo = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TraceRange = 10000.f;
+
+	// Beam weapons need visibility instead of Weapon trace 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bUseWeaponTraceType = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bHasFiringSpread = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))

@@ -3,6 +3,7 @@
 #include "Weapons/HitscanWeapon.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/BaseCharacter.h"
+#include "Characters/EffectContainerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -43,7 +44,7 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 		return;
 	}
 
-	if(const UClass* HitActorClass = Impact.GetActor()->GetClass(); !HitActorClass->ImplementsInterface(UEffectible::StaticClass()))
+	if(const UClass* HitActorClass = Impact.GetActor()->GetClass(); !HitActorClass->ImplementsInterface(UAttackable::StaticClass()))
 	{
 		Internal_PlayWeaponMissEffectFX(Impact);
 	} else

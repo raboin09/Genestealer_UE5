@@ -5,6 +5,7 @@
 
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
@@ -132,7 +133,10 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		TraceParams.bReturnPhysicalMaterial = true;
 		FHitResult Hit(ForceInit);
 		TArray<AActor*> IgnoreActors = { GetInstigator(), this, GetOwner() };
-		UKismetSystemLibrary::LineTraceSingle(this, *Sockets.Find(Key), MeshComponentRef->GetSocketLocation(FName(Key)), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+		const FVector StartTrace = *Sockets.Find(Key);
+		const FVector EndTrace = MeshComponentRef->GetSocketLocation(FName(Key));
+		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(Hit.bBlockingHit && bIsActive && !HitActors.Contains(Hit.GetActor()))
 		{
 			HitActors.Add(Hit.GetActor());

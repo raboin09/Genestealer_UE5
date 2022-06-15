@@ -5,9 +5,9 @@
 #include "Characters/BaseCharacter.h"
 #include "API/Attackable.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
-#include "API/Effectible.h"
 #include "Engine/DataTable.h"
 #include "Characters//HealthComponent.h"
+#include "Characters/EffectContainerComponent.h"
 #include "Effects/BaseStatModifierEffect.h"
 #include "Genestealer/Genestealer.h"
 
@@ -18,7 +18,7 @@ void UEffectUtils::ApplyEffectToActor(AActor* ReceivingActor, TSubclassOf<AActor
 		return;
 	}
 
-	IEffectible* EffectibleCast = Cast<IEffectible>(ReceivingActor);
+	IAttackable* EffectibleCast = Cast<IAttackable>(ReceivingActor);
 	if (!EffectibleCast)
 	{
 		return;
@@ -56,12 +56,12 @@ void UEffectUtils::ApplyEffectToHitResult(TSubclassOf<AActor> BaseEffectClass, c
 		return;
 	}
 
-	if (!HitActor->GetClass()->ImplementsInterface(UEffectible::StaticClass()))
+	if (!HitActor->GetClass()->ImplementsInterface(UAttackable::StaticClass()))
 	{
 		return;
 	}
 
-	IEffectible* EffectibleCast = Cast<IEffectible>(Impact.GetActor());
+	IAttackable* EffectibleCast = Cast<IAttackable>(Impact.GetActor());
 	if (!EffectibleCast)
 	{
 		return;
