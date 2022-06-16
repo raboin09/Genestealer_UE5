@@ -111,14 +111,24 @@ private:
 	void Internal_ActivateOverlapBoxes(bool bActivate) const;
 	void Internal_ApplyEdgeTagToActor(bool bLeftEdge);
 
-	void Internal_AdjustStance(bool bNewStanceCrouching) const;
 	void Internal_ResetCharacterValuesOnCoverExit() const;
 	void Internal_SetCoverNormalRotationValues() const;
 	void Internal_SetCoverAimingRotationValues(bool bRightShoulder) const;
+	IAnimatable* Internal_GetAnimatableOwner() const;
 
 	void Internal_TryPeekRolloutAndFire(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder);
 	void Internal_StartPeekRollout(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder);
 	void Internal_StartPeekRollback();
+
+	void Internal_SetLookingMode() const;
+	void Internal_SetVelocityMode() const;
+	void Internal_SetAimingMode() const;
+	
+	void Internal_SetWalkingGait() const;
+	void Internal_SetRunningGait() const;
+
+	void Internal_SetStanding() const;
+	void Internal_SetCrouching() const;
 
 	void Internal_StartCoverTransition();
 	UFUNCTION()

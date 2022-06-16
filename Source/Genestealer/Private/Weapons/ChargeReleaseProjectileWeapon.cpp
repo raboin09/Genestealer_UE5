@@ -57,7 +57,7 @@ void AChargeReleaseProjectileWeapon::OnBurstFinished()
 	}
 }
 
-TArray<TSubclassOf<AActor>> AChargeReleaseProjectileWeapon::GetAdditionalEffectsToApplyToProjectile() const
+TArray<TSubclassOf<AActor>> AChargeReleaseProjectileWeapon::Internal_GetAdditionalEffectsToApplyToProjectile() const
 {
 	if(CurrentChargeState < WeaponEffects.Num())
 	{

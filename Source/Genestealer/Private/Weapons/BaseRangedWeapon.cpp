@@ -505,7 +505,7 @@ FVector ABaseRangedWeapon::GetAdjustedAim() const
 		return FVector::ZeroVector;
 	}
 
-	if(const APlayerController* const PlayerController = Cast<APlayerController>(GetInstigator()->Controller))
+	if(const APlayerController* PlayerController = Cast<APlayerController>(GetInstigator()->Controller))
 	{
 		FVector CamLoc;
 		FRotator CamRot;
@@ -513,7 +513,7 @@ FVector ABaseRangedWeapon::GetAdjustedAim() const
 		return CamRot.Vector();
 	}
 
-	if(const AAIController* const AIController = Cast<AAIController>(GetInstigator()->Controller))
+	if(const AAIController* AIController = Cast<AAIController>(GetInstigator()->Controller))
 	{
 		return AIController->GetControlRotation().Vector();
 	}

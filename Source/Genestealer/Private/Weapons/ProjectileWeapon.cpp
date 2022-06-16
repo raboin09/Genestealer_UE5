@@ -66,7 +66,7 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 	{
 		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
-		Projectile->AddAdditionalEffectsToApply(GetAdditionalEffectsToApplyToProjectile());
+		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
 		USpawnUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
 		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
 		{

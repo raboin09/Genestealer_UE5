@@ -5,12 +5,15 @@
 
 #include "AI/BaseAIController.h"
 #include "Characters/InteractionComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Quest/QuestObjectiveComponent.h"
 
 ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AIControllerClass = ABaseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
+	QuestObjectiveComponent = CreateDefaultSubobject<UQuestObjectiveComponent>(TEXT("QuestObjectiveComponent"));
 }
 
 FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) const
@@ -53,7 +56,10 @@ float ABaseAICharacter::GetWeaponRange() const
 
 void ABaseAICharacter::InteractWithActor(AActor* InstigatingActor)
 {
-	
+	if(!IsPlayerControlled() && QuestObjectiveComponent  && QuestObjectiveComponent->HasAnyActiveQuests())
+	{
+		QuestObjectiveComponent->BroadcastQuestEvent(EQuestObjectiveAction::Interact);
+	}
 }
 
 void ABaseAICharacter::SwitchOutlineOnMesh(bool bShouldOutline)
@@ -70,5 +76,12 @@ void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEven
 	{
 		InventoryComponent->DestroyInventory(true, true);
 	}
+
+	if(QuestObjectiveComponent && QuestObjectiveComponent->HasAnyActiveQuests())
+	{
+		UKismetSystemLibrary::PrintString(this, "Death Quest event");
+		QuestObjectiveComponent->BroadcastQuestEvent(EQuestObjectiveAction::Death);
+	}
+	
 	Super::HandleDeathEvent(DeathEventPayload);
 }

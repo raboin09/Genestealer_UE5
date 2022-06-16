@@ -172,11 +172,11 @@ void ABaseCoverActor::OccupyMount(ABaseCharacter* InActor, const FVector& InTarg
 	OccupiedActor = InActor;
 	if(bCrouchingCover)
 	{
-		Internal_AdjustStance(true);
+		Internal_SetCrouching();
 	}
 	
 	Internal_SetCoverNormalRotationValues();
-	OccupiedActor->SetDesiredGait(EALSGait::Walking);
+	Internal_SetWalkingGait();
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_STATE_IN_COVER);
 	
 	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
@@ -251,7 +251,7 @@ void ABaseCoverActor::StartMountedFire()
 		{
 			if(bCrouchingCover)
 			{
-				Internal_AdjustStance(false);
+				Internal_SetStanding();
 			}
 			Internal_SetCoverAimingRotationValues(true);
 			GetWorldTimerManager().SetTimer(TimerHandle_StartFiringDelay, OccupiedActor->GetInventoryComponent(), &UInventoryComponent::StartFiring, DelayBeforeCrouchToStandShoot, false);
@@ -276,7 +276,7 @@ void ABaseCoverActor::StopMountedFire()
 		
 		if(bCrouchingCover)
 		{
-			Internal_AdjustStance(true);
+			Internal_SetCrouching();
 		}
 		
 		Internal_StopPeekFire();
@@ -286,7 +286,7 @@ void ABaseCoverActor::StopMountedFire()
 		{
 			if(bCrouchingCover)
 			{
-				Internal_AdjustStance(true);
+				Internal_SetCrouching();
 			}
 			Internal_SetCoverNormalRotationValues();
 		}
@@ -309,15 +309,15 @@ void ABaseCoverActor::StartMountedAim()
 	if(ActorInLeftEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT) && bLeftCoverEnabled)
 	{
 		Internal_StartPeekRollout(LeftCoverPeekBox, false);
-		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+		Internal_SetAimingMode();
 	} else if(ActorInRightEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT) && bRightCoverEnabled)
 	{
 		Internal_StartPeekRollout(RightCoverPeekBox, true);
-		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+		Internal_SetAimingMode();
 	} else if(bCrouchingCover && bMiddleCoverEnabled)
 	{
-		Internal_AdjustStance(false);
-		OccupiedActor->SetRotationMode(EALSRotationMode::Aiming);
+		Internal_SetStanding();
+		Internal_SetAimingMode();
 	}
 }
 
@@ -330,19 +330,19 @@ void ABaseCoverActor::StopMountedAim()
 	
 	if(ActorInLeftEdge() || ActorInRightEdge())
 	{
-		Internal_AdjustStance(true);
+		Internal_SetCrouching();
 		Internal_StartPeekRollback();
 	} else if(bCrouchingCover)
 	{
 		if(!ActorFiring())
 		{
-			Internal_AdjustStance(true);
+			Internal_SetCrouching();
 		} else
 		{
 			return;
 		}
 	}
-	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection);
+	Internal_SetVelocityMode();
 }
 
 void ABaseCoverActor::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -426,6 +426,76 @@ void ABaseCoverActor::Internal_StartPeekRollback()
 	Internal_StartCoverTransition();
 }
 
+void ABaseCoverActor::Internal_SetLookingMode() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetLookingMode();
+}
+
+void ABaseCoverActor::Internal_SetVelocityMode() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetVelocityMode();
+}
+
+void ABaseCoverActor::Internal_SetAimingMode() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetAimingMode();
+}
+
+void ABaseCoverActor::Internal_SetWalkingGait() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetWalkingGait();
+}
+
+void ABaseCoverActor::Internal_SetRunningGait() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetRunningGait();
+}
+
+void ABaseCoverActor::Internal_SetStanding() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetStanding();
+}
+
+void ABaseCoverActor::Internal_SetCrouching() const
+{
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
+	{
+		return;
+	}
+	AnimatableOwner->SetCrouching();
+}
+
 void ABaseCoverActor::Internal_StartPeekFire()
 {
 	if(!OccupiedActor || !OccupiedActor->GetInventoryComponent())
@@ -485,59 +555,54 @@ void ABaseCoverActor::Internal_ApplyEdgeTagToActor(bool bLeftEdge)
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, bLeftEdge ? TAG_COVER_LEFTEDGE : TAG_COVER_RIGHTEDGE);
 }
 
-void ABaseCoverActor::Internal_AdjustStance(bool bNewStanceCrouching) const
-{
-	if(!OccupiedActor)
-	{
-		return;
-	}
-	
-	if(bNewStanceCrouching)
-	{
-		OccupiedActor->SetStance(EALSStance::Crouching, true);
-	} else
-	{
-		OccupiedActor->SetStance(EALSStance::Standing, true);
-	}
-}
-
 void ABaseCoverActor::Internal_ResetCharacterValuesOnCoverExit() const
 {
 	if(bCrouchingCover)
 	{
-		Internal_AdjustStance(false);
+		Internal_SetStanding();
 	}
-	OccupiedActor->SetRotationMode(EALSRotationMode::LookingDirection, true, true);
-	OccupiedActor->SetDesiredGait(EALSGait::Running);
+	Internal_SetLookingMode();
+	Internal_SetRunningGait();
 }
 
 void ABaseCoverActor::Internal_SetCoverNormalRotationValues() const
 {
-	if(!OccupiedActor)
+	if(bCrouchingCover)
+	{
+		Internal_SetCrouching();
+	} else
+	{
+		Internal_SetStanding();
+	}
+
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
 	{
 		return;
 	}
-
-	if(bCrouchingCover)
-	{
-		Internal_AdjustStance(true);
-	} else
-	{
-		Internal_AdjustStance(false);
-	}
-	
-	OccupiedActor->SetRightShoulder(true);
-	OccupiedActor->SetRotationMode(EALSRotationMode::VelocityDirection, true, true);
+	AnimatableOwner->SetCameraOverRightShoulder(true);
+	Internal_SetVelocityMode();
 }
 
 void ABaseCoverActor::Internal_SetCoverAimingRotationValues(bool bRightShoulder) const
 {
-	if(!OccupiedActor)
+	IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner();
+	if(!AnimatableOwner)
 	{
 		return;
 	}
-	OccupiedActor->SetRightShoulder(bRightShoulder);
-	OccupiedActor->SetRotationMode(EALSRotationMode::Aiming, true, true);
+	AnimatableOwner->SetCameraOverRightShoulder(bRightShoulder);
+	Internal_SetAimingMode();
+}
+
+IAnimatable* ABaseCoverActor::Internal_GetAnimatableOwner() const
+{
+	if(!OccupiedActor)
+	{
+		return nullptr;
+	}
+
+	return Cast<IAnimatable>(OccupiedActor);
 }
 
 void ABaseCoverActor::Internal_TryPeekRolloutAndFire(const UShapeComponent* TargetPeekBox, bool bRightCameraShoulder)

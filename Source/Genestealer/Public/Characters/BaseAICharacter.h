@@ -47,5 +47,7 @@ protected:
 
 private:
 	UPROPERTY()
+	class UQuestObjectiveComponent* QuestObjectiveComponent;
+	UPROPERTY()
 	class UInteractionComponent* InteractionComponent;
 };

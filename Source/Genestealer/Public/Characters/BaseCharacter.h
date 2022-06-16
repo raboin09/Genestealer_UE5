@@ -10,6 +10,7 @@
 #include "API/Mountable.h"
 #include "API/Taggable.h"
 #include "Character/ALSCharacter.h"
+#include "Character/Animation/ALSPlayerCameraBehavior.h"
 #include "Utils/GameplayTagUtils.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
@@ -31,9 +32,8 @@ public:
 	////////////////////////////////
 	virtual void RagdollEnd() override;
 	virtual void RagdollStart() override;
-	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
-	virtual bool CanSprint() const override;
-	virtual EALSGait GetAllowedGait() const override;
+	FORCEINLINE virtual bool CanSprint() const override { return IsMounted() ? false : Super::CanSprint(); }
+	FORCEINLINE virtual EALSGait GetAllowedGait() const override { return IsMounted() ?  EALSGait::Walking : Super::GetAllowedGait(); } 
 	
 	////////////////////////////////
 	/// IAnimatable override
@@ -41,6 +41,16 @@ public:
 	virtual float TryPlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual float ForcePlayAnimMontage(const FAnimMontagePlayData& AnimMontageData) override;
 	virtual void ForceStopAnimMontage(UAnimMontage* AnimMontage) override;
+	FORCEINLINE virtual void SetCameraLookingMode() override { if(CameraBehavior) CameraBehavior->SetRotationMode(EALSRotationMode::LookingDirection); }
+	FORCEINLINE virtual void SetCameraOverRightShoulder(bool bNewRightShoulder) override { SetRightShoulder(bNewRightShoulder); }
+	FORCEINLINE virtual void SetAimingMode(bool bForce = true, bool bAffectsCamera = true) override { SetRotationMode(EALSRotationMode::Aiming, bForce, bAffectsCamera); }
+	FORCEINLINE virtual void SetLookingMode(bool bForce = true, bool bAffectsCamera = true) override { SetRotationMode(EALSRotationMode::LookingDirection, bForce, bAffectsCamera); }
+	FORCEINLINE virtual void SetVelocityMode(bool bForce = true, bool bAffectsCamera = true) override { SetRotationMode(EALSRotationMode::VelocityDirection, bForce, bAffectsCamera); }
+	FORCEINLINE virtual void SetWalkingGait() override { SetDesiredGait(EALSGait::Walking); }
+	FORCEINLINE virtual void SetRunningGait() override { SetDesiredGait(EALSGait::Running); }
+	FORCEINLINE virtual void SetSprintingGait() override { SetDesiredGait(EALSGait::Sprinting); }
+	FORCEINLINE virtual void SetStanding() override { SetStance(EALSStance::Standing); }
+	FORCEINLINE virtual void SetCrouching() override { SetStance(EALSStance::Crouching); }
 	FORCEINLINE virtual bool IsAiming() const override { return GameplayTagContainer.HasTag(TAG_STATE_AIMING); }
 	FORCEINLINE virtual bool IsFiring() const override { return GameplayTagContainer.HasTag(TAG_STATE_FIRING); }
 	FORCEINLINE virtual bool IsReady() const override { return GameplayTagContainer.HasTag(TAG_STATE_READY); }
@@ -165,7 +175,7 @@ protected:
 	virtual void GL_HandleCoverDodgeAction() override;
 	virtual void GL_HandleAimAction(bool bValue) override;
 	virtual void GL_HandleSprintAction(bool bValue) override;
-	
+
 private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Destroy;

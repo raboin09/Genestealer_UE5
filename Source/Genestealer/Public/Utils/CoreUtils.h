@@ -26,6 +26,8 @@ public:
 	static float GetPlayerControllerSphereTraceRadius(const UObject* ContextObject);
 	static float GetCoverPointValidDistance();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
+	static UQuestManagerComponent* GetQuestManager(const UObject* ContextObject);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static TScriptInterface<IInteractable> GetTargetedActorByPlayerController(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static UInventoryComponent* GetInventoryComponentFromActor(const AActor* InActor);

@@ -28,7 +28,6 @@ void ABaseExplodingProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		Internal_ExplodeAllActorsInRadius();
 	}
-	UKismetSystemLibrary::PrintString(this, "EndPlay");
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -83,8 +82,7 @@ void ABaseExplodingProjectile::Internal_ExplodeAllActorsInRadius()
 	bExplodedAlready = true;
 	TArray<AActor*> OverlappingActors;
 	ExplosionRadius->GetOverlappingActors(OverlappingActors);
-
-	UKismetSystemLibrary::PrintString(this, "Sound Play");
+	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetOwner(), ExplosionNiagara, GetActorLocation(), GetActorRotation());
 	UAudioManager::SpawnSoundAtLocation(GetOwner(), ExplosionSound, GetActorLocation(), GetActorRotation());
 

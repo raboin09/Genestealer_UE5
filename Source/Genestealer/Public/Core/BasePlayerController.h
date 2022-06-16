@@ -22,6 +22,8 @@ public:
 	ABasePlayerController();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	
+	FORCEINLINE class UQuestManagerComponent* GetQuestManager() const { return QuestManager; }
 	FORCEINLINE FNewActorTargeted& OnNewActorTargeted() { return NewActorTargeted; }
 	TScriptInterface<IInteractable> GetTargetedActor() const;
 
@@ -51,6 +53,10 @@ protected:
 	TArray<FGameplayTag> DefaultGameplayTags;	
 	UPROPERTY(EditDefaultsOnly, Category="Gladius|Defaults")
 	float OutlineTraceRange;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UQuestManagerComponent* QuestManager;
+	
 private:
 	UFUNCTION()
 	void HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload);

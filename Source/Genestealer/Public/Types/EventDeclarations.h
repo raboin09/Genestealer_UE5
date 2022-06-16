@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HealthTypes.h"
+#include "QuestTypes.h"
 #include "API/Interactable.h"
 #include "API/Weapon.h"
 #include "EventDeclarations.generated.h"
@@ -218,3 +219,55 @@ struct FPlayerAimingChangedPayload
 	UTexture2D* CrosshairTexture;
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerAimingChanged, const FPlayerAimingChangedPayload&, PlayerAimingChangedPayload);
+
+///////////////////////////////////////
+// QUEST EVENT
+///////////////////////////////////////
+USTRUCT(BlueprintType)
+struct FQuestObjectiveEventPayload
+{
+	GENERATED_BODY()
+	
+	// The overlapped actor, quest objective, or killed AI character
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* EventObjective;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EQuestObjectiveAction EventAction;
+
+	FQuestObjectiveEventPayload(AActor* InObjective, EQuestObjectiveAction InAction)
+	{
+		EventObjective = InObjective;
+		EventAction = InAction;
+	}
+
+	FQuestObjectiveEventPayload()
+	{
+		EventObjective = nullptr;
+		EventAction = EQuestObjectiveAction::None;
+	}
+};
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestObjectiveEvent, const FQuestObjectiveEventPayload&, QuestObjectiveEventPayload);
+
+///////////////////////////////////////
+// QUEST UPDATE
+///////////////////////////////////////
+
+USTRUCT(BlueprintType)
+struct FQuestUpdateEventPayload
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class AQuest* UpdatedQuest;
+
+	FQuestUpdateEventPayload(AQuest* InUpdatedQuest)
+	{
+		UpdatedQuest = InUpdatedQuest;
+	}
+
+	FQuestUpdateEventPayload()
+	{
+		UpdatedQuest = nullptr;
+	}
+};
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestUpdateEvent, const FQuestUpdateEventPayload&, QuestUpdateEventPayload);

@@ -180,7 +180,7 @@ private:
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
 	UFUNCTION()
-	FAnimMontagePlayData Internal_GetPlayData() const;
+	virtual FAnimMontagePlayData Internal_GetPlayData() const;
 	UFUNCTION()
 	void Internal_AlternateFiringMesh();
 	bool Internal_IsInCover() const;

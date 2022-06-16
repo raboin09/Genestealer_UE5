@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Animation/AGRCoreAnimInstance.h"
 #include "Character/Animation/ALSCharacterAnimInstance.h"
 #include "BaseAnimInstance.generated.h"
 

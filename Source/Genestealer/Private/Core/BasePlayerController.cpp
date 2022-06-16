@@ -9,12 +9,14 @@
 #include "Actors/BaseCoverActor.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Quest/QuestManagerComponent.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 
 ABasePlayerController::ABasePlayerController()
 {
 	OutlineTraceRange = 3000.f;
+	QuestManager = CreateDefaultSubobject<UQuestManagerComponent>(TEXT("QuestManager"));
 }
 
 void ABasePlayerController::BeginPlay()

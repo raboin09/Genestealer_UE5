@@ -21,7 +21,7 @@ protected:
 	virtual float SimulateWeaponFire() override;
 	virtual void OnBurstFinished() override;
 	
-	virtual TArray<TSubclassOf<AActor>> GetAdditionalEffectsToApplyToProjectile() const override;
+	virtual TArray<TSubclassOf<AActor>> Internal_GetAdditionalEffectsToApplyToProjectile() const override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire|Charge")
 	int32 MaxChargedState = 2;

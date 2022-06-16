@@ -72,6 +72,15 @@ float UCoreUtils::GetCoverPointValidDistance()
 	return 800.f;
 }
 
+UQuestManagerComponent* UCoreUtils::GetQuestManager(const UObject* ContextObject)
+{
+	if (const ABasePlayerController* BaseCon = GetBasePlayerController(ContextObject))
+	{
+		return BaseCon->GetQuestManager();
+	}
+	return nullptr;
+}
+
 TScriptInterface<IInteractable> UCoreUtils::GetTargetedActorByPlayerController(const UObject* ContextObject)
 {
 	if(const ABasePlayerController* PlayerController = GetBasePlayerController(ContextObject))

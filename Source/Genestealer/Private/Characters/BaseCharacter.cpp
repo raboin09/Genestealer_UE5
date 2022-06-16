@@ -3,16 +3,13 @@
 #include "Characters/BaseCharacter.h"
 
 #include "Camera/CameraComponent.h"
-#include "Character/Animation/ALSPlayerCameraBehavior.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Characters/Animation/BaseAnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
@@ -80,29 +77,6 @@ void ABaseCharacter::RagdollStart()
 {
 	Super::RagdollStart();
 	GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
-}
-
-void ABaseCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
-{
-	Super::OnOverlayStateChanged(PreviousState);
-}
-
-bool ABaseCharacter::CanSprint() const
-{
-	if(IsMounted())
-	{
-		return false;
-	}
-	return Super::CanSprint();
-}
-
-EALSGait ABaseCharacter::GetAllowedGait() const
-{
-	if(IsMounted())
-	{
-		return EALSGait::Walking;
-	}
-	return Super::GetAllowedGait();
 }
 
 void ABaseCharacter::BeginPlay()
@@ -418,7 +392,7 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			InventoryComponent->StartFiring();
 			if(InventoryComponent->DoesCurrentWeaponForceAimOnFire())
 			{
-				SetRotationMode(EALSRotationMode::Aiming, true, false);
+				SetAimingMode(true, false);
 			}
 		}
 		
@@ -438,7 +412,7 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			InventoryComponent->StopFiring();
 			if(!IsAiming())
 			{
-				SetRotationMode(EALSRotationMode::LookingDirection, true, true);
+				SetLookingMode(true, true);
 			}
 		}
 		
@@ -480,18 +454,15 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 			CurrentMount->StartMountedAim();
 		} else
 		{
-			SetRotationMode(EALSRotationMode::Aiming, true, true);
+			SetAimingMode(true, true);
 		}
 	} else
 	{
 		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
 		if(IsFiring() && !IsMounted())
 		{
-			SetRotationMode(EALSRotationMode::Aiming, true, true);
-			if(CameraBehavior)
-			{
-				CameraBehavior->SetRotationMode(EALSRotationMode::LookingDirection);
-			}
+			SetAimingMode(true, true);
+			SetCameraLookingMode();
 			return;
 		}
 		
@@ -500,7 +471,7 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 			CurrentMount->StopMountedAim();
 		} else
 		{
-			SetRotationMode(EALSRotationMode::LookingDirection);
+			SetLookingMode();
 		}
 	}
 }
@@ -514,11 +485,11 @@ void ABaseCharacter::GL_HandleSprintAction(bool bValue)
 
 	if (bValue)
 	{
-		SetDesiredGait(EALSGait::Sprinting);
+		SetSprintingGait();
 	}
 	else
 	{
-		SetDesiredGait(EALSGait::Running);
+		SetRunningGait();
 	}
 }
 
