@@ -4,7 +4,8 @@
 #include "Quest/QuestManagerComponent.h"
 #include "SMSystem/Public/SMUtils.h"
 #include "Kismet/GameplayStatics.h"
-#include "Quest/BaseQuestStateMachineInstance.h"
+#include "Quest/QuestStateMachine.h"
+#include "Quest/Transition_QuestComplete.h"
 #include "Utils/CoreUtils.h"
 
 UQuestManagerComponent::UQuestManagerComponent()
@@ -13,7 +14,7 @@ UQuestManagerComponent::UQuestManagerComponent()
 	QuestIndexTicker = 0;
 }
 
-void UQuestManagerComponent::GiveQuestClassToPlayer(const UObject* WorldContextObject, TSubclassOf<AQuest> QuestClass)
+void UQuestManagerComponent::GiveQuestClassToPlayer(const UObject* WorldContextObject, TSubclassOf<UQuestStateMachine> QuestClass)
 {
 	if(UQuestManagerComponent* QuestManagerComponent = UCoreUtils::GetQuestManager(WorldContextObject))
 	{
@@ -21,29 +22,27 @@ void UQuestManagerComponent::GiveQuestClassToPlayer(const UObject* WorldContextO
 	}
 }
 
-void UQuestManagerComponent::ActivateQuestInstance(TSubclassOf<AQuest> QuestClass)
+void UQuestManagerComponent::ActivateQuestInstance(TSubclassOf<UQuestStateMachine> QuestClass)
 {
 	if(!QuestClass || !GetWorld() || HasQuestClassAlready(QuestClass))
 	{
 		return;
 	}
 	
-	AQuest* TempQuest = GetWorld()->SpawnActor<AQuest>(QuestClass);
-	
+	UQuestStateMachine* TempQuest = Cast<UQuestStateMachine>(USMBlueprintUtils::CreateStateMachineInstance(QuestClass, this));
 	if(!TempQuest)
 	{
 		return;
 	}
 
-	TArray<UTransition_QuestComplete*> QuestSections = TempQuest->InitStateMachineInstance();
-	for(UTransition_QuestComplete* CurrTrans : QuestSections)
+	TempQuest->Start();
+	for(UTransition_QuestComplete* CurrTrans : TempQuest->QuestTransitions)
 	{
 		if(CurrTrans)
 		{
 			CurrTrans->OnQuestUpdated().AddDynamic(this, &UQuestManagerComponent::HandleQuestUpdate);
 		}		
 	}
-	UKismetSystemLibrary::PrintString(this, "UQuestManagerComponent:: State Machine Trans: " + FString::FromInt(QuestSections.Num()));
 	const int32 TempQuestID = QuestIndexTicker++;
 	TempQuest->QuestData.QuestID = TempQuestID;
 	ActiveQuests.Add(TempQuestID, TempQuest);
@@ -74,14 +73,14 @@ void UQuestManagerComponent::HandleQuestUpdate(const FQuestUpdateEventPayload& Q
 	QuestUpdate.Broadcast(QuestObjectiveEventPayload.UpdatedQuest);
 }
 
-AQuest* UQuestManagerComponent::GetActiveQuest(int32 QuestID)
+UQuestStateMachine* UQuestManagerComponent::GetActiveQuest(int32 QuestID)
 {
 	return *ActiveQuests.Find(QuestID);
 }
 
 void UQuestManagerComponent::DeactivateQuest(int32 QuestID)
 {
-	if(const AQuest* QuestInst = GetActiveQuest(QuestID))	{
+	if(const UQuestStateMachine* QuestInst = GetActiveQuest(QuestID))	{
 		if(QuestInst->QuestData.QuestStateMachineInstance)
 		{
 			QuestInst->QuestData.QuestStateMachineInstance->Stop();
@@ -92,7 +91,7 @@ void UQuestManagerComponent::DeactivateQuest(int32 QuestID)
 
 bool UQuestManagerComponent::IsQuestComplete(int32 QuestID)
 {
-	if(const AQuest* QuestInst = GetActiveQuest(QuestID))
+	if(const UQuestStateMachine* QuestInst = GetActiveQuest(QuestID))
 	{
 		if(QuestInst->QuestData.QuestStateMachineInstance)
 		{
@@ -102,13 +101,13 @@ bool UQuestManagerComponent::IsQuestComplete(int32 QuestID)
 	return false;
 }
 
-bool UQuestManagerComponent::HasQuestClassAlready(TSubclassOf<AQuest> QuestToCheck)
+bool UQuestManagerComponent::HasQuestClassAlready(TSubclassOf<UQuestStateMachine> QuestToCheck)
 {
 	TArray<int32> Keys;
 	ActiveQuests.GetKeys(Keys);
 	for(const int32 CurrKey : Keys)
 	{
-		if(const AQuest* CurrQuest = *ActiveQuests.Find(CurrKey))
+		if(const UQuestStateMachine* CurrQuest = *ActiveQuests.Find(CurrKey))
 		{
 			if(CurrQuest->GetClass() == QuestToCheck)
 			{

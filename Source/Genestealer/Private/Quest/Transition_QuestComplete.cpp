@@ -6,7 +6,7 @@
 #include "API/Questable.h"
 #include "Quest/QuestObjectiveComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Quest/Quest.h"
+#include "Quest/QuestStateMachine.h"
 
 bool UTransition_QuestComplete::CanEnterTransition_Implementation() const
 {
@@ -111,7 +111,7 @@ void UTransition_QuestComplete::ApplyQuestIncrementsForEvent(EQuestObjectiveActi
 			QuestSectionData.NumCurrentActions++;
 		}
 		
-		if(AQuest* CurrQuest = Cast<AQuest>(GetContext()))
+		if(UQuestStateMachine* CurrQuest = Cast<UQuestStateMachine>(GetStateMachineInstance(true)))
 		{
 			QuestUpdated.Broadcast(CurrQuest);
 		}

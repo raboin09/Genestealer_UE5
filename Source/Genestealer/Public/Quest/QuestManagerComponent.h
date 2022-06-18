@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Quest/Quest.h"
+#include "Quest/QuestStateMachine.h"
 
 #include "QuestManagerComponent.generated.h"
 
@@ -18,18 +18,18 @@ public:
 	UQuestManagerComponent();
 
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
-	static void GiveQuestClassToPlayer(const UObject* WorldContextObject, TSubclassOf<AQuest> QuestClass);
+	static void GiveQuestClassToPlayer(const UObject* WorldContextObject, TSubclassOf<UQuestStateMachine> QuestClass);
 
 	FORCEINLINE int32 GenerateNextQuestID() { return QuestIndexTicker++; }
-	FORCEINLINE TMap<int32, AQuest*> GetQuestMap() const { return ActiveQuests; }
+	FORCEINLINE TMap<int32, UQuestStateMachine*> GetQuestMap() const { return ActiveQuests; }
 	FORCEINLINE FQuestUpdateEvent& OnQuestUpdate() { return QuestUpdate; }
 
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
-	void ActivateQuestInstance(TSubclassOf<AQuest> QuestClass);
+	void ActivateQuestInstance(TSubclassOf<UQuestStateMachine> QuestClass);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
 	void DeactivateAllQuests();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
-	AQuest* GetActiveQuest(int32 QuestID);
+	UQuestStateMachine* GetActiveQuest(int32 QuestID);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
 	int32 GetNumberOfQuests() const { return ActiveQuests.Num(); }
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
@@ -37,14 +37,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
 	bool IsQuestComplete(int32 QuestID);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
-	bool HasQuestClassAlready(TSubclassOf<AQuest> QuestToCheck);
+	bool HasQuestClassAlready(TSubclassOf<UQuestStateMachine> QuestToCheck);
 	UFUNCTION()
 	void HandleQuestUpdate(const FQuestUpdateEventPayload& QuestObjectiveEventPayload);
 	
 private:
 
 	UPROPERTY()
-	TMap<int32, AQuest*> ActiveQuests;
+	TMap<int32, UQuestStateMachine*> ActiveQuests;
 	int32 QuestIndexTicker;
 	FQuestUpdateEvent QuestUpdate;
 };

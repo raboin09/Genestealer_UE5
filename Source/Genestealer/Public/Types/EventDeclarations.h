@@ -258,9 +258,9 @@ struct FQuestUpdateEventPayload
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class AQuest* UpdatedQuest;
+	class UQuestStateMachine* UpdatedQuest;
 
-	FQuestUpdateEventPayload(AQuest* InUpdatedQuest)
+	FQuestUpdateEventPayload(UQuestStateMachine* InUpdatedQuest)
 	{
 		UpdatedQuest = InUpdatedQuest;
 	}

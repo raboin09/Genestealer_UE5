@@ -5,19 +5,24 @@
 #include "CoreMinimal.h"
 #include "SMInstance.h"
 #include "Transition_QuestComplete.h"
-#include "BaseQuestStateMachineInstance.generated.h"
+#include "QuestStateMachine.generated.h"
 
 /**
  * 
  */
 UCLASS(Abstract, Blueprintable)
-class GENESTEALER_API UBaseQuestStateMachineInstance : public USMInstance
+class GENESTEALER_API UQuestStateMachine : public USMInstance
 {
 	GENERATED_BODY()
 
 public:
-	UBaseQuestStateMachineInstance();
+	UQuestStateMachine();
 	virtual void Initialize(UObject* Context) override;
+
+	bool IsQuestComplete() const;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	FQuestData QuestData;
 
 	UPROPERTY()
 	TArray<UTransition_QuestComplete*> QuestTransitions;

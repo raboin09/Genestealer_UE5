@@ -57,7 +57,7 @@ struct FQuestData
 	TSubclassOf<USMInstance> QuestStateMachineClass;
 
 	UPROPERTY()
-	class UBaseQuestStateMachineInstance* QuestStateMachineInstance = nullptr;
+	class UQuestStateMachine* QuestStateMachineInstance = nullptr;
 	
 	int32 QuestID = -1;
 };
