@@ -6,7 +6,7 @@
 #include "Actors/BaseOverlapProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 void AProjectileWeapon::FireWeapon()
 {
@@ -62,12 +62,12 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 
 	FTransform SpawnTrans = FTransform();
 	SpawnTrans.SetLocation(SpawnOrigin);
-	if (ABaseOverlapProjectile* Projectile = USpawnUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
+	if (ABaseOverlapProjectile* Projectile = UWorldUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
 		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
-		USpawnUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
+		UWorldUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
 		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
 		{
 			if(!IsWeaponPlayerControlled() && bSlowDownProjectileOnAIShooters)

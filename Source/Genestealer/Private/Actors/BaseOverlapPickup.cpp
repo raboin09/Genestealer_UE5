@@ -5,7 +5,7 @@
 #include "Genestealer/Genestealer.h"
 #include "Characters/InteractionComponent.h"
 #include "Utils/CoreUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 ABaseOverlapPickup::ABaseOverlapPickup()
 {
@@ -74,8 +74,8 @@ void ABaseOverlapPickup::InteractWithActor(AActor* InstigatingActor)
 void ABaseOverlapPickup::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	MaterialDissolver = USpawnUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
-	USpawnUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
+	MaterialDissolver = UWorldUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
+	UWorldUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
 	if(MaterialDissolver)
 	{
 		MaterialDissolver->InitDissolveableMesh(GetMesh());

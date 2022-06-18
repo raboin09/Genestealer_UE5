@@ -8,9 +8,9 @@ UQuestStateMachine::UQuestStateMachine()
 	
 }
 
-void UQuestStateMachine::Initialize(UObject* Context)
+void UQuestStateMachine::Start()
 {
-	Super::Initialize(Context);
+	Super::Start();
 	TArray<USMTransitionInstance*> TransArray;
 	GetAllTransitionInstances(TransArray);
 	for(USMTransitionInstance* TransInst : TransArray)

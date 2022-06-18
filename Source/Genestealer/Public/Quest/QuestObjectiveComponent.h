@@ -18,12 +18,15 @@ public:
 	virtual void ActivateQuestObjective(int32 QuestID) override;
 	virtual void DeactivateQuestObjective(int32 QuestID) override;
 	virtual void DeactivateAllQuestObjectives() override;
+	
+	FORCEINLINE virtual FQuestObjectiveEvent& OnQuestObjectiveEvent() override { return QuestEventTrigger; };
 	virtual void BroadcastQuestEvent(EQuestObjectiveAction InEvent) override;
-	virtual FQuestObjectiveEvent& OnQuestObjectiveEvent() override { return QuestEventTrigger; };
+
 	virtual bool IsAssociatedWithQuest(int32 QuestID) override;
-	virtual void ClearQuestEventBindings() override;
 	FORCEINLINE virtual bool HasAnyActiveQuests() override { return AssociatedQuests.Num() > 0; };
 	
+	virtual void ClearQuestEventBindings() override;
+
 private:
 	TArray<int32> AssociatedQuests;	
 	FQuestObjectiveEvent QuestEventTrigger;

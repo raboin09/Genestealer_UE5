@@ -61,7 +61,6 @@ void UQuestManagerComponent::DeactivateAllQuests()
 
 void UQuestManagerComponent::HandleQuestUpdate(const FQuestUpdateEventPayload& QuestObjectiveEventPayload)
 {
-	UKismetSystemLibrary::PrintString(this, "Quest Update");
 	if(!QuestObjectiveEventPayload.UpdatedQuest)
 		return;
 

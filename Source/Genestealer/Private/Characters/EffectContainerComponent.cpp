@@ -7,7 +7,7 @@
 #include "Effects/BaseEffect.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/CombatUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 DECLARE_CYCLE_STAT(TEXT("Genestealer_EffectContainerTick"), STAT_Genestealer_StatsEffectContainerTicks, STATGROUP_StatSystem);
 
@@ -62,7 +62,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 		SpawnTransform = FTransform(UCombatUtils::GetRotationFromComponentHit(Impact), Impact.ImpactPoint);
 	}
 
-	ABaseEffect* EffectActor = USpawnUtils::SpawnActorToWorld_Deferred<ABaseEffect>(ContextObject, BaseEffectClass);
+	ABaseEffect* EffectActor = UWorldUtils::SpawnActorToWorld_Deferred<ABaseEffect>(ContextObject, BaseEffectClass);
 	if (!EffectActor)
 	{
 		return nullptr;
@@ -74,7 +74,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 	EffectContext.SurfaceHit = Impact;
 	EffectContext.HitDirection = Impact.ImpactNormal;
 	EffectActor->SetEffectContext(EffectContext);
-	USpawnUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
+	UWorldUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
 	return EffectActor;
 }
 
@@ -87,7 +87,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstance(TSubcl
 
 	const FTransform& SpawnTransform = GetOwner()->GetActorTransform();
 
-	ABaseEffect* EffectActor = USpawnUtils::SpawnActorToWorld_Deferred<ABaseEffect>(GetOwner(), BaseEffectClass);
+	ABaseEffect* EffectActor = UWorldUtils::SpawnActorToWorld_Deferred<ABaseEffect>(GetOwner(), BaseEffectClass);
 	if (!EffectActor)
 	{
 		return nullptr;
@@ -97,7 +97,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstance(TSubcl
 	EffectContext.InstigatingActor = InstigatingActor;
 	EffectContext.ReceivingActor = GetOwner();
 	EffectActor->SetEffectContext(EffectContext);
-	USpawnUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
+	UWorldUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
 	return EffectActor;
 }
 

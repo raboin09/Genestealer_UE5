@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -41,12 +41,12 @@ void UInventoryComponent::Internal_SpawnWeaponFromClass(TSubclassOf<AActor> Weap
 {
 	if(WeaponClass && WeaponClass->ImplementsInterface(UWeapon::StaticClass()))
 	{
-		AActor* SpawnedWeapon = USpawnUtils::SpawnActorToWorld_Deferred<AActor>(this, WeaponClass);
+		AActor* SpawnedWeapon = UWorldUtils::SpawnActorToWorld_Deferred<AActor>(this, WeaponClass);
 		if(const TScriptInterface<IWeapon> NewWeapon = SpawnedWeapon)
 		{
 			NewWeapon->SetOwningPawn(Cast<ACharacter>(GetOwner()));
 		}
-		USpawnUtils::FinishSpawningActor_Deferred(SpawnedWeapon, GetOwner()->GetTransform());
+		UWorldUtils::FinishSpawningActor_Deferred(SpawnedWeapon, GetOwner()->GetTransform());
 		if(const TScriptInterface<IWeapon> NewWeapon = SpawnedWeapon)
 		{
 			AddWeapon(NewWeapon, Slot);

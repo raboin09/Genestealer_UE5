@@ -14,7 +14,7 @@
 #include "Utils/CoreUtils.h"
 #include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 ABaseCoverActor::ABaseCoverActor()
 {
@@ -126,8 +126,8 @@ void ABaseCoverActor::InteractWithActor(AActor* InstigatingActor)
 void ABaseCoverActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	MaterialDissolver = USpawnUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
-	USpawnUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
+	MaterialDissolver = UWorldUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
+	UWorldUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
 	if(MaterialDissolver)
 	{
 		MaterialDissolver->InitDissolveableMesh(DissolveMesh);

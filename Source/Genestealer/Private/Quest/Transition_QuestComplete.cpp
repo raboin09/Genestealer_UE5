@@ -7,6 +7,7 @@
 #include "Quest/QuestObjectiveComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Quest/QuestStateMachine.h"
+#include "Utils/WorldUtils.h"
 
 bool UTransition_QuestComplete::CanEnterTransition_Implementation() const
 {
@@ -45,12 +46,11 @@ void UTransition_QuestComplete::ActivateAllObjectivesOfClass(UClass* ObjectiveCl
 {
 	if(ObjectiveClass)
 	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ObjectiveClass, FoundActors);
-		for(AActor* CurrActor : FoundActors)
+		for(AActor* CurrActor : UWorldUtils::QuestRelevantActors)
 		{
 			if(QuestSectionData.ObjectiveTag.IsNone() || CurrActor->ActorHasTag(QuestSectionData.ObjectiveTag))
 			{
+				UKismetSystemLibrary::PrintString(this, "Activating " + CurrActor->GetFullName());
 				ActivateQuestObjectiveActor(CurrActor);	
 			}
 		}
@@ -59,13 +59,17 @@ void UTransition_QuestComplete::ActivateAllObjectivesOfClass(UClass* ObjectiveCl
 
 void UTransition_QuestComplete::ActivateQuestObjectiveActor(AActor* InActor)
 {
-	if(InActor)
+	if(!InActor)
 	{
-		if(IQuestable* CastedActor = Cast<IQuestable>(InActor->GetComponentByClass(UQuestObjectiveComponent::StaticClass())))
-		{
-			CastedActor->OnQuestObjectiveEvent().AddDynamic(this, &UTransition_QuestComplete::HandleQuestEventTrigger);
-			CastedActor->ActivateQuestObjective(QuestID);
-		}
+		return;
+	}
+
+	UQuestObjectiveComponent* QuestObjectiveComponent = Cast<UQuestObjectiveComponent>(InActor->GetComponentByClass(UQuestObjectiveComponent::StaticClass())); 
+	
+	if(IQuestable* CastedActor = Cast<IQuestable>(QuestObjectiveComponent))
+	{
+		CastedActor->OnQuestObjectiveEvent().AddDynamic(this, &UTransition_QuestComplete::HandleQuestEventTrigger);
+		CastedActor->ActivateQuestObjective(QuestID);
 	}
 }
 
@@ -73,9 +77,7 @@ void UTransition_QuestComplete::DeactivateAllObjectivesOfClass(UClass* Objective
 {
 	if(ObjectiveClass)
 	{
-		TArray<AActor*> FoundActors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ObjectiveClass, FoundActors);
-		for(AActor* CurrActor : FoundActors)
+		for(AActor* CurrActor : UWorldUtils::QuestRelevantActors)
 		{
 			DeactivateQuestObjectiveActor(CurrActor);
 		}

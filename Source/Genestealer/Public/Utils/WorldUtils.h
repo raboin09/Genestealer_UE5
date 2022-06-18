@@ -4,22 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "SpawnUtils.generated.h"
+#include "WorldUtils.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GENESTEALER_API USpawnUtils : public UBlueprintFunctionLibrary
+class GENESTEALER_API UWorldUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+	/////////////////////////////////////////////////
+	// Anything that has UQuestObjectiveComponent
+	// Added in UQuestObjectiveComponent::BeginPlay()
+	/////////////////////////////////////////////////
+	static TArray<AActor*> QuestRelevantActors;
 
-	UFUNCTION(BlueprintCallable)
-	static void FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform);
-	UFUNCTION(BlueprintCallable)
-	static AActor* K2_SpawnActorWorld(UObject* ContextObject, TSubclassOf<AActor> ClassToSpawn, const FTransform& SpawnTransform);
 	
+	UFUNCTION(BlueprintCallable, Category="Genestealer|WorldUtils")
+	static void K2_FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform);
+	UFUNCTION(BlueprintCallable, Category="Genestealer|WorldUtils")
+	static AActor* K2_SpawnActorWorld_Deferred(UObject* ContextObject, TSubclassOf<AActor> ClassToSpawn, AActor* Owner = nullptr, APawn* Instigator = nullptr, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+
+	
+	static void FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform);
 	template<typename T>
 	FORCEINLINE static T* SpawnActorToWorld_Deferred(UObject* ContextObject, TSubclassOf<AActor> ClassToSpawn, AActor* Owner = nullptr, APawn* Instigator = nullptr, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn)
 	{
@@ -42,4 +50,5 @@ private:
 	}
 
 	static AActor* Internal_SpawnActorFromClass(UWorld* World, UClass* Class, const FTransform& SpawnTransform);
+	static void Internal_AddActorToRelevantArrays(AActor* InActor);
 };

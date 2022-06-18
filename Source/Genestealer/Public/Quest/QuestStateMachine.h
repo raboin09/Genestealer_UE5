@@ -17,7 +17,7 @@ class GENESTEALER_API UQuestStateMachine : public USMInstance
 
 public:
 	UQuestStateMachine();
-	virtual void Initialize(UObject* Context) override;
+	virtual void Start() override;
 
 	bool IsQuestComplete() const;
 	

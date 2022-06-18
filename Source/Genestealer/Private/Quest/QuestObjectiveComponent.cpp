@@ -3,6 +3,8 @@
 
 #include "Quest/QuestObjectiveComponent.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 void UQuestObjectiveComponent::ActivateQuestObjective(int32 QuestID)
 {
 	AssociatedQuests.AddUnique(QuestID);

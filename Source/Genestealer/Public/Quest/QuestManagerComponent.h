@@ -38,6 +38,7 @@ public:
 	bool IsQuestComplete(int32 QuestID);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
 	bool HasQuestClassAlready(TSubclassOf<UQuestStateMachine> QuestToCheck);
+	
 	UFUNCTION()
 	void HandleQuestUpdate(const FQuestUpdateEventPayload& QuestObjectiveEventPayload);
 	

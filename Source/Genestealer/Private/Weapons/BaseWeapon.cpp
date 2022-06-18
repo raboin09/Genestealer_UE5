@@ -14,7 +14,7 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
-#include "Utils/SpawnUtils.h"
+#include "Utils/WorldUtils.h"
 
 ABaseWeapon::ABaseWeapon()
 {
