@@ -6,6 +6,7 @@
 #include "InputActionValue.h"
 #include "API/Interactable.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/ALSPlayerController.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "BasePlayerController.generated.h"
@@ -13,7 +14,7 @@
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABasePlayerController : public AALSPlayerController
 {
 	GENERATED_BODY()
@@ -40,18 +41,18 @@ public:
 #if !UE_BUILD_SHIPPING
 	void CreateSandboxUI()
 	{		
-		// const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("Blueprint'/Game/_GladiusTempora/Core/TESTING/BPUI_SandboxMainMenu.BPUI_SandboxMainMenu_C'"));
-		// UUserWidget* UserWidget = CreateWidget<UUserWidget>(this, UserWidgetClass);
-		// UserWidget->AddToViewport();
-		// UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, UserWidget, EMouseLockMode::DoNotLock);
-		// bShowMouseCursor = true;
+		const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("WidgetBlueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxMainMenu.GL_DEV_SandboxMainMenu_C'"));
+		UUserWidget* UserWidget = CreateWidget<UUserWidget>(this, UserWidgetClass);
+		UserWidget->AddToViewport(1);
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, UserWidget, EMouseLockMode::DoNotLock);
+		bShowMouseCursor = true;
 	}
 #endif
 	
 protected:	
-	UPROPERTY(EditDefaultsOnly, Category="Gladius|Defaults")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;	
-	UPROPERTY(EditDefaultsOnly, Category="Gladius|Defaults")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	float OutlineTraceRange;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

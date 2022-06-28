@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API UBaseAnimInstance : public UALSCharacterAnimInstance
 {
 	GENERATED_BODY()

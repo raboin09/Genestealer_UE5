@@ -16,3 +16,19 @@ UAudioComponent* UAudioManager::SpawnSoundAtLocation(const UObject* WorldContext
 {
 	return UGameplayStatics::SpawnSoundAtLocation(WorldContextObject, Sound, Location, Rotation, VolumeMultiplier, PitchMultiplier, StartTime, AttenuationSettings, ConcurrencySettings, bAutoDestroy);
 }
+
+void UAudioManager::StopSound(UAudioComponent* AudioToStop, bool bFadeOut, float FadeTime)
+{
+	if(!AudioToStop)
+	{
+		return;
+	}
+	
+	if(bFadeOut)
+	{
+		AudioToStop->FadeOut(FadeTime, 0.f);
+	} else
+	{
+		AudioToStop->Stop();
+	}
+}

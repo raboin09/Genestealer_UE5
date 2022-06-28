@@ -19,7 +19,7 @@ enum class EWeaponVFXAdjustmentType : uint8
 	AdjustOnImpact
 };
 
-UCLASS(Abstract, NotBlueprintable)
+UCLASS(Abstract, NotBlueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IRangedEntity
 {
 	GENERATED_BODY()

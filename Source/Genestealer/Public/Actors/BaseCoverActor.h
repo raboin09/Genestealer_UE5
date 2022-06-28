@@ -65,8 +65,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UStaticMeshComponent* MiddleCoverWall;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
-	bool bMiddleCoverEnabled;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Genestealer")
+	bool bMiddleCoverEnabled = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* LeftCoverEdgeBox;
@@ -74,7 +74,7 @@ protected:
 	UBoxComponent* LeftCoverPeekBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* LeftCoverRollbackBox;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Genestealer")
 	bool bLeftCoverEnabled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
@@ -83,7 +83,7 @@ protected:
 	UBoxComponent* RightCoverPeekBox;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
 	UBoxComponent* RightCoverRollbackBox;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Genestealer")
 	bool bRightCoverEnabled;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer|Audio")

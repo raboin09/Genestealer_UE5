@@ -14,12 +14,12 @@ class GENESTEALER_API UWorldUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	/////////////////////////////////////////////////
-	// Anything that has UQuestObjectiveComponent
-	// Added in UQuestObjectiveComponent::BeginPlay()
-	/////////////////////////////////////////////////
+	//////////////////////////
+	// Static Variables
+	//////////////////////////
 	static TArray<AActor*> QuestRelevantActors;
 
+	static void TryAddActorToQuestableArray(AActor* InActor);
 	
 	UFUNCTION(BlueprintCallable, Category="Genestealer|WorldUtils")
 	static void K2_FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform);
@@ -50,5 +50,4 @@ private:
 	}
 
 	static AActor* Internal_SpawnActorFromClass(UWorld* World, UClass* Class, const FTransform& SpawnTransform);
-	static void Internal_AddActorToRelevantArrays(AActor* InActor);
 };

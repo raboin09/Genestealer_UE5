@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SMInstance.h"
-#include "Transition_QuestComplete.h"
+#include "Transition_QuestSection.h"
 #include "QuestStateMachine.generated.h"
 
 /**
@@ -17,13 +17,14 @@ class GENESTEALER_API UQuestStateMachine : public USMInstance
 
 public:
 	UQuestStateMachine();
-	virtual void Start() override;
+	virtual void Initialize(UObject* Context) override;
 
+	void TryAddActorToQuest(AActor* InActor);
 	bool IsQuestComplete() const;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	FQuestData QuestData;
 
 	UPROPERTY()
-	TArray<UTransition_QuestComplete*> QuestTransitions;
+	TArray<UTransition_QuestSection*> QuestTransitions;
 };

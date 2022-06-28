@@ -6,13 +6,13 @@
 #include "SMTransitionInstance.h"
 #include "Types/EventDeclarations.h"
 #include "Types/QuestTypes.h"
-#include "Transition_QuestComplete.generated.h"
+#include "Transition_QuestSection.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GENESTEALER_API UTransition_QuestComplete : public USMTransitionInstance
+class GENESTEALER_API UTransition_QuestSection : public USMTransitionInstance
 {
 	GENERATED_BODY()
 
@@ -22,6 +22,7 @@ public:
 	FQuestSectionData QuestSectionData;
 	int32 QuestID;
 
+	void ActivateQuestObjectiveActor(AActor* InActor);
 	FORCEINLINE FQuestUpdateEvent& OnQuestUpdated() { return QuestUpdated; }
 	
 protected:
@@ -34,7 +35,6 @@ protected:
 
 private:
 	void ActivateAllObjectivesOfClass(UClass* ObjectiveClass);
-	void ActivateQuestObjectiveActor(AActor* InActor);
 	void DeactivateAllObjectivesOfClass(UClass* ObjectiveClass) const;
 	void DeactivateQuestObjectiveActor(AActor* InActor) const;
 	void ApplyQuestIncrementsForEvent(EQuestObjectiveAction Action, UClass* ValidClass);

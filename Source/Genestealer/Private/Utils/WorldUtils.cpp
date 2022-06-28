@@ -3,8 +3,8 @@
 #include "Utils/WorldUtils.h"
 
 #include "EngineUtils.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Quest/QuestObjectiveComponent.h"
+#include "API/Questable.h"
+#include "Utils/CoreUtils.h"
 
 TArray<AActor*> UWorldUtils::QuestRelevantActors = {};
 
@@ -15,7 +15,6 @@ void UWorldUtils::FinishSpawningActor_Deferred(AActor* InActor, const FTransform
 		return;
 	}
 	InActor->FinishSpawning(ActorTransform);
-	Internal_AddActorToRelevantArrays(InActor);
 }
 
 void UWorldUtils::K2_FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform)
@@ -37,15 +36,11 @@ AActor* UWorldUtils::Internal_SpawnActorFromClass(UWorld* World, UClass* Class, 
 	return World->SpawnActor<AActor>(Class, SpawnTransform);
 }
 
-void UWorldUtils::Internal_AddActorToRelevantArrays(AActor* InActor)
+void UWorldUtils::TryAddActorToQuestableArray(AActor* InActor)
 {
-	if(!InActor)
+	if(!InActor || !InActor->GetClass() || !InActor->GetClass()->ImplementsInterface(UQuestable::StaticClass()))
 	{
 		return;
 	}
-
-	if(UQuestObjectiveComponent* QuestObjectiveComponent = Cast<UQuestObjectiveComponent>(InActor->GetComponentByClass(UQuestObjectiveComponent::StaticClass())))
-	{
-		QuestRelevantActors.Add(InActor);
-	}
+	QuestRelevantActors.AddUnique(InActor);
 }

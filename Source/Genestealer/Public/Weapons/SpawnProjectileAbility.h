@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actors/BaseOverlapProjectile.h"
 #include "API/Activatable.h"
 #include "Weapons/BaseRangedWeapon.h"
 #include "SpawnProjectileAbility.generated.h"
@@ -11,7 +10,7 @@
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ASpawnProjectileAbility : public ABaseRangedWeapon, public IActivatable
 {
 	GENERATED_BODY()

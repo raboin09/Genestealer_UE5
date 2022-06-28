@@ -157,7 +157,7 @@ void ABaseWeapon::StopFire()
 		bWantsToFire = false;
 		if(FireStartAudio)
 		{
-			FireStartAudio->FadeOut(.3f, 0.f);
+			StopWeaponSound(FireStartAudio, true, 0.f);
 			FireStartAudio = nullptr;
 		}
 		DetermineWeaponState();
@@ -362,6 +362,11 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 		AC = UAudioManager::SpawnSoundAttached(Sound, OwningPawn->GetRootComponent());
 	}
 	return AC;
+}
+
+void ABaseWeapon::StopWeaponSound(UAudioComponent* AudioToStop, bool bFadeOut, float FadeTime) const
+{
+	UAudioManager::StopSound(AudioToStop, bFadeOut, FadeTime);
 }
 
 float ABaseWeapon::PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const

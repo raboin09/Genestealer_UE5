@@ -12,6 +12,7 @@
 #include "Quest/QuestManagerComponent.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
+#include "Utils/WorldUtils.h"
 
 ABasePlayerController::ABasePlayerController()
 {

@@ -17,6 +17,7 @@ class GENESTEALER_API UQuestManagerComponent : public UActorComponent
 public:	
 	UQuestManagerComponent();
 
+	static void TryAddActorToActiveQuests(AActor* InActor);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
 	static void GiveQuestClassToPlayer(const UObject* WorldContextObject, TSubclassOf<UQuestStateMachine> QuestClass);
 
@@ -24,6 +25,8 @@ public:
 	FORCEINLINE TMap<int32, UQuestStateMachine*> GetQuestMap() const { return ActiveQuests; }
 	FORCEINLINE FQuestUpdateEvent& OnQuestUpdate() { return QuestUpdate; }
 
+	void AddActorToActiveQuests(AActor* InActor);
+	
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
 	void ActivateQuestInstance(TSubclassOf<UQuestStateMachine> QuestClass);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|QuestManager")
@@ -38,7 +41,9 @@ public:
 	bool IsQuestComplete(int32 QuestID);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|QuestManager")
 	bool HasQuestClassAlready(TSubclassOf<UQuestStateMachine> QuestToCheck);
-	
+
+protected:
+	virtual void BeginPlay() override;
 	UFUNCTION()
 	void HandleQuestUpdate(const FQuestUpdateEventPayload& QuestObjectiveEventPayload);
 	

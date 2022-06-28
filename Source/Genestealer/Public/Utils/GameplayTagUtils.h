@@ -19,6 +19,9 @@
 #define TAG_ACTOR_WEAPON FGameplayTag::RequestGameplayTag("ActorType.Weapon")
 #define TAG_ACTOR_COVER FGameplayTag::RequestGameplayTag("ActorType.Cover")
 
+#define TAG_INPUT_RIGHT_MOVEMENT FGameplayTag::RequestGameplayTag("Input.RightMovement")
+#define TAG_INPUT_LEFT_MOVEMENT FGameplayTag::RequestGameplayTag("Input.LeftMovement")
+
 #define TAG_STATE_STUNNED FGameplayTag::RequestGameplayTag("State.Stunned")
 #define TAG_STATE_IMMOVABLE FGameplayTag::RequestGameplayTag("State.Immovable")
 #define TAG_STATE_LOADING FGameplayTag::RequestGameplayTag("State.Loading")

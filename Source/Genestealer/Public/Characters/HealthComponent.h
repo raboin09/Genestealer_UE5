@@ -8,7 +8,7 @@
 #include "Types/EventDeclarations.h"
 #include "HealthComponent.generated.h"
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer" )
 class GENESTEALER_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()

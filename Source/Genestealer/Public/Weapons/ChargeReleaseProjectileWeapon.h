@@ -7,7 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "ChargeReleaseProjectileWeapon.generated.h"
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API AChargeReleaseProjectileWeapon : public AProjectileWeapon
 {
 	GENERATED_BODY()

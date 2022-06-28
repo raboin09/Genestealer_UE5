@@ -128,12 +128,11 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 		StopWeaponAnimation(CurrentMontage);
 		CurrentMontage = nullptr;
 	}
-
+	
 	if (FireAudio)
 	{
-		FireAudio->FadeOut(0.3f, 0.0f);
+		StopWeaponSound(FireAudio, true, 0.3f);
 		FireAudio = nullptr;
-
 		PlayWeaponSound(FireFinishSound);
 	}
 	

@@ -15,7 +15,7 @@
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
 
-UCLASS(Abstract, NotBlueprintable, config=Game)
+UCLASS(Abstract, NotBlueprintable, config=Game, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IAnimatable
 {
 	GENERATED_BODY()
@@ -57,7 +57,7 @@ public:
 	FORCEINLINE virtual bool IsInCover() const override { return GameplayTagContainer.HasTag(TAG_STATE_IN_COVER); }
 	FORCEINLINE virtual bool IsRagdoll() const override { return GameplayTagContainer.HasTag(TAG_STATE_RAGDOLL); }
 	FORCEINLINE virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
-	FORCEINLINE virtual bool HasRightInput() const override { return bHasRightInput; }
+	FORCEINLINE virtual bool HasRightInput() const override { return GameplayTagContainer.HasTag(TAG_INPUT_RIGHT_MOVEMENT); }
 	FORCEINLINE virtual FTransform GetWeaponLeftHandPlacementLocation() const override { return InventoryComponent ? InventoryComponent->GetCurrentWeaponLeftHandSocketTransform() : FTransform(); }
 	
 	////////////////////////////////
@@ -184,8 +184,6 @@ private:
 
 	UPROPERTY(Transient)
 	EHitReactType LastKnownHitReact;
-	UPROPERTY(Transient)
-	bool bHasRightInput;
 	
 	UPROPERTY(Transient)
 	TScriptInterface<IMountable> CurrentMount;

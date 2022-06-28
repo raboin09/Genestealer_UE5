@@ -8,30 +8,36 @@ UQuestStateMachine::UQuestStateMachine()
 	
 }
 
-void UQuestStateMachine::Start()
+void UQuestStateMachine::Initialize(UObject* Context)
 {
-	Super::Start();
+	Super::Initialize(Context);
 	TArray<USMTransitionInstance*> TransArray;
 	GetAllTransitionInstances(TransArray);
 	for(USMTransitionInstance* TransInst : TransArray)
 	{
-		if(UTransition_QuestComplete* CurrTrans = Cast<UTransition_QuestComplete>(TransInst))
+		if(UTransition_QuestSection* CurrTrans = Cast<UTransition_QuestSection>(TransInst))
 		{
 			QuestTransitions.Add(CurrTrans);
 		}
 	}
 }
 
+void UQuestStateMachine::TryAddActorToQuest(AActor* InActor)
+{
+	for(UTransition_QuestSection* Transition : QuestTransitions)
+	{
+		Transition->ActivateQuestObjectiveActor(InActor);
+	}
+}
+
 bool UQuestStateMachine::IsQuestComplete() const
 {
-	bool bAllQuestsDone = true;	
-	for(UTransition_QuestComplete* CurrTrans : QuestTransitions)
+	for(UTransition_QuestSection* CurrTrans : QuestTransitions)
 	{
-		if(CurrTrans)
+		if(CurrTrans && !CurrTrans->QuestSectionData.IsQuestSectionDone())
 		{
-			bAllQuestsDone = bAllQuestsDone && CurrTrans->QuestSectionData.IsQuestSectionDone();
+			return false;
 		}
-	}
-	
-	return bAllQuestsDone;
+	}	
+	return true;
 }

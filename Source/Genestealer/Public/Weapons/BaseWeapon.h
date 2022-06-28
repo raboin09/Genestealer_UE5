@@ -19,7 +19,7 @@ class USoundCue;
 /**
  * 
  */
-UCLASS(Abstract, NotBlueprintable, AutoExpandCategories=("Genestealer|Weapon"))
+UCLASS(Abstract, NotBlueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseWeapon : public ABaseActor, public IWeapon
 {
 	GENERATED_BODY()
@@ -59,6 +59,7 @@ protected:
 	bool IsWeaponPlayerControlled() const;
 	void SetWeaponState(EWeaponState NewState);
 	UAudioComponent* PlayWeaponSound(USoundCue* Sound) const;
+	void StopWeaponSound(UAudioComponent* AudioToStop, bool bFadeOut = false, float FadeTime = 0.f) const;
     float PlayWeaponAnimation(const FAnimMontagePlayData& PlayData) const;
     void StopWeaponAnimation(UAnimMontage* AnimMontage) const;
 	virtual void OnEnterInventory(ACharacter* NewOwner) override;

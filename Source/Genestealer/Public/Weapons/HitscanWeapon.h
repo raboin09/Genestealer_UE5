@@ -8,7 +8,7 @@ class ABaseImpactEffect;
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API AHitscanWeapon : public ABaseRangedWeapon
 {
 	GENERATED_BODY()

@@ -111,7 +111,7 @@ struct FEffectImpactSFX : public FTableRowBase
 	USoundCue* NurgleFleshHeadshotSound = nullptr;
 };
 
-UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), hideCategories = ("Material Parameters", "Optimization", "Skeletal Mesh", "HLOD", "Mobile", "Asset User Data", "Virtual Texture", "Compilation", "Clothing", "Master Post Component", "Skin Weights", "Clothing Simulation", "Override Parameters", "Activation", "Lighting", "Attachment", "Navigation", "Component Tick", "Physics", "Tags", "Component Replication", "Variable", "Parameters", "Randomness", "Rendering", "Replication", "Input", "Actor", "Actor Tick", "Collision", "Transform", "LOD", "Cooking"))
+UCLASS(Abstract, Blueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseEffect : public AActor, public IEffect
 {
 	GENERATED_BODY()

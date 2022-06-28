@@ -3,18 +3,23 @@
 
 #include "Quest/BaseOverlapQuestPickup.h"
 #include "GameFramework/Character.h"
-#include "Quest/QuestObjectiveComponent.h"
+#include "Utils/WorldUtils.h"
 
 ABaseOverlapQuestPickup::ABaseOverlapQuestPickup()
 {
-	QuestObjectiveComponent = CreateDefaultSubobject<UQuestObjectiveComponent>(TEXT("QuestObjectiveComponent"));
 	CollisionComp->SetSphereRadius(128.f);
 	bDiesAfterOverlap = true;
 }
 
+void ABaseOverlapQuestPickup::BeginPlay()
+{
+	Super::BeginPlay();
+	UWorldUtils::TryAddActorToQuestableArray(this);
+}
+
 bool ABaseOverlapQuestPickup::CanPickup(ACharacter* PotentialChar)
 {
-	if(PotentialChar && PotentialChar->IsPlayerControlled() && QuestObjectiveComponent && QuestObjectiveComponent->HasAnyActiveQuests())
+	if(PotentialChar && PotentialChar->IsPlayerControlled() && QuestObjectiveEvent.IsBound())
 	{
 		return true;
 	}
@@ -23,9 +28,5 @@ bool ABaseOverlapQuestPickup::CanPickup(ACharacter* PotentialChar)
 
 void ABaseOverlapQuestPickup::ConsumePickup(ACharacter* ConsumingChar)
 {
-	if(ConsumingChar && QuestObjectiveComponent)
-	{
-		QuestObjectiveComponent->BroadcastQuestEvent(EQuestObjectiveAction::Overlap);
-		QuestObjectiveComponent->ClearQuestEventBindings();
-	}
+	QuestObjectiveEvent.Broadcast(FQuestObjectiveEventPayload(this, EQuestObjectiveAction::Overlap));
 }

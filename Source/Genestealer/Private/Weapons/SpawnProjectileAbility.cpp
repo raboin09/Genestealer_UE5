@@ -3,6 +3,7 @@
 
 #include "Weapons/SpawnProjectileAbility.h"
 
+#include "Actors/BaseOverlapProjectile.h"
 #include "Utils/WorldUtils.h"
 
 ASpawnProjectileAbility::ASpawnProjectileAbility()
