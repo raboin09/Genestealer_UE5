@@ -22,17 +22,51 @@ void AHitscanWeapon::FireWeapon()
 		}
 	}
 	
-	const FVector& AimDirection = GetAdjustedAim();
-	const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);
 
-	for(int i=0; i<NumberOfShotsPerFire; i++)
+
+	if(FiringMechanism == EFiringMechanism::ScatterShot)
 	{
-		const FVector ShootDirection = GetShootDirection(AimDirection);
-		const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
-		const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
-		Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
+		for(int i=0; i<NumberOfShotsPerFire; i++)
+		{
+			Internal_FireShot();
+		}
+	} else if(FiringMechanism == EFiringMechanism::Burst)
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_BurstFire, this, &AHitscanWeapon::Internal_BurstFireTick, TimeBetweenBurstShots, true);
+	} else if(FiringMechanism == EFiringMechanism::Automatic)
+	{
+		Internal_FireShot();
+	} else if(FiringMechanism == EFiringMechanism::Continuous)
+	{
+		Internal_FireShot();
 	}
 }
+
+
+void AHitscanWeapon::Internal_BurstFireTick()
+{
+	if(BurstFireCount >= NumberOfShotsPerFire)
+	{
+		BurstFireCount = 0;
+		StopSimulatingWeaponFire();
+		GetWorldTimerManager().ClearTimer(TimerHandle_BurstFire);
+		return;
+	}
+
+	BurstFireCount++;
+	Internal_FireShot();
+}
+
+void AHitscanWeapon::Internal_FireShot()
+{
+	const FVector& AimDirection = GetAdjustedAim();
+	const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);
+	const FVector ShootDirection = GetShootDirection(AimDirection);
+	const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
+	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
+	Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
+}
+
 
 void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const FVector& Origin, const FVector& ShootDirection)
 {
@@ -113,3 +147,4 @@ void AHitscanWeapon::Internal_PlayWeaponMissEffectFX(const FHitResult& Impact)
 		}
 	}
 }
+

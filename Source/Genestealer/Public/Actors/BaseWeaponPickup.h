@@ -17,7 +17,7 @@ public:
 	
 	ABaseWeaponPickup();
 
-	virtual UMeshComponent* GetMesh() const override;
+	virtual UMeshComponent* GetMesh_Implementation() const override;
 	
 protected:
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;

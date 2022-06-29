@@ -15,7 +15,7 @@ ABaseOverlapTrigger::ABaseOverlapTrigger()
 	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
-void ABaseOverlapTrigger::HandleEndOverlapEvent(AActor* ExitingActor)
+void ABaseOverlapTrigger::K2_HandleEndOverlapEvent_Implementation(AActor* ExitingActor)
 {
 	if(!TriggerMachine)
 	{

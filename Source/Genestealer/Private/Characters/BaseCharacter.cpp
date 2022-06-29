@@ -358,21 +358,18 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 	const TArray BaseTagsToCheck = {TAG_COVER_ROLLEDOUT, TAG_STATE_STUNNED};
 	if(GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(BaseTagsToCheck)))
 	{
-		UKismetSystemLibrary::PrintString(this, "Cant move");
 		return false;
 	}
 
 	const TArray RightTagsToCheck = {TAG_COVER_RIGHTEDGE};
 	if(GetTagContainer().HasTag(TAG_INPUT_RIGHT_MOVEMENT) && GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(RightTagsToCheck)))
 	{
-		UKismetSystemLibrary::PrintString(this, "Cant move right");
 		return false;
 	}
 
 	const TArray LeftTagsToCheck = {TAG_COVER_LEFTEDGE};
 	if(GetTagContainer().HasTag(TAG_INPUT_LEFT_MOVEMENT) && GetTagContainer().HasAny(FGameplayTagContainer::CreateFromArray(LeftTagsToCheck)))
 	{
-		UKismetSystemLibrary::PrintString(this, "Cant move left");
 		return false;
 	}
 	

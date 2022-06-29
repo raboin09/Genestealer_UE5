@@ -37,7 +37,7 @@ ABaseOverlapPickup::ABaseOverlapPickup()
 	DeathBuffer = 2.f;
 }
 
-void ABaseOverlapPickup::HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult)
+void ABaseOverlapPickup::K2_HandleOverlapEvent_Implementation(AActor* OtherActor, const FHitResult& HitResult)
 {
 	if(ACharacter* CastedChar = Cast<ACharacter>(OtherActor))
 	{
@@ -53,7 +53,7 @@ void ABaseOverlapPickup::HandleOverlapEvent(AActor* OtherActor, const FHitResult
 					MaterialDissolver->StartDissolveTimeline(true);
 				}
 			}
-			Super::HandleOverlapEvent(OtherActor, HitResult);	
+			Super::K2_HandleOverlapEvent(OtherActor, HitResult);	
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Quest/BaseOverlapQuestPickup.h"
+#include "Actors/BaseOverlapQuestPickup.h"
 #include "GameFramework/Character.h"
 #include "Utils/WorldUtils.h"
 
@@ -9,6 +9,10 @@ ABaseOverlapQuestPickup::ABaseOverlapQuestPickup()
 {
 	CollisionComp->SetSphereRadius(128.f);
 	bDiesAfterOverlap = true;
+
+	BlockedOverlapTags.Add(TAG_ACTOR_AI);
+	
+	RequiredOverlapTags.Add(TAG_ACTOR_PLAYER);
 }
 
 void ABaseOverlapQuestPickup::BeginPlay()
@@ -19,11 +23,7 @@ void ABaseOverlapQuestPickup::BeginPlay()
 
 bool ABaseOverlapQuestPickup::CanPickup(ACharacter* PotentialChar)
 {
-	if(PotentialChar && PotentialChar->IsPlayerControlled() && QuestObjectiveEvent.IsBound())
-	{
-		return true;
-	}
-	return false;
+	return QuestObjectiveEvent.IsBound();
 }
 
 void ABaseOverlapQuestPickup::ConsumePickup(ACharacter* ConsumingChar)

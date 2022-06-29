@@ -20,7 +20,7 @@ ABaseWeaponPickup::ABaseWeaponPickup()
 	SummonedSkelMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
-UMeshComponent* ABaseWeaponPickup::GetMesh() const
+UMeshComponent* ABaseWeaponPickup::GetMesh_Implementation() const
 {
 	if(SummonedSkelMesh && SummonedSkelMesh->SkeletalMesh != nullptr)
 	{

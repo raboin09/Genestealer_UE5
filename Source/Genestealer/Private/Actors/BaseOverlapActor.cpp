@@ -30,14 +30,14 @@ void ABaseOverlapActor::BeginPlay()
 	}
 }
 
-void ABaseOverlapActor::HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult)
+void ABaseOverlapActor::K2_HandleOverlapEvent_Implementation(AActor* OtherActor, const FHitResult& HitResult)
 {
 	if(bDiesAfterOverlap) {
 		HandleActorDeath();
 	}
 }
 
-void ABaseOverlapActor::HandleEndOverlapEvent(AActor* ExitingActor)
+void ABaseOverlapActor::K2_HandleEndOverlapEvent_Implementation(AActor* ExitingActor)
 {
 	
 }
@@ -76,9 +76,21 @@ void ABaseOverlapActor::Deactivate()
 
 void ABaseOverlapActor::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (IsActive() && OtherActor && !OtherActor->IsA(StaticClass()) && !HitActors.Contains(OtherActor)) {
+	if(!OtherActor || OtherActor->IsA(StaticClass()))
+	{
+		return;
+	}
+
+	const bool bTagsBlocked = BlockedOverlapTags.Num() > 0 ? UGameplayTagUtils::ActorHasAnyGameplayTags(OtherActor, BlockedOverlapTags) : false;
+	if(bTagsBlocked)
+	{
+		return;
+	}
+
+	const bool bValidRequiredTags = RequiredOverlapTags.Num() > 0 ? UGameplayTagUtils::ActorHasAnyGameplayTags(OtherActor, RequiredOverlapTags) : true;
+	if (IsActive() && !HitActors.Contains(OtherActor) && bValidRequiredTags) {
 		HitActors.Add(OtherActor);
-		HandleOverlapEvent(OtherActor, SweepResult);
+		K2_HandleOverlapEvent(OtherActor, SweepResult);
 	}
 }
 
@@ -87,6 +99,6 @@ void ABaseOverlapActor::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	if(OtherActor && !OtherActor->IsA(StaticClass()) && HitActors.Contains(OtherActor))
 	{
 		HitActors.Remove(OtherActor);
-		HandleEndOverlapEvent(OtherActor);
+		K2_HandleEndOverlapEvent(OtherActor);
 	}
 }

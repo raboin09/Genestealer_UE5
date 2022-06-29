@@ -29,13 +29,13 @@ public:
 	//////////////////////////////////////
 	// ABaseOverlapActor Overrides
 	//////////////////////////////////////
-	FORCEINLINE virtual UShapeComponent* GetCollisionComponent() const override { return CollisionComp; }
+	FORCEINLINE virtual UShapeComponent* GetCollisionComponent_Implementation() const override { return CollisionComp; }
 	
 protected:
 	virtual void PostInitializeComponents() override;
 	
-	virtual void HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult) override;
-	FORCEINLINE virtual UMeshComponent* GetMesh() const override { return PickupBase; }
+	virtual void K2_HandleOverlapEvent_Implementation(AActor* OtherActor, const FHitResult& HitResult) override;
+	FORCEINLINE virtual UMeshComponent* GetMesh_Implementation() const override { return PickupBase; }
 	virtual bool CanPickup(ACharacter* PotentialChar) PURE_VIRTUAL(ABaseOverlapPickup::CanPickup, return false;)
 	virtual void ConsumePickup(ACharacter* ConsumingChar) PURE_VIRTUAL(ABaseOverlapPickup::ConsumePickup,)
 	

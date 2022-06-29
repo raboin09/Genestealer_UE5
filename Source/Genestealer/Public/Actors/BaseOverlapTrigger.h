@@ -17,12 +17,12 @@ class GENESTEALER_API ABaseOverlapTrigger : public ABaseOverlapPickup
 public:
 	ABaseOverlapTrigger();
 	
-	FORCEINLINE virtual UMeshComponent* GetMesh() const override { return nullptr; };
+	FORCEINLINE virtual UMeshComponent* GetMesh_Implementation() const override { return nullptr; };
 	
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_ConsumePickup(ACharacter* ConsumingChar);
-	virtual void HandleEndOverlapEvent(AActor* ExitingActor) override;
+	virtual void K2_HandleEndOverlapEvent_Implementation(AActor* ExitingActor) override;
 	virtual bool CanPickup(ACharacter* PotentialChar) override;
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
 

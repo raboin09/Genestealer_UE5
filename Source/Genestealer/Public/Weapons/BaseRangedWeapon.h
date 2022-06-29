@@ -19,6 +19,16 @@ enum class EWeaponVFXAdjustmentType : uint8
 	AdjustOnImpact
 };
 
+UENUM()
+enum class EFiringMechanism : uint8
+{
+	Automatic,
+	Burst,
+	ScatterShot,
+	ChargeAndRelease,
+	Continuous
+};
+
 UCLASS(Abstract, NotBlueprintable, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseRangedWeapon : public ABaseWeapon, public IRangedEntity
 {
@@ -85,16 +95,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TraceRange = 10000.f;
 
-	// Beam weapons need visibility instead of Weapon trace 
+	// Beam weapons need visibility instead of Weapon trace
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
-	bool bUseWeaponTraceType = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	EFiringMechanism FiringMechanism = EFiringMechanism::Automatic;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
 	bool bHasFiringSpread = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
 	float TraceSpread = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
 	float FiringSpreadIncrement = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
 	float FiringSpreadMax = 10.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	FName RaycastSourceSocketName = "Muzzle";
@@ -120,17 +130,17 @@ protected:
 	UFXSystemAsset* FireFXClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
 	bool bLoopedMuzzleFX = false;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	EWeaponVFXAdjustmentType AdjustVFX = EWeaponVFXAdjustmentType::NeverAdjust;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	FString MaxSpawnScaleName = "User.SpawnScaleMax";
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	FVector MaxVFXScaleAdjust = FVector(.1, .1, 30);
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	FString MinSpawnScaleName = "User.SpawnScaleMin";
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	FVector MinVFXScaleAdjust = FVector(.1, .1, 30);
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnImpact", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnImpact && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	float ParticleMeshZ = 33.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
 	bool bDeactivateVFXImmediately = false;
