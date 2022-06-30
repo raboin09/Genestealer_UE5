@@ -42,6 +42,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void K2_PlayHitEffects();
+	UFUNCTION(BlueprintImplementableEvent)
 	void K2_StartWeaponTrace();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_StopWeaponTrace();
@@ -75,7 +77,7 @@ private:
 	FTimerHandle Timer_Raycasting;
 	
 	int32 ComboSectionIncrement;
-	
+
 	UPROPERTY()
 	UMeshComponent* MeshComponentRef;
 	UPROPERTY(Transient)

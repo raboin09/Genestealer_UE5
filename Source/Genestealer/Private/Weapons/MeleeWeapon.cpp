@@ -108,7 +108,6 @@ void AMeleeWeapon::Internal_StartCollisionRaycastingTick()
 	{
 		return;
 	}
-
 	K2_StartWeaponTrace();
 
 	Internal_SetCurrentSocketLocations();
@@ -142,6 +141,10 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(Hit.bBlockingHit && bIsActive && !HitActors.Contains(Hit.GetActor()))
 		{
+			if(IsWeaponPlayerControlled())
+			{
+				K2_PlayHitEffects();
+			}
 			HitActors.Add(Hit.GetActor());
 			UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, Hit, GetInstigator());
 			break;
