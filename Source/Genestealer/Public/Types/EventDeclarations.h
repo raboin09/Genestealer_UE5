@@ -210,11 +210,25 @@ USTRUCT(BlueprintType)
 struct FPlayerAimingChangedPayload
 {
 	GENERATED_BODY()
-	FPlayerAimingChangedPayload(): bIsAiming(false), CrosshairTexture(nullptr) { }	
-	FPlayerAimingChangedPayload(bool bInIsAiming, UTexture2D* InCrosshairTexture = nullptr) : bIsAiming(bInIsAiming), CrosshairTexture(InCrosshairTexture) { }
+	
+	FPlayerAimingChangedPayload()
+	{
+		bIsAiming = false;
+		CrosshairSize = 0.f;
+		CrosshairTexture = nullptr;
+	}
+
+	FPlayerAimingChangedPayload(bool bInIsAiming, UTexture2D* InCrosshairTexture, float InCrosshairSize)
+	{
+		bIsAiming = bInIsAiming;
+		CrosshairTexture = InCrosshairTexture;
+		CrosshairSize = InCrosshairSize;
+	};
 
 	UPROPERTY()
 	bool bIsAiming;
+	UPROPERTY()
+	float CrosshairSize;
 	UPROPERTY()
 	UTexture2D* CrosshairTexture;
 };

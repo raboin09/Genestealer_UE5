@@ -30,5 +30,5 @@ public:
 	virtual int32 GetMaxAmmo() PURE_VIRTUAL(IRangedEntity::GetMaxAmmo, return 0;);
 	virtual bool HasInfiniteAmmo() PURE_VIRTUAL(IRangedEntity::HasInfiniteAmmo, return false;);
 	virtual bool HasInfiniteClip() PURE_VIRTUAL(IRangedEntity::HasInfiniteClip, return false;);
-	virtual UTexture2D* GetCrosshair() const PURE_VIRTUAL(IRangedEntity::GetCrosshair, return nullptr;);
+	virtual FPlayerAimingChangedPayload GetCrosshairPayload() const PURE_VIRTUAL(IRangedEntity::GetCrosshairPayload, return FPlayerAimingChangedPayload(false, nullptr, 0.f);)
 };

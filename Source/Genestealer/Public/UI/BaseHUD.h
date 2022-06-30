@@ -71,6 +71,8 @@ private:
 	UPROPERTY()
 	FTimerHandle HideDisplaysTimer;
 	UPROPERTY()
+	float CrosshairDrawSize;
+	UPROPERTY()
 	UTexture2D* CurrentCrosshair;
 	UPROPERTY()
 	FLinearColor CurrentCrosshairColor = FLinearColor::White;

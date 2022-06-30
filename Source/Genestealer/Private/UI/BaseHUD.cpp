@@ -15,10 +15,9 @@ void ABaseHUD::DrawHUD()
 	if(bShouldDrawCrosshair && CurrentCrosshair)
 	{
 		const FVector2D ViewportSize = UWidgetLayoutLibrary::GetViewportSize(this);
-		constexpr float DrawSize = 50.f;
-		const float DrawX = (ViewportSize.X / 2) - (DrawSize / 2);
-		const float DrawY = ViewportSize.Y / 2 - (DrawSize / 2);
-		DrawTexture(CurrentCrosshair, DrawX, DrawY, DrawSize, DrawSize, 1.f, 1.f, 1.f, 1.f, CurrentCrosshairColor);
+		const float DrawX = (ViewportSize.X / 2) - (CrosshairDrawSize / 2);
+		const float DrawY = ViewportSize.Y / 2 - (CrosshairDrawSize / 2);
+		DrawTexture(CurrentCrosshair, DrawX, DrawY, CrosshairDrawSize, CrosshairDrawSize, 1.f, 1.f, 1.f, 1.f, CurrentCrosshairColor);
 	}
 }
 
@@ -64,4 +63,5 @@ void ABaseHUD::HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& Play
 {
 	bShouldDrawCrosshair = PlayerAimingChangedPayload.bIsAiming;
 	CurrentCrosshair = PlayerAimingChangedPayload.CrosshairTexture;
+	CrosshairDrawSize = PlayerAimingChangedPayload.CrosshairSize;
 }

@@ -16,7 +16,8 @@ class GENESTEALER_API AHitscanWeapon : public ABaseRangedWeapon
 protected:
 	// BaseRangedWeapon overrides
 	virtual void FireWeapon() override;
-
+	virtual void StopSimulatingWeaponFire() override;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="1", EditCondition = "FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot", EditConditionHides))
 	int32 NumberOfShotsPerFire = 1;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin=".01", EditCondition = "FiringMechanism == EFiringMechanism::Burst", EditConditionHides))
@@ -40,8 +41,10 @@ private:
 	UPROPERTY()
 	TArray<UFXSystemComponent*> TrailParticles;
 
+	///////////////////////
 	// Burst Fire
-
+	///////////////////////
+	UFUNCTION()
 	void Internal_BurstFireTick();
 	
 	int32 BurstFireCount;

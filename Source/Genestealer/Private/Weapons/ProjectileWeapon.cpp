@@ -11,6 +11,7 @@
 void AProjectileWeapon::FireWeapon()
 {
 	HandleProjectileFire();
+	Super::FireWeapon();
 }
 
 ABaseOverlapProjectile* AProjectileWeapon::HandleProjectileFire()

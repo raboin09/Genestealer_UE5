@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	float ChargeSoundDelay = 0.f;
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	TArray<UAnimMontage*> ChargeFireAnims;
+
 	// FireFX is the charging VFX, ChargeBlastVFX is on burst finished
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
 	UNiagaraSystem* ChargeBlastVFX;

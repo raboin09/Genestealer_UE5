@@ -44,7 +44,7 @@ public:
 	bool HasWeapon(const UClass* WeaponClass) const;
 	void GiveWeaponClassAmmo(const UClass* WeaponClass, int32 AmmoRoundsToGive);
 
-	UTexture2D* GetCrosshair() const;
+	FPlayerAimingChangedPayload GetCrosshairPayload() const;
 	FORCEINLINE EWeaponType GetCurrentWeaponType() const { return CurrentWeapon ? CurrentWeapon->GetWeaponType() : EWeaponType::NONE; }
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FORCEINLINE TScriptInterface<IWeapon> GetEquippedWeapon() const{ return CurrentWeapon; }

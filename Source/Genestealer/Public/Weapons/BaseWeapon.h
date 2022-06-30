@@ -66,10 +66,12 @@ protected:
 	virtual void OnLeaveInventory() override;
 	virtual void DetermineWeaponState();
 	
-	virtual void FireWeapon() PURE_VIRTUAL(ABaseWeapon::FireWeapon,);
+	virtual void FireWeapon() { K2_OnFireWeapon(); }
 	virtual float SimulateWeaponFire() PURE_VIRTUAL(ABaseWeapon::SimulateWeaponFire, return 0.f; )
 	virtual void StopSimulatingWeaponFire() PURE_VIRTUAL(ABaseWeapon::StopSimulatingWeaponFire,)
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnFireWeapon();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnEnterInventory();
 	UFUNCTION(BlueprintImplementableEvent)

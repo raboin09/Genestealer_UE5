@@ -121,13 +121,13 @@ void UInventoryComponent::EquipPrimaryWeapon()
 	}
 }
 
-UTexture2D* UInventoryComponent::GetCrosshair() const
+FPlayerAimingChangedPayload UInventoryComponent::GetCrosshairPayload() const
 {
 	if(const IRangedEntity* RangedEntity = Cast<IRangedEntity>(CurrentWeapon.GetObject()))
 	{
-		return RangedEntity->GetCrosshair();
+		return RangedEntity->GetCrosshairPayload();
 	}
-	return nullptr;
+	return FPlayerAimingChangedPayload(false, nullptr, 0.f);
 }
 
 TScriptInterface<IWeapon> UInventoryComponent::Internal_FindWeapon(TSubclassOf<AActor> WeaponClass)

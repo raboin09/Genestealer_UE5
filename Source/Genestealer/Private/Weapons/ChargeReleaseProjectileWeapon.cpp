@@ -17,6 +17,7 @@ void AChargeReleaseProjectileWeapon::BeginPlay()
 void AChargeReleaseProjectileWeapon::FireWeapon()
 {
 	Internal_TryIncreaseChargeState();
+	K2_OnFireWeapon();
 }
 
 float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
@@ -43,14 +44,14 @@ float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_DelayChargeAudio,  this, &AChargeReleaseProjectileWeapon::Internal_PlayChargeAudio, ChargeSoundDelay, false);
 		}
-	}
+	}	
 	return 0.f;
 }
 
 void AChargeReleaseProjectileWeapon::OnBurstFinished()
 {
 	Super::OnBurstFinished();
-	GetWorldTimerManager().ClearTimer(TimerHandle_DelayChargeAudio);
+	GetWorldTimerManager().ClearTimer(TimerHandle_DelayChargeAudio);	
 	if(CurrentChargeState > -1.f)
 	{
 		Internal_FireAndReset();
@@ -59,9 +60,8 @@ void AChargeReleaseProjectileWeapon::OnBurstFinished()
 
 TArray<TSubclassOf<AActor>> AChargeReleaseProjectileWeapon::Internal_GetAdditionalEffectsToApplyToProjectile() const
 {
-	if(CurrentChargeState < WeaponEffects.Num())
+	if(CurrentChargeState < WeaponEffects.Num() && CurrentChargeState > 0)
 	{
-		
 		 return { WeaponEffects[CurrentChargeState] };
 	}
 	return {};
@@ -89,6 +89,19 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 	{
 		ChargingAudio->FadeOut(0.3f, 0.0f);
 		ChargingAudio = nullptr;
+	}
+
+	if(!CurrentMontage || !bLoopedFireAnim)
+	{
+		FAnimMontagePlayData PlayData;
+		if(ChargeFireAnims.Num() - 1 < CurrentChargeState)
+		{
+			PlayData.MontageToPlay = ChargeFireAnims[ChargeFireAnims.Num() - 1];
+		} else
+		{
+			PlayData.MontageToPlay = ChargeFireAnims[CurrentChargeState];
+		}
+		PlayWeaponAnimation(PlayData);
 	}
 	
 	if(ABaseOverlapProjectile* Projectile = HandleProjectileFire())

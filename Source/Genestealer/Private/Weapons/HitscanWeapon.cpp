@@ -21,18 +21,21 @@ void AHitscanWeapon::FireWeapon()
 			TrailParticle->DeactivateImmediate();
 		}
 	}
-	
-
 
 	if(FiringMechanism == EFiringMechanism::ScatterShot)
 	{
-		for(int i=0; i<NumberOfShotsPerFire; i++)
+		// Fire one shot in the middle for guaranteed hits
+		const bool bCacheFiringSpread = bHasFiringSpread;
+		bHasFiringSpread = false;
+		Internal_FireShot();
+		bHasFiringSpread = bCacheFiringSpread;
+		for(int i=1; i<NumberOfShotsPerFire; i++)
 		{
 			Internal_FireShot();
 		}
 	} else if(FiringMechanism == EFiringMechanism::Burst)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_BurstFire, this, &AHitscanWeapon::Internal_BurstFireTick, TimeBetweenBurstShots, true);
+		GetWorldTimerManager().SetTimer(TimerHandle_BurstFire, this, &AHitscanWeapon::Internal_BurstFireTick, TimeBetweenBurstShots, true, 0.f);
 	} else if(FiringMechanism == EFiringMechanism::Automatic)
 	{
 		Internal_FireShot();
@@ -40,20 +43,38 @@ void AHitscanWeapon::FireWeapon()
 	{
 		Internal_FireShot();
 	}
+	Super::FireWeapon();
 }
 
+void AHitscanWeapon::StopSimulatingWeaponFire()
+{
+	if(FiringMechanism == EFiringMechanism::Burst)
+	{
+		if(BurstFireCount >= NumberOfShotsPerFire)
+		{
+			Super::StopSimulatingWeaponFire();	
+		}
+	} else
+	{
+		Super::StopSimulatingWeaponFire();
+	}
+}
 
 void AHitscanWeapon::Internal_BurstFireTick()
 {
 	if(BurstFireCount >= NumberOfShotsPerFire)
 	{
-		BurstFireCount = 0;
 		StopSimulatingWeaponFire();
+		BurstFireCount = 0;
 		GetWorldTimerManager().ClearTimer(TimerHandle_BurstFire);
 		return;
 	}
 
 	BurstFireCount++;
+	if(bSpawnMuzzleFX && !bLoopedMuzzleFX)
+	{
+		PlayMuzzleFX();
+	}
 	Internal_FireShot();
 }
 

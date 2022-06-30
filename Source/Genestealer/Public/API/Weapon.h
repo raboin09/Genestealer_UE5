@@ -24,7 +24,8 @@ enum class EWeaponType : uint8
 	Melee,
 	Heavy,
 	Pistol,
-	Rifle
+	Rifle,
+	Assault
 };
 
 UENUM(BlueprintType)

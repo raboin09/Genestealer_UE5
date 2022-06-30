@@ -49,7 +49,7 @@ protected:
 	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
-	FORCEINLINE virtual UTexture2D* GetCrosshair() const override { return Crosshair; }
+	FORCEINLINE virtual FPlayerAimingChangedPayload GetCrosshairPayload() const override { return FPlayerAimingChangedPayload(false, Crosshair, CrosshairSize); }
 	virtual void BroadcastAmmoUsage() override;
 	virtual void GiveAmmo(int AddAmount) override;
 	
@@ -87,9 +87,16 @@ protected:
 	float GetCurrentFiringSpreadPercentage() const;
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
+	void PlayMuzzleFX();
 
+	UPROPERTY(Transient)
+	UAnimMontage* CurrentMontage;
+	virtual FAnimMontagePlayData GetPlayData() const;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
 	UTexture2D* Crosshair;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
+	float CrosshairSize = 50.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon", meta = (EditCondition = "WeaponType != EWeaponType::Rifle && WeaponType != EWeaponType::Heavy"))
 	bool bAkimbo = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
@@ -98,13 +105,13 @@ protected:
 	// Beam weapons need visibility instead of Weapon trace
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	EFiringMechanism FiringMechanism = EFiringMechanism::Automatic;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "FiringMechanism == EFiringMechanism::Automatic || FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot", EditConditionHides))
 	bool bHasFiringSpread = true;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && (FiringMechanism == EFiringMechanism::Automatic || FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot)", EditConditionHides))
 	float TraceSpread = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && (FiringMechanism == EFiringMechanism::Automatic || FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot)", EditConditionHides))
 	float FiringSpreadIncrement = 1.0f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && FiringMechanism == EFiringMechanism::Automatic", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "bHasFiringSpread && (FiringMechanism == EFiringMechanism::Automatic || FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot)", EditConditionHides))
 	float FiringSpreadMax = 10.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	FName RaycastSourceSocketName = "Muzzle";
@@ -190,16 +197,12 @@ private:
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
 	UFUNCTION()
-	virtual FAnimMontagePlayData Internal_GetPlayData() const;
-	UFUNCTION()
 	void Internal_AlternateFiringMesh();
 	bool Internal_IsInCover() const;
 	bool Internal_HasRightInput() const;
 	
 	UPROPERTY(Transient)
 	bool bSecondaryWeaponsTurn;
-	UPROPERTY(Transient)
-	UAnimMontage* CurrentMontage;
 	UPROPERTY(Transient)
 	UAudioComponent* ReloadAudio;
 	UPROPERTY(Transient)

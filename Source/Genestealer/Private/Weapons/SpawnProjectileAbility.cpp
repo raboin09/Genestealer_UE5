@@ -48,7 +48,7 @@ void ASpawnProjectileAbility::StartFire()
 	}
 }
 
-FAnimMontagePlayData ASpawnProjectileAbility::Internal_GetPlayData() const
+FAnimMontagePlayData ASpawnProjectileAbility::GetPlayData() const
 {
 	FAnimMontagePlayData PlayData;	
 	PlayData.MontageToPlay = FireAnim;
@@ -58,7 +58,7 @@ FAnimMontagePlayData ASpawnProjectileAbility::Internal_GetPlayData() const
 void ASpawnProjectileAbility::Internal_StartAttack()
 {
 	GetTagContainer().AddTag(TAG_STATE_ATTACK_COMMITTED);
-	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
+	const FAnimMontagePlayData PlayData = GetPlayData();
 	PlayWeaponAnimation(PlayData);
 }
 

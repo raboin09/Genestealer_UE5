@@ -385,7 +385,7 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 
 	if(bValue)
 	{
-		if(IsRagdoll())
+		if(IsRagdoll()) 
 		{
 			return;
 		}

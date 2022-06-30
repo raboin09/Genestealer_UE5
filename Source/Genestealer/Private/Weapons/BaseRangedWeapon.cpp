@@ -55,10 +55,8 @@ void ABaseRangedWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	BroadcastAmmoUsage();
 }
 
-float ABaseRangedWeapon::SimulateWeaponFire()
+void ABaseRangedWeapon::PlayMuzzleFX()
 {
-	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
-	Internal_AlternateFiringMesh();
 	if (FireFXClass && bSpawnMuzzleFX)
 	{
 		if (!bLoopedMuzzleFX || !FireVFXSystem)
@@ -77,7 +75,14 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 			}
 		}
 	}
+}
 
+float ABaseRangedWeapon::SimulateWeaponFire()
+{
+	const FAnimMontagePlayData PlayData = GetPlayData();
+	Internal_AlternateFiringMesh();
+	PlayMuzzleFX();
+	
 	if(bSpawnShellFX && IsWeaponPlayerControlled())
 	{
 		Internal_PlayShellEffects();
@@ -110,7 +115,7 @@ float ABaseRangedWeapon::SimulateWeaponFire()
 }
 
 void ABaseRangedWeapon::StopSimulatingWeaponFire()
-{
+{	
 	if(FireVFXSystem != nullptr)
 	{
 		if(bDeactivateVFXImmediately)
@@ -208,7 +213,7 @@ UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 	return NiagaraFX;
 }
 
-FAnimMontagePlayData ABaseRangedWeapon::Internal_GetPlayData() const
+FAnimMontagePlayData ABaseRangedWeapon::GetPlayData() const
 {
 	// if not akimbo, if in cover return 
 	
@@ -434,10 +439,10 @@ FVector ABaseRangedWeapon::GetShootDirection(const FVector& AimDirection)
 		CurrentFiringSpread = FMath::Min(FiringSpreadMax, CurrentFiringSpread + FiringSpreadIncrement);
 		return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
 	}
-		const int32 RandomSeed = FMath::Rand();
-		const FRandomStream WeaponRandomStream(RandomSeed);
-		const float ConeHalfAngle = FMath::DegreesToRadians(0.f);
-		return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
+	const int32 RandomSeed = FMath::Rand();
+	const FRandomStream WeaponRandomStream(RandomSeed);
+	const float ConeHalfAngle = FMath::DegreesToRadians(0.f);
+	return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
 }
 
 float ABaseRangedWeapon::GetCurrentSpread() const
