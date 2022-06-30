@@ -109,6 +109,8 @@ void AMeleeWeapon::Internal_StartCollisionRaycastingTick()
 		return;
 	}
 
+	K2_StartWeaponTrace();
+
 	Internal_SetCurrentSocketLocations();
 	GetWorldTimerManager().SetTimer(Timer_Raycasting, this, &AMeleeWeapon::Internal_CheckForCollisionHit, .01f, true);
 }
@@ -116,6 +118,7 @@ void AMeleeWeapon::Internal_StartCollisionRaycastingTick()
 void AMeleeWeapon::Internal_StopCollisionRaycastingTick()
 {
 	GetWorldTimerManager().ClearTimer(Timer_Raycasting);
+	K2_StopWeaponTrace();
 }
 
 void AMeleeWeapon::Internal_CheckForCollisionHit()

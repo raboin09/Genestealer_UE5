@@ -72,8 +72,8 @@ private:
 
 	int32 CurrentChargeState = -1;
 
+	UPROPERTY()
 	FTimerHandle TimerHandle_DelayChargeAudio;
-
 	UPROPERTY()
 	UAudioComponent* ChargingAudio;
 	UPROPERTY()

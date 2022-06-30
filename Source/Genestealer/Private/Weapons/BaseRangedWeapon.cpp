@@ -154,8 +154,7 @@ void ABaseRangedWeapon::Internal_PlayShellEffects() const
 	const FTransform SpawnTransform = NextFiringMesh->GetSocketTransform(ShellSpawnSocket);	
 	if(ShellFXClass->IsA(UParticleSystem::StaticClass()))
 	{
-		UParticleSystemComponent* ShellFXSystem = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(ShellFXClass), SpawnTransform.GetLocation(), SpawnTransform.Rotator());
-		if(ShellFXSystem)
+		if(UParticleSystemComponent* ShellFXSystem = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(ShellFXClass), SpawnTransform.GetLocation(), SpawnTransform.Rotator()))
 		{
 			ShellFXSystem->OnParticleCollide.AddDynamic(this, &ABaseRangedWeapon::HandleShellParticleCollision);
 		}
@@ -530,7 +529,13 @@ FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirect
 	AAIController* AIPC = GetInstigator() ? Cast<AAIController>(GetInstigator()->Controller) : nullptr;
 	FVector OutStartTrace = FVector::ZeroVector;
 
-	if(!bAimOriginIsPlayerEyesInsteadOfWeapon)
+	bool bShouldEyeTrace = false;
+	if (const IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
+	{
+		bShouldEyeTrace = AnimationOwner->IsAiming() && bAimOriginIsPlayerEyesInsteadOfWeapon;
+	}
+	
+	if(!bShouldEyeTrace)
 	{
 		OutStartTrace = GetRaycastOriginLocation();
 	}
