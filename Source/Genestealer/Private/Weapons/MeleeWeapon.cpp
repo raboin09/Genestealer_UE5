@@ -3,6 +3,7 @@
 
 #include "Weapons/MeleeWeapon.h"
 
+#include "API/AIPawn.h"
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -139,9 +140,10 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		const FVector EndTrace = MeshComponentRef->GetSocketLocation(FName(Key));
 		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
-		if(Hit.bBlockingHit && bIsActive && !HitActors.Contains(Hit.GetActor()))
+		AActor* HitActor = Hit.GetActor();
+		if(Hit.bBlockingHit && bIsActive && HitActor && !HitActors.Contains(Hit.GetActor()))
 		{
-			if(IsWeaponPlayerControlled())
+			if(IsWeaponPlayerControlled() && HitActor->GetClass()->ImplementsInterface(UAIPawn::StaticClass()))
 			{
 				K2_PlayHitEffects();
 			}
