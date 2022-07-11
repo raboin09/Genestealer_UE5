@@ -24,6 +24,9 @@ public class RD : ModuleRules
 #if UE_4_24_OR_LATER
 		ShadowVariableWarningLevel = WarningLevel.Off;
 		bUseUnity = false;
+#else
+		bEnableShadowVariableWarnings = false;
+		bFasterWithoutUnity = true;
 #endif
 
 		PublicDefinitions.Add("_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS");

@@ -35,6 +35,7 @@ protected:
 	FORCEINLINE virtual float SimulateWeaponFire() override { return 0.f; }
 	virtual void StartFire() override;
 	virtual void StopFire() override;
+	virtual void OnUnEquip() override;
 	
 	///////////////////////////////////////////
 	/// AMeleeWeapon code

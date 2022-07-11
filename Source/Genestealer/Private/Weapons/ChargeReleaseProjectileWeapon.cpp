@@ -5,6 +5,8 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Actors/BaseOverlapProjectile.h"
 #include "Components/AudioComponent.h"
+#include "Core/AudioManager.h"
+#include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -79,7 +81,15 @@ void AChargeReleaseProjectileWeapon::Internal_TryIncreaseChargeState()
 void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 {
 	Internal_PlayChargeBlastVFX();
-	PlayWeaponSound(FireFinishSound);
+	if (FireFinishSound && OwningPawn)
+	{
+		constexpr float PitchStep = .15f;
+		constexpr float BasePitch = .75f;
+		const float PitchMod = BasePitch + (MaxChargedState * PitchStep);
+		FireFinishSound->PitchMultiplier = PitchMod - (CurrentChargeState * PitchStep);
+		UAudioManager::SpawnSoundAttached(FireFinishSound, OwningPawn->GetRootComponent());
+	}
+	
 	if(ChargingNiagara)
 	{
 		ChargingNiagara->Deactivate();

@@ -107,6 +107,11 @@ TSubclassOf<AActor> UInventoryComponent::GetPrimaryWeaponClass() const
 
 void UInventoryComponent::EquipAlternateWeapon()
 {
+	if(PrimaryWeapon)
+	{
+		PrimaryWeapon->StopFire();
+	}
+	
 	if(AlternateWeapon)
 	{
 		Internal_SetCurrentWeapon(AlternateWeapon, CurrentWeapon);

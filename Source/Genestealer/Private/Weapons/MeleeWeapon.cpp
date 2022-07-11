@@ -75,6 +75,13 @@ void AMeleeWeapon::StopFire()
 	
 }
 
+void AMeleeWeapon::OnUnEquip()
+{
+	Super::OnUnEquip();
+	Internal_StopAttack();
+	StopWeaponAnimation(FireAnim);
+}
+
 void AMeleeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -172,6 +179,7 @@ void AMeleeWeapon::Internal_SetCurrentSocketLocations()
 
 void AMeleeWeapon::Internal_StartAttack()
 {
+	K2_OnFireWeapon();
 	GetTagContainer().AddTag(TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);

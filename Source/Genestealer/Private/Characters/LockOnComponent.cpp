@@ -33,19 +33,19 @@ void ULockOnComponent::BeginPlay()
 }
 
 void ULockOnComponent::InterpToBestTargetForMeleeAttack()
-{
-	if(AActor* SourceActor = GetOwner(); bUseControllerRotation)
-	{
-		SourceActor->SetActorRotation(Internal_GetControllerAndActorBlendedRotation(SourceActor));
-	}
-	
+{	
 	SelectedActor = Internal_TraceForTarget();
 	if(!SelectedActor)
 	{
 		return;
+	}
+	
+	if(AActor* SourceActor = GetOwner(); bUseControllerRotation)
+	{
+		SourceActor->SetActorRotation(Internal_GetControllerAndActorBlendedRotation(SourceActor));
+		TargetActorRotation = UKismetMathLibrary::FindLookAtRotation(SourceActor->GetActorLocation(), SelectedActor->GetActorLocation());
 	}	
 	TargetActorLocation = SelectedActor->GetActorLocation();
-	TargetActorRotation = GetOwner()->GetActorRotation();
 	Internal_StartInterpTransition();
 }
 
