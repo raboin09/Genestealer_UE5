@@ -19,4 +19,8 @@ class GENESTEALER_API UActivateWeapon_NotifyState : public UAnimNotifyState
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 	UObject* Internal_GetActivatableAbilityFromOwner(const USkeletalMeshComponent* MeshComp) const;
+
+protected:
+	UPROPERTY(EditAnywhere, Category="Genestealer", meta=(MustImplement="Effect"))
+	TArray<TSubclassOf<AActor>> ActivationEffects;
 };

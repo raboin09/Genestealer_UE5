@@ -67,6 +67,7 @@ public:
 	virtual bool CanFire() const PURE_VIRTUAL(IWeapon::CanFire, return false;);
 	virtual bool CanReload() PURE_VIRTUAL(IWeapon::CanReload, return false;);
 
+	UFUNCTION(BlueprintCallable, Category="Genestealer")
 	virtual UMeshComponent* GetWeaponMesh() const PURE_VIRTUAL(IWeapon::GetWeaponMesh, return nullptr;);
 	virtual UMeshComponent* GetSecondaryWeaponMesh() const PURE_VIRTUAL(IWeapon::GetSecondaryWeaponMesh, return nullptr;);
 	
@@ -76,6 +77,6 @@ public:
 	virtual void StartWeaponRagdoll(bool bSpawnPickup = true) PURE_VIRTUAL(IWeapon::StartWeaponRagdoll,);
 	virtual void DestroyWeapon() PURE_VIRTUAL(IWeapon::DestroyWeapon,);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Genestealer")
 	virtual float GetWeaponRange() PURE_VIRTUAL(IWeapon::GetWeaponRange, return 0.f;)  
 };

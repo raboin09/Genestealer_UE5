@@ -4,6 +4,7 @@
 #include "Weapons/MeleeWeapon.h"
 
 #include "API/AIPawn.h"
+#include "Characters/LockOnComponent.h"
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -11,8 +12,9 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
-void AMeleeWeapon::Activate()
+void AMeleeWeapon::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
+	AdditionalEffectsToApply = ActivationEffects;
 	if (!bIsActive) {
 		HitActors.Empty();
 		bIsActive = true;
@@ -22,7 +24,9 @@ void AMeleeWeapon::Activate()
 
 void AMeleeWeapon::Deactivate()
 {
-	if (bIsActive) {
+	AdditionalEffectsToApply.Empty();
+	if(bIsActive)
+	{
 		Internal_StopAttack();
 	}
 }
@@ -36,27 +40,27 @@ void AMeleeWeapon::EnableComboWindow()
 void AMeleeWeapon::DisableComboWindow()
 {
 	GetTagContainer().RemoveTag(TAG_STATE_COMBO_WINDOW_ENABLED);
-	if(!GetTagContainer().HasTag(TAG_STATE_COMBO_ACTIVATED))
+	if(GetTagContainer().HasTag(TAG_STATE_COMBO_ACTIVATED))
 	{
-		ComboSectionIncrement = 1;
+		HitActors.Empty();
+		GetTagContainer().RemoveTag(TAG_STATE_COMBO_ACTIVATED);
+		Internal_StartAttack();
+	}
+	else {
+		Internal_ResetComboCounter();
 	}
 }
 
 void AMeleeWeapon::StartFire()
 {	
-	if (IsWeaponOnCooldown())
-	{
-		return;
-	}
-	
-	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED))
+	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED) && !bIsActive)
 	{
 		Internal_StartAttack();
 		return;
 	}
-	
+
 	if(GetTagContainer().HasTag(TAG_STATE_COMBO_WINDOW_ENABLED))
-	{
+	{		
 		GetTagContainer().AddTag(TAG_STATE_COMBO_ACTIVATED);
 		GetTagContainer().RemoveTag(TAG_STATE_COMBO_WINDOW_ENABLED);
 		if(ComboSectionIncrement >= MaxComboSections)
@@ -66,7 +70,6 @@ void AMeleeWeapon::StartFire()
 		{
 			ComboSectionIncrement++;
 		}
-		Internal_StartAttack();
 	}
 }
 
@@ -102,10 +105,6 @@ FAnimMontagePlayData AMeleeWeapon::Internal_GetPlayData() const
 {
 	FAnimMontagePlayData PlayData;	
 	PlayData.MontageToPlay = FireAnim;
-	// if(OwningPawn && OwningPawn->IsPlayerControlled())
-	// {
-	// 	PlayData.bForceInPlace = true;
-	// }
 	PlayData.MontageSection = Internal_GetNextMontageSection();
 	return PlayData;
 }
@@ -155,7 +154,9 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 				K2_PlayHitEffects();
 			}
 			HitActors.Add(Hit.GetActor());
-			UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, Hit, GetInstigator());
+			TArray<TSubclassOf<AActor>> EffectsToApply = WeaponEffects;
+			EffectsToApply.Append(AdditionalEffectsToApply);
+			UEffectUtils::ApplyEffectsToHitResult(EffectsToApply, Hit, GetInstigator());
 			break;
 		}
 	}
@@ -184,7 +185,10 @@ void AMeleeWeapon::Internal_StartAttack()
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);
 	PlayWeaponSound(FireSound);
-	LastFireTime = GetWorld()->GetTimeSeconds();
+	if(ULockOnComponent* LockOnComponent = GetOwningPawn()->FindComponentByClass<ULockOnComponent>(); IsWeaponPlayerControlled())
+	{
+		LockOnComponent->InterpToBestTargetForMeleeAttack();
+	}
 }
 
 void AMeleeWeapon::Internal_StopAttack()

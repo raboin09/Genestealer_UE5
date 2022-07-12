@@ -122,12 +122,29 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 	SetInCombat(true, EventPayload.InstigatingActor);
 	GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
-
-	if(EventPayload.DamageHitReactEvent.bOnlyHitReactOnDeath)
+	
+	if(IsAlive())
+	{
+		if(IsPlayerControlled() && GetCurrentPlayingMontage())
+		{
+			LastKnownHitReact = EHitReactType::None;	
+		} else
+		{
+			LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;	
+		}
+	} else
+	{
+		if(EventPayload.DamageHitReactEvent.DeathReactType == EHitReactType::None)
+		{
+			LastKnownHitReact = EventPayload.DamageHitReactEvent.DeathReactType == EHitReactType::None ? EventPayload.DamageHitReactEvent.HitReactType : EventPayload.DamageHitReactEvent.DeathReactType;
+		}
+	}
+	
+	if(LastKnownHitReact == EHitReactType::None)
 	{
 		return;
-	}	
-	LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;
+	}
+	
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
 		if(!GetTagContainer().HasTag(TAG_STATE_IMMOVABLE) || !IsAlive())
@@ -175,8 +192,14 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 	
 	const TScriptInterface<IWeapon> NewWeapon = CurrentWeaponChangedPayload.NewWeapon;
 	if(!NewWeapon || !NewWeapon->GetWeaponMesh())
-		return;	
-	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("VB RHS_ik_hand_gun"));
+		return;
+
+	auto SocketName = "VB RHS_ik_hand_gun";
+	if(NewWeapon->GetWeaponType() == EWeaponType::Melee)
+	{
+		SocketName = "hand_r";	
+	}
+	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
 	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())
 	{
@@ -304,7 +327,7 @@ void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitRea
 	FAnimMontagePlayData PlayData;
 	PlayData.MontageToPlay = K2_GetHitReactAnimation(Internal_GetHitDirectionTag(HitReactEvent.HitDirection));
 	PlayData.PlayRate = 1.f;
-	PlayData.bShouldBlendOut = false;
+	PlayData.bShouldBlendOut = true;
 	PlayData.MontageSection = FName();
 	ForcePlayAnimMontage(PlayData);
 }

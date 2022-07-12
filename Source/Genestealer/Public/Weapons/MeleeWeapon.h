@@ -21,7 +21,7 @@ public:
 	///////////////////////////////////////////
 	/// IActivatable code
 	///////////////////////////////////////////
-	virtual void Activate() override;
+	virtual void Activate(TArray<TSubclassOf<AActor>> ActivationEffects) override;
 	virtual void Deactivate() override;
 	virtual void EnableComboWindow() override;
 	virtual void DisableComboWindow() override;
@@ -72,7 +72,6 @@ private:
 	void Internal_StartAttack();
 	void Internal_StopAttack();
 	void Internal_ResetComboCounter();
-	void Internal_AttemptRaycast(const FHitResult& HitResult, FVector StartLocation, FVector EndLocation);
 	
 	TMap<FString, FVector> Sockets;
 	FTimerHandle Timer_Raycasting;
@@ -87,4 +86,6 @@ private:
 	bool bIsActive;
 	UPROPERTY(Transient)
 	TArray<AActor*> HitActors;
+	UPROPERTY(Transient) 
+	TArray<TSubclassOf<AActor>> AdditionalEffectsToApply;
 };

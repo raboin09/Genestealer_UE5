@@ -181,7 +181,7 @@ void AALSBaseCharacter::RagdollStart()
 	// Step 3: Stop any active montages.
 	if (GetMesh()->GetAnimInstance())
 	{
-		GetMesh()->GetAnimInstance()->Montage_Stop(0.2f);
+		GetMesh()->GetAnimInstance()->Montage_Stop(0.f);
 	}
 
 	// Fixes character mesh is showing default A pose for a split-second just before ragdoll ends in listen server games

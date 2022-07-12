@@ -13,7 +13,7 @@ void UActivateWeapon_NotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, 
 	{
 		return;
 	}
-	ActivatableAbility->Activate();
+	ActivatableAbility->Activate(ActivationEffects);
 }
 
 void UActivateWeapon_NotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)

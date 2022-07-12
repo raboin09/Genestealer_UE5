@@ -23,7 +23,7 @@ public:
 	///////////////////////////////////////////
 	FORCEINLINE virtual void EnableComboWindow() override{}
 	FORCEINLINE virtual void DisableComboWindow() override{}
-	virtual void Activate() override;
+	virtual void Activate(TArray<TSubclassOf<AActor>> ActivationEffects) override;
 	virtual void Deactivate() override;
 	
 protected:

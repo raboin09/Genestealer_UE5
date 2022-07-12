@@ -41,10 +41,9 @@ void ABaseStatModifier::K2_ApplyStatChange_Implementation(float ModifiedStatValu
 			} else
 			{
 				HitReactEvent.HitDirection = EffectContext.InstigatingActor ?  EffectContext.InstigatingActor->GetActorForwardVector().GetSafeNormal() : FVector::ZeroVector;
-				// HitReactEvent.HitDirection = EffectContext.HitDirection;
 			}
 			HitReactEvent.HitResult = EffectContext.SurfaceHit;
-			HitReactEvent.bOnlyHitReactOnDeath = StatEffectDataObj->bOnlyHitReactOnDeath;
+			HitReactEvent.DeathReactType = StatEffectDataObj->DeathImpulse;
 			HitReactEvent.HitReactType = StatEffectDataObj->HitImpulse;
 			UEffectUtils::TryApplyDamageToActor(EffectContext.ReceivingActor, EffectContext.InstigatingActor, HitReactEvent.DamageTaken, HitReactEvent);
 		}

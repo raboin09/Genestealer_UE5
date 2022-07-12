@@ -37,8 +37,8 @@ struct FDamageHitReactEvent
 	FVector HitDirection;
 	float DamageTaken;
 	FHitResult HitResult;
-	bool bOnlyHitReactOnDeath = true;
 	EHitReactType HitReactType = EHitReactType::None;
+	EHitReactType DeathReactType = EHitReactType::None;
 };
 
 USTRUCT(BlueprintType)

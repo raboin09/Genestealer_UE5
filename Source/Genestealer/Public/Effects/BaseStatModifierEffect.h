@@ -35,8 +35,8 @@ public:
 	float HeadshotModifier = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
 	EHitReactType HitImpulse;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage && HitImpulse != EHitReactType::None", EditConditionHides))
-	bool bOnlyHitReactOnDeath = true;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(EditCondition = "StatToModify == EEffectStatType::Health_Damage", EditConditionHides))
+	EHitReactType DeathImpulse;
 };
 
 /**

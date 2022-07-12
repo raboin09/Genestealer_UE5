@@ -28,7 +28,7 @@ void ASpawnProjectileAbility::Deactivate()
 	Internal_StopAttack();
 }
 
-void ASpawnProjectileAbility::Activate()
+void ASpawnProjectileAbility::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
 	const FVector Origin = GetRaycastOriginLocation();
 	const FVector Direction = GetAdjustedAim();
