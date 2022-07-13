@@ -152,13 +152,15 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	{
 		return;
 	}
+
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE) || !IsAlive())
+	{
+		return;
+	}
 	
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
-		if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE) || !IsAlive())
-		{
-			Internal_TryStartCharacterKnockback(EventPayload.DamageHitReactEvent);
-		}
+		Internal_TryStartCharacterKnockback(EventPayload.DamageHitReactEvent);
 	} else
 	{
 		Internal_TryPlayHitReact(EventPayload.DamageHitReactEvent);
@@ -227,7 +229,15 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
-	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE))
+	{
+		FDamageHitReactEvent NewEvent = DeathEventPayload.HitReactEvent;
+		NewEvent.HitReactType = EHitReactType::Knockback_VeryLight;
+		Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
+	} else
+	{
+		Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
+	}
 	K2_OnDeath();
 	SetLifeSpan(5.f);
 }
