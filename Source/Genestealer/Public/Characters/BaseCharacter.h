@@ -11,6 +11,7 @@
 #include "API/Taggable.h"
 #include "Character/ALSCharacter.h"
 #include "Character/Animation/ALSPlayerCameraBehavior.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
 
@@ -50,13 +51,13 @@ public:
 	FORCEINLINE virtual void SetSprintingGait() override { SetDesiredGait(EALSGait::Sprinting); }
 	FORCEINLINE virtual void SetStanding() override { SetStance(EALSStance::Standing); }
 	FORCEINLINE virtual void SetCrouching() override { SetStance(EALSStance::Crouching); }
-	FORCEINLINE virtual bool IsAiming() const override { return GameplayTagContainer.HasTag(TAG_STATE_AIMING); }
-	FORCEINLINE virtual bool IsFiring() const override { return GameplayTagContainer.HasTag(TAG_STATE_FIRING); }
-	FORCEINLINE virtual bool IsReady() const override { return GameplayTagContainer.HasTag(TAG_STATE_READY); }
-	FORCEINLINE virtual bool IsInCover() const override { return GameplayTagContainer.HasTag(TAG_STATE_IN_COVER); }
-	FORCEINLINE virtual bool IsRagdoll() const override { return GameplayTagContainer.HasTag(TAG_STATE_RAGDOLL); }
+	FORCEINLINE virtual bool IsAiming() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_AIMING); }
+	FORCEINLINE virtual bool IsFiring() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_FIRING); }
+	FORCEINLINE virtual bool IsReady() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_READY); }
+	FORCEINLINE virtual bool IsInCover() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IN_COVER); }
+	FORCEINLINE virtual bool IsRagdoll() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_RAGDOLL); }
 	FORCEINLINE virtual UAnimMontage* GetCurrentPlayingMontage() const override { return GetCurrentMontage(); }
-	FORCEINLINE virtual bool HasRightInput() const override { return GameplayTagContainer.HasTag(TAG_INPUT_RIGHT_MOVEMENT); }
+	FORCEINLINE virtual bool HasRightInput() override { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_INPUT_RIGHT_MOVEMENT); }
 	FORCEINLINE virtual FTransform GetWeaponLeftHandPlacementLocation() const override { return InventoryComponent ? InventoryComponent->GetCurrentWeaponLeftHandSocketTransform() : FTransform(); }
 	
 	////////////////////////////////
@@ -74,19 +75,24 @@ public:
 	////////////////////////////////
 	UFUNCTION()
 	virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
+	virtual void HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded) override;
 
 	////////////////////////////////
 	/// ABaseCharacter
 	////////////////////////////////
 	UFUNCTION(BlueprintCallable, Category = "Genestealer")
-	FORCEINLINE bool IsAlive() const { return !GameplayTagContainer.HasTag(TAG_STATE_DEAD); }
+	FORCEINLINE bool IsAlive() { return !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	FORCEINLINE FCharacterInCombatChanged& OnCharacterInCombatChanged() { return CharacterInCombatChanged; }
 	bool IsInCombat();
 	void SetInCombat(bool bInNewState, AActor* DamageCauser);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, Category = "Genestealer")
 	void K2_OnDeath();
+	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
+	void K2_HandleTagAdded(const FGameplayTag& AddedTag);
+	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
+	void K2_HandleTagRemoved(const FGameplayTag& RemovedTag);
 	
 protected:
 	////////////////////////////

@@ -48,7 +48,7 @@ protected:
 private:
 	FORCEINLINE TArray<TSubclassOf<AActor>> Internal_GetAdditionalEffectsToApplyToProjectile() const { return WeaponEffects; };
 
-	virtual FAnimMontagePlayData GetPlayData() const override;
+	virtual FAnimMontagePlayData GetPlayData() override;
 	void Internal_StartAttack();
 	void Internal_StopAttack();
 	virtual ABaseOverlapProjectile* Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity);

@@ -54,10 +54,10 @@ public:
 	virtual void SetStanding() PURE_VIRTUAL(IAnimatable::SetStanding, )
 	virtual void SetCrouching() PURE_VIRTUAL(IAnimatable::SetCrouching, )
 	
-	virtual bool IsAiming() const PURE_VIRTUAL(IAnimatable::IsAiming, return false;)
-	virtual bool IsFiring() const PURE_VIRTUAL(IAnimatable::IsFiring, return false;)
-	virtual bool IsReady() const PURE_VIRTUAL(IAnimatable::IsReady, return false;)
-	virtual bool IsInCover() const PURE_VIRTUAL(IAnimatable::IsInCover, return false;)
-	virtual bool IsRagdoll() const PURE_VIRTUAL(IAnimatable::IsRagdoll, return false;)
-	virtual bool HasRightInput() const PURE_VIRTUAL(IAnimatable::HasRightInput, return false;)
+	virtual bool IsAiming() PURE_VIRTUAL(IAnimatable::IsAiming, return false;)
+	virtual bool IsFiring() PURE_VIRTUAL(IAnimatable::IsFiring, return false;)
+	virtual bool IsReady() PURE_VIRTUAL(IAnimatable::IsReady, return false;)
+	virtual bool IsInCover() PURE_VIRTUAL(IAnimatable::IsInCover, return false;)
+	virtual bool IsRagdoll() PURE_VIRTUAL(IAnimatable::IsRagdoll, return false;)
+	virtual bool HasRightInput() PURE_VIRTUAL(IAnimatable::HasRightInput, return false;)
 };

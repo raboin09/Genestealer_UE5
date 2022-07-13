@@ -23,7 +23,8 @@ class GENESTEALER_API ITaggable
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual FGameplayTagContainer& GetTagContainer() { return GameplayTagContainer; }
+	virtual FGameplayTagContainer& GetTagContainer() { return GameplayTagContainer; }	
+	virtual void HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded) {}
 
 protected:
 	FGameplayTagContainer GameplayTagContainer;

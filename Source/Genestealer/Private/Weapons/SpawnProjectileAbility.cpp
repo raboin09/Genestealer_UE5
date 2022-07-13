@@ -48,7 +48,7 @@ void ASpawnProjectileAbility::StartFire()
 	}
 }
 
-FAnimMontagePlayData ASpawnProjectileAbility::GetPlayData() const
+FAnimMontagePlayData ASpawnProjectileAbility::GetPlayData()
 {
 	FAnimMontagePlayData PlayData;	
 	PlayData.MontageToPlay = FireAnim;
@@ -57,14 +57,14 @@ FAnimMontagePlayData ASpawnProjectileAbility::GetPlayData() const
 
 void ASpawnProjectileAbility::Internal_StartAttack()
 {
-	GetTagContainer().AddTag(TAG_STATE_ATTACK_COMMITTED);
+	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = GetPlayData();
 	PlayWeaponAnimation(PlayData);
 }
 
 void ASpawnProjectileAbility::Internal_StopAttack()
 {
-	GetTagContainer().RemoveTag(TAG_STATE_ATTACK_COMMITTED);
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ATTACK_COMMITTED);
 }
 
 ABaseOverlapProjectile* ASpawnProjectileAbility::Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity)

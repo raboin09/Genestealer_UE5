@@ -13,6 +13,7 @@
 #include "Sound/SoundCue.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/EffectUtils.h"
+#include "Utils/GameplayTagUtils.h"
 
 ABaseEffect::ABaseEffect()
 {
@@ -47,7 +48,7 @@ void ABaseEffect::Internal_PlayEffectSound()
 {
 	if(K2_GetEffectSound())
 	{
-		UAudioManager::SpawnSoundAtLocation(this, K2_GetEffectSound(), GetActorLocation());
+		UAudioManager::SpawnSoundAtLocation(EffectContext.InstigatingActor, K2_GetEffectSound(), GetActorLocation());
 	}
 }
 
@@ -58,11 +59,11 @@ void ABaseEffect::Internal_PlayEffectParticleSystem()
 	{
 		if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
 		{
-			EffectVFX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, CastedNiagaraSystem, GetActorLocation(), GetActorRotation());
+			EffectVFX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(EffectContext.InstigatingActor, CastedNiagaraSystem, GetActorLocation(), GetActorRotation());
 		}
 		else if(UParticleSystem* CastedParticleSystem = Cast<UParticleSystem>(K2_GetEffectParticleSystem()))
 		{
-			EffectVFX = UGameplayStatics::SpawnEmitterAtLocation(this, CastedParticleSystem, GetActorLocation(), GetActorRotation());
+			EffectVFX = UGameplayStatics::SpawnEmitterAtLocation(EffectContext.InstigatingActor, CastedParticleSystem, GetActorLocation(), GetActorRotation());
 		}
 	} else
 	{
@@ -87,8 +88,8 @@ void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Activation()
 	{
 		return;
 	}
-	TaggableReceiver->GetTagContainer().AppendTags(FGameplayTagContainer::CreateFromArray(GetEffectInitializationData().TagsToApply));
-	TaggableReceiver->GetTagContainer().RemoveTags(FGameplayTagContainer::CreateFromArray(GetEffectInitializationData().TagsToRemove));
+	UGameplayTagUtils::AddTagsToActor(EffectContext.ReceivingActor, GetEffectInitializationData().TagsToApply);
+	UGameplayTagUtils::RemoveTagsFromActor(EffectContext.ReceivingActor, GetEffectInitializationData().TagsToRemove);
 }
 
 void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Deactivation()
@@ -103,7 +104,7 @@ void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Deactivation()
 	{
 		return;
 	}
-	TaggableReceiver->GetTagContainer().RemoveTags(FGameplayTagContainer::CreateFromArray(GetEffectInitializationData().TagsToApply));
+	UGameplayTagUtils::RemoveTagsFromActor(EffectContext.ReceivingActor, GetEffectInitializationData().TagsToApply);
 }
 
 bool ABaseEffect::Internal_IsValidHeadshot() const

@@ -28,7 +28,7 @@ void UBaseAnimInstance::DisableRootMotionModeForDuration(float Duration)
 void UBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	if(const IAnimatable* AnimOwner = Cast<IAnimatable>(TryGetPawnOwner()))
+	if(IAnimatable* AnimOwner = Cast<IAnimatable>(TryGetPawnOwner()))
 	{
 		bFiring = AnimOwner->IsFiring();
 		bIsInCover = AnimOwner->IsInCover();

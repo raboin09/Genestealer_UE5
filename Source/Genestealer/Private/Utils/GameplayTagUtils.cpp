@@ -39,6 +39,20 @@ void UGameplayTagUtils::AddTagToActor(AActor* InActor, FGameplayTag InTag)
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
 		CastedActor->GetTagContainer().AddTag(InTag);
+		CastedActor->HandleTagChanged(InTag, true);
+	}
+}
+
+void UGameplayTagUtils::AddTagsToActor(AActor* InActor, TArray<FGameplayTag> InTags)
+{
+	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
+	{
+		CastedActor->GetTagContainer().AppendTags(FGameplayTagContainer::CreateFromArray(InTags));
+		for(FGameplayTag Tag : InTags)
+		{
+			UKismetSystemLibrary::PrintString(InActor, Tag.ToString());
+			CastedActor->HandleTagChanged(Tag, true);
+		}
 	}
 }
 
@@ -46,7 +60,11 @@ void UGameplayTagUtils::RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag
 {
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
-		return CastedActor->GetTagContainer().RemoveTags(FGameplayTagContainer::CreateFromArray(InTags));
+		CastedActor->GetTagContainer().RemoveTags(FGameplayTagContainer::CreateFromArray(InTags));
+		for(FGameplayTag Tag : InTags)
+		{
+			CastedActor->HandleTagChanged(Tag, false);
+		}
 	}
 }
 
@@ -55,5 +73,6 @@ void UGameplayTagUtils::RemoveTagFromActor(AActor* InActor, FGameplayTag InTag)
 	if(ITaggable* CastedActor = Cast<ITaggable>(InActor))
 	{
 		CastedActor->GetTagContainer().RemoveTag(InTag);
+		CastedActor->HandleTagChanged(InTag, false);
 	}
 }

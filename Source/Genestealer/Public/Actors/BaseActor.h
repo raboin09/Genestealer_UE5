@@ -20,9 +20,15 @@ public:
 	////////////////////////////////
 	UFUNCTION()
 	virtual FGameplayTagContainer& GetTagContainer() override { return GameplayTagContainer; }
-
+	virtual void HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded) override;
+	
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
+	void K2_HandleTagAdded(const FGameplayTag& AddedTag);
+	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
+	void K2_HandleTagRemoved(const FGameplayTag& RemovedTag);
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	TArray<FGameplayTag> DefaultGameplayTags;

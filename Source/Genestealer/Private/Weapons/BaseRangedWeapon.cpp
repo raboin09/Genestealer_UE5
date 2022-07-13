@@ -212,7 +212,7 @@ UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 	return NiagaraFX;
 }
 
-FAnimMontagePlayData ABaseRangedWeapon::GetPlayData() const
+FAnimMontagePlayData ABaseRangedWeapon::GetPlayData()
 {
 	// if not akimbo, if in cover return 
 	
@@ -264,18 +264,18 @@ void ABaseRangedWeapon::Internal_AlternateFiringMesh()
 	}
 }
 
-bool ABaseRangedWeapon::Internal_IsInCover() const
+bool ABaseRangedWeapon::Internal_IsInCover()
 {
-	if(const IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
+	if(IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
 	{
 		return AnimOwner->IsInCover();
 	}
 	return false;
 }
 
-bool ABaseRangedWeapon::Internal_HasRightInput() const
+bool ABaseRangedWeapon::Internal_HasRightInput()
 {
-	if(const IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
+	if(IAnimatable* AnimOwner = Cast<IAnimatable>(OwningPawn))
 	{
 		return AnimOwner->HasRightInput();
 	}
@@ -530,7 +530,7 @@ FVector ABaseRangedWeapon::GetCameraDamageStartLocation(const FVector& AimDirect
 	FVector OutStartTrace = FVector::ZeroVector;
 
 	bool bShouldEyeTrace = false;
-	if (const IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
+	if (IAnimatable* AnimationOwner = Cast<IAnimatable>(OwningPawn))
 	{
 		bShouldEyeTrace = AnimationOwner->IsAiming() && bAimOriginIsPlayerEyesInsteadOfWeapon;
 	}

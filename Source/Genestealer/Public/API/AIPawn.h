@@ -24,7 +24,7 @@ class GENESTEALER_API IAIPawn
 
 public:
 	virtual class UBehaviorTree* GetAIBehavior() const PURE_VIRTUAL(IAIPawn::GetAIBehavior, return nullptr;)
-	virtual bool IsAIFiring() const PURE_VIRTUAL(IAIPawn::IsAIFiring, return false;)
+	virtual bool IsAIFiring() PURE_VIRTUAL(IAIPawn::IsAIFiring, return false;)
 	UFUNCTION(BlueprintCallable)
 	virtual void FireWeapon(bool bStartFiring) PURE_VIRTUAL(IAIPawn::FireWeapon, )
 	virtual void Aim(bool bStartAiming) PURE_VIRTUAL(IAIPawn::Aim, )

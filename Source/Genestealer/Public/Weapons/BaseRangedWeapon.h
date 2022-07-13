@@ -91,7 +91,7 @@ protected:
 
 	UPROPERTY(Transient)
 	UAnimMontage* CurrentMontage;
-	virtual FAnimMontagePlayData GetPlayData() const;
+	virtual FAnimMontagePlayData GetPlayData();
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
 	UTexture2D* Crosshair;
@@ -198,8 +198,8 @@ private:
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
 	UFUNCTION()
 	void Internal_AlternateFiringMesh();
-	bool Internal_IsInCover() const;
-	bool Internal_HasRightInput() const;
+	bool Internal_IsInCover();
+	bool Internal_HasRightInput();
 	
 	UPROPERTY(Transient)
 	bool bSecondaryWeaponsTurn;

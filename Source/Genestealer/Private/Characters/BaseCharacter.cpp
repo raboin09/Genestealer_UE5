@@ -68,7 +68,7 @@ void ABaseCharacter::Tick(float DeltaSeconds)
 void ABaseCharacter::RagdollEnd()
 {
 	Super::RagdollEnd();
-	GameplayTagContainer.RemoveTag(TAG_STATE_RAGDOLL);
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_RAGDOLL);
 	InitCapsuleCollisionDefaults();
 	InitMeshCollisionDefaults();
 }
@@ -76,7 +76,15 @@ void ABaseCharacter::RagdollEnd()
 void ABaseCharacter::RagdollStart()
 {
 	Super::RagdollStart();
-	GameplayTagContainer.AddTag(TAG_STATE_RAGDOLL);
+	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_RAGDOLL);
+}
+
+void ABaseCharacter::K2_HandleTagRemoved_Implementation(const FGameplayTag& AddedTag)
+{
+}
+
+void ABaseCharacter::K2_HandleTagAdded_Implementation(const FGameplayTag& AddedTag)
+{
 }
 
 void ABaseCharacter::BeginPlay()
@@ -147,7 +155,7 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
 	{
-		if(!GetTagContainer().HasTag(TAG_STATE_IMMOVABLE) || !IsAlive())
+		if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE) || !IsAlive())
 		{
 			Internal_TryStartCharacterKnockback(EventPayload.DamageHitReactEvent);
 		}
@@ -216,7 +224,7 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	
 	ClearHeldObject();
 	
-	GameplayTagContainer.AddTag(TAG_STATE_DEAD);
+	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_DEAD);
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
 	Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
@@ -366,16 +374,16 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 {
 	if(Value > 0.f)
 	{
-		GetTagContainer().AddTag(TAG_INPUT_RIGHT_MOVEMENT);
-		GetTagContainer().RemoveTag(TAG_INPUT_LEFT_MOVEMENT);
+		UGameplayTagUtils::AddTagToActor(this, TAG_INPUT_RIGHT_MOVEMENT);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_INPUT_LEFT_MOVEMENT);
 	} else if(Value < 0.f)
 	{
-		GetTagContainer().AddTag(TAG_INPUT_LEFT_MOVEMENT);
-		GetTagContainer().RemoveTag(TAG_INPUT_RIGHT_MOVEMENT);
+		UGameplayTagUtils::AddTagToActor(this, TAG_INPUT_LEFT_MOVEMENT);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_INPUT_RIGHT_MOVEMENT);
 	} else
 	{
-		GetTagContainer().RemoveTag(TAG_INPUT_LEFT_MOVEMENT);
-		GetTagContainer().RemoveTag(TAG_INPUT_RIGHT_MOVEMENT);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_INPUT_LEFT_MOVEMENT);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_INPUT_RIGHT_MOVEMENT);
 	}
 
 	const TArray BaseTagsToCheck = {TAG_COVER_ROLLEDOUT, TAG_STATE_STUNNED};
@@ -425,7 +433,7 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			}
 		}
 		
-		GameplayTagContainer.AddTag(TAG_STATE_FIRING);
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_FIRING);
 		GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 		if(!GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
 		{
@@ -445,7 +453,7 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			}
 		}
 		
-		GameplayTagContainer.RemoveTag(TAG_STATE_FIRING);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_FIRING);
 		if(GetTagContainer().HasTag(TAG_STATE_IN_COMBAT))
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
@@ -477,7 +485,7 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 	        return;
 	    }
 	    
-		GameplayTagContainer.AddTag(TAG_STATE_AIMING);
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_AIMING);
 		if(IsMounted())
 		{
 			CurrentMount->StartMountedAim();
@@ -487,7 +495,7 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 		}
 	} else
 	{
-		GameplayTagContainer.RemoveTag(TAG_STATE_AIMING);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_AIMING);
 		if(IsFiring() && !IsMounted())
 		{
 			SetAimingMode(true, true);
@@ -574,12 +582,24 @@ void ABaseCharacter::Internal_CoverDodgeTryEnd()
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()
 {
-	GameplayTagContainer.AppendTags(FGameplayTagContainer::CreateFromArray(DefaultGameplayTags));
+	UGameplayTagUtils::AddTagsToActor(this, DefaultGameplayTags);
 }
 
 void ABaseCharacter::Internal_SetOutOfCombat()
 {
 	SetInCombat(false, nullptr);
+}
+
+void ABaseCharacter::HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded)
+{
+	if(bAdded)
+	{
+		K2_HandleTagAdded(ChangedTag);
+	}
+	else
+	{
+		K2_HandleTagRemoved(ChangedTag);
+	}
 }
 
 bool ABaseCharacter::IsInCombat()
@@ -597,10 +617,10 @@ void ABaseCharacter::SetInCombat(bool bInNewState, AActor* DamageCauser)
 {
 	if(bInNewState)
 	{
-		GetTagContainer().AddTag(TAG_STATE_IN_COMBAT);
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_IN_COMBAT);
 	} else
 	{
-		GetTagContainer().RemoveTag(TAG_STATE_IN_COMBAT);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_IN_COMBAT);
 	}
 	
 	if(IsAlive())

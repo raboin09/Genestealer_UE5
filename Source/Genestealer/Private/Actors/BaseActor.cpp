@@ -19,6 +19,26 @@ void ABaseActor::BeginPlay()
 	UQuestManagerComponent::TryAddActorToActiveQuests(this);
 }
 
+void ABaseActor::HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded)
+{
+	if(bAdded)
+	{
+		K2_HandleTagAdded(ChangedTag);
+	}
+	else
+	{
+		K2_HandleTagRemoved(ChangedTag);
+	}
+}
+
+void ABaseActor::K2_HandleTagRemoved_Implementation(const FGameplayTag& AddedTag)
+{
+}
+
+void ABaseActor::K2_HandleTagAdded_Implementation(const FGameplayTag& AddedTag)
+{
+}
+
 void ABaseActor::Internal_AddDefaultTagsToContainer()
 {
 	for(const FGameplayTag CurrentTag : DefaultGameplayTags)

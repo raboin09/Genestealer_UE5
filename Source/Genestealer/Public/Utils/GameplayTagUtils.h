@@ -21,6 +21,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void AddTagToActor(AActor* InActor, FGameplayTag InTag);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
+	static void AddTagsToActor(AActor* InActor, TArray<FGameplayTag> InTags);
+	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void RemoveTagsFromActor(AActor* InActor, TArray<FGameplayTag> InTags);
 	UFUNCTION(BlueprintCallable, Category="Genestealer|GameplayTagUtils")
 	static void RemoveTagFromActor(AActor* InActor, FGameplayTag InTag);
