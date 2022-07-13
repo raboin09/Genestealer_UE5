@@ -359,6 +359,16 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 	UAudioComponent* AC = nullptr;
 	if (Sound && OwningPawn)
 	{
+		if(const ABasePlayerCharacter* PlayerCharacter = UCoreUtils::GetPlayerCharacter(this); !IsWeaponPlayerControlled())
+		{
+			if(PlayerCharacter->GetDistanceTo(this) <= 1000)
+			{
+				Sound->VolumeMultiplier = .5f;
+			} else
+			{
+				Sound->VolumeMultiplier = 1.f;
+			}
+		}
 		AC = UAudioManager::SpawnSoundAttached(Sound, OwningPawn->GetRootComponent());
 	}
 	return AC;
