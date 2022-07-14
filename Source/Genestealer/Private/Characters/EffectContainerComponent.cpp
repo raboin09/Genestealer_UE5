@@ -39,7 +39,7 @@ void UEffectContainerComponent::TryApplyEffectToContainer(TSubclassOf<AActor> Ba
 void UEffectContainerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	AActor* OwnerActor = GetOwner();
+	const AActor* OwnerActor = GetOwner();
 	if (OwnerActor && OwnerActor->GetClass()->ImplementsInterface(UTaggable::StaticClass()))
 	{
 		TScriptInterface<ITaggable> TaggableVar;
@@ -62,12 +62,12 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 		SpawnTransform = FTransform(UCombatUtils::GetRotationFromComponentHit(Impact), Impact.ImpactPoint);
 	}
 
-	ABaseEffect* EffectActor = UWorldUtils::SpawnActorToWorld_Deferred<ABaseEffect>(ContextObject, BaseEffectClass);
+	ABaseEffect* EffectActor = UWorldUtils::SpawnActorToWorld_Deferred<ABaseEffect>(ContextObject, BaseEffectClass,InstigatingActor, Cast<APawn>(InstigatingActor));
 	if (!EffectActor)
 	{
 		return nullptr;
 	}
-	EffectActor->SetInstigator(Cast<APawn>(InstigatingActor));
+
 	FEffectContext EffectContext;
 	EffectContext.InstigatingActor = InstigatingActor;
 	EffectContext.ReceivingActor = Impact.GetActor();
@@ -231,7 +231,7 @@ void UEffectContainerComponent::StartTicking()
 		return;
 	}
 	
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if (!World)
 	{
 		return;
@@ -242,7 +242,7 @@ void UEffectContainerComponent::StartTicking()
 
 void UEffectContainerComponent::StopTicking()
 {
-	UWorld* World = GetWorld();
+	const UWorld* World = GetWorld();
 	if (!World)
 	{
 		return;

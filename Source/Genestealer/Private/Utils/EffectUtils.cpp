@@ -20,7 +20,7 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 	}
 
 	TArray<FHitResult> HitResults;
-	UKismetSystemLibrary::SphereTraceMulti(InstigatingActor, TraceLocation, TraceLocation, TraceRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), true, {}, EDrawDebugTrace::ForDuration, HitResults, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+	UKismetSystemLibrary::SphereTraceMulti(InstigatingActor, TraceLocation, TraceLocation, TraceRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), true, {}, EDrawDebugTrace::None, HitResults, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 
 	TArray<AActor*> AllHitActors;
 	for(FHitResult SumHit : HitResults)
@@ -58,7 +58,7 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 			AllHitActors.Remove(CurrActor);
 
 			FHitResult ValidationLineTraceHit;
-			UKismetSystemLibrary::LineTraceSingle(InstigatingActor, ValidationTraceStartLocation, MeshComponent->GetSocketLocation(HitValidationBone), ValidationTraceType, true, AllHitActors, EDrawDebugTrace::ForDuration, ValidationLineTraceHit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+			UKismetSystemLibrary::LineTraceSingle(InstigatingActor, ValidationTraceStartLocation, MeshComponent->GetSocketLocation(HitValidationBone), ValidationTraceType, true, AllHitActors, EDrawDebugTrace::None, ValidationLineTraceHit, true, FLinearColor::Red, FLinearColor::Green, 15.f);
 			if(ValidationLineTraceHit.bBlockingHit)
 			{
 				ApplyEffectsToHitResult(EffectsToApply, ValidationLineTraceHit, InstigatingActor);
@@ -125,12 +125,12 @@ void UEffectUtils::ApplyEffectToHitResult(TSubclassOf<AActor> BaseEffectClass, c
 {
 	if (!InstigatingActor)
 	{
-		UKismetSystemLibrary::PrintString(InstigatingActor, "Bad Inst");	
+		return;
 	}
 
 	if (!BaseEffectClass)
 	{
-		UKismetSystemLibrary::PrintString(InstigatingActor, "Bad Class");	
+		return;
 	}
 	
 	if (!InstigatingActor || !BaseEffectClass)

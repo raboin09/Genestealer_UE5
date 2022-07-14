@@ -30,8 +30,6 @@ protected:
 
 private:
 	void Internal_ExplodeAllActorsInRadius();
-	bool Internal_TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor);
-	FHitResult Internal_TraceToLocation(const FVector& StartTrace, const FVector& EndTrace) const;
 
 	UPROPERTY(Transient)
 	bool bExplodedAlready = false;
