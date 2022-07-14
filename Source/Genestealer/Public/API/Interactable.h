@@ -31,6 +31,6 @@ class GENESTEALER_API IInteractable
 
 public:
 	virtual EAffiliation GetInteractableAffiliation() const PURE_VIRTUAL(IInteractable::GetInteractableAffiliation, return EAffiliation::Neutral;)
-	virtual void SwitchOutlineOnMesh(bool bShouldOutline) PURE_VIRTUAL(IInteractableInterface::SwitchOutlineOnMesh, );
-	virtual void InteractWithActor(AActor* InstigatingActor) PURE_VIRTUAL(IInteractableInterface::InteractWithActor, );
+	virtual void SwitchOutlineOnMesh(bool bShouldOutline) PURE_VIRTUAL(IInteractable::SwitchOutlineOnMesh, );
+	virtual void InteractWithActor(AActor* InstigatingActor) PURE_VIRTUAL(IInteractable::InteractWithActor, );
 };

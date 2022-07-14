@@ -15,26 +15,22 @@
 ABaseOverlapProjectile::ABaseOverlapProjectile() 
 {
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
-	MovementComp->UpdatedComponent = CollisionComp;
+	MovementComp->UpdatedComponent = SummonedMesh;
 	MovementComp->InitialSpeed = 2000.0f;
 	MovementComp->MaxSpeed = 2000.0f;
 	MovementComp->bRotationFollowsVelocity = true;
-	MovementComp->ProjectileGravityScale = 0.f;
-
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComp->SetCollisionProfileName("BlockAllDynamic");
-	CollisionComp->SetCollisionObjectType(GENESTEALER_OBJECT_TYPE_PROJECTILE);
-	CollisionComp->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
-	CollisionComp->InitSphereRadius(5.0f);
-	CollisionComp->bTraceComplexOnMove = true;
-	SetRootComponent(CollisionComp);
+	MovementComp->ProjectileGravityScale = 0.f;	
 
 	SummonedMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SummonedMesh"));
+	SummonedMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SummonedMesh->SetCollisionProfileName("BlockAllDynamic");
+	SummonedMesh->SetCollisionObjectType(GENESTEALER_OBJECT_TYPE_PROJECTILE);
+	SummonedMesh->SetCollisionResponseToChannel(GENESTEALER_OBJECT_TYPE_PROJECTILE, ECR_Ignore);
 	SummonedMesh->SetupAttachment(RootComponent);
 	SummonedMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SummonedMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-
+	SetRootComponent(SummonedMesh);
+	
 	ParticleComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleComp"));
 	ParticleComp->bAutoActivate = true;
 	ParticleComp->SetupAttachment(SummonedMesh);
@@ -67,11 +63,7 @@ void ABaseOverlapProjectile::PostInitializeComponents()
 	{
 		MovementComp->OnProjectileStop.AddDynamic(this, &ABaseOverlapProjectile::OnImpact);
 	}
-	if(CollisionComp)
-	{
-		CollisionComp->IgnoreActorWhenMoving(GetInstigator(), true);
-		CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
-	}
+	
 	if(NiagaraSystem && GetOwner())
 	{
 		NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(NiagaraSystem, SummonedMesh, "", FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);

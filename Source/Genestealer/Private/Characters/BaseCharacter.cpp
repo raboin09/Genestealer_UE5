@@ -2,6 +2,7 @@
 
 #include "Characters/BaseCharacter.h"
 
+#include "API/Activatable.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
@@ -133,12 +134,18 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	
 	if(IsAlive())
 	{
+		const auto HitReactType = EventPayload.DamageHitReactEvent.HitReactType; 
 		if(IsPlayerControlled() && GetCurrentPlayingMontage())
 		{
-			LastKnownHitReact = EHitReactType::None;	
+			if(HitReactType == EHitReactType::Knockback_VeryLight
+				|| HitReactType == EHitReactType::Knockback_Light
+				|| HitReactType == EHitReactType::HitReact_Light)
+			{
+				LastKnownHitReact = EHitReactType::None;
+			}
 		} else
 		{
-			LastKnownHitReact = EventPayload.DamageHitReactEvent.HitReactType;	
+			LastKnownHitReact = HitReactType;	
 		}
 	} else
 	{
@@ -156,6 +163,14 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE) || !IsAlive())
 	{
 		return;
+	}
+
+	if(InventoryComponent)
+	{
+		if(IActivatable* Activatable = Cast<IActivatable>(InventoryComponent->GetEquippedWeapon().GetObject()))
+		{
+			Activatable->ResetActivatable();
+		}
 	}
 	
 	if(UCombatUtils::ShouldHitKnockback(LastKnownHitReact))
@@ -233,7 +248,7 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	{
 		FDamageHitReactEvent NewEvent = DeathEventPayload.HitReactEvent;
 		NewEvent.HitReactType = EHitReactType::Knockback_VeryLight;
-		Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
+		Internal_TryStartCharacterKnockback(NewEvent, false);
 	} else
 	{
 		Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);

@@ -43,8 +43,6 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UParticleSystemComponent* ParticleComp;
 	UPROPERTY(VisibleDefaultsOnly)
-	USphereComponent* CollisionComp;
-	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* SummonedMesh;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> ProjectileEffectsToApply;

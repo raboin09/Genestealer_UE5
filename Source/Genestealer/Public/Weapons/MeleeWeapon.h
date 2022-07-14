@@ -25,6 +25,7 @@ public:
 	virtual void Deactivate() override;
 	virtual void EnableComboWindow() override;
 	virtual void DisableComboWindow() override;
+	virtual void ResetActivatable() override;
 
 protected:
 	///////////////////////////////////////////
@@ -82,8 +83,6 @@ private:
 	UMeshComponent* MeshComponentRef;
 	UPROPERTY(Transient)
 	float MontageLengthInGameTime;
-	UPROPERTY(Transient)
-	bool bIsActive;
 	UPROPERTY(Transient)
 	TArray<AActor*> HitActors;
 	UPROPERTY(Transient) 

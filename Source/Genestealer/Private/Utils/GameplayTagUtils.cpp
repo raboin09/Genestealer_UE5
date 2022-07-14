@@ -50,7 +50,6 @@ void UGameplayTagUtils::AddTagsToActor(AActor* InActor, TArray<FGameplayTag> InT
 		CastedActor->GetTagContainer().AppendTags(FGameplayTagContainer::CreateFromArray(InTags));
 		for(FGameplayTag Tag : InTags)
 		{
-			UKismetSystemLibrary::PrintString(InActor, Tag.ToString());
 			CastedActor->HandleTagChanged(Tag, true);
 		}
 	}

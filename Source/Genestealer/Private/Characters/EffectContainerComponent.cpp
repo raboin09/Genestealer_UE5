@@ -67,7 +67,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstanceFromHit
 	{
 		return nullptr;
 	}
-		
+	EffectActor->SetInstigator(Cast<APawn>(InstigatingActor));
 	FEffectContext EffectContext;
 	EffectContext.InstigatingActor = InstigatingActor;
 	EffectContext.ReceivingActor = Impact.GetActor();
@@ -93,6 +93,7 @@ TScriptInterface<IEffect> UEffectContainerComponent::CreateEffectInstance(TSubcl
 		return nullptr;
 	}
 
+	EffectActor->SetInstigator(Cast<APawn>(InstigatingActor));
 	FEffectContext EffectContext;
 	EffectContext.InstigatingActor = InstigatingActor;
 	EffectContext.ReceivingActor = GetOwner();

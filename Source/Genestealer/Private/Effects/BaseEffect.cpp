@@ -55,7 +55,8 @@ void ABaseEffect::Internal_PlayEffectSound()
 void ABaseEffect::Internal_PlayEffectParticleSystem()
 {
 	const bool bReceivingActorIsPawn = EffectContext.ReceivingActor ? EffectContext.ReceivingActor->IsA(APawn::StaticClass()) : false;
-	if(!EffectDataObj->bAttachVFXToActor || !bReceivingActorIsPawn)
+	const bool bShouldAttachVFX = EffectDataObj ? EffectDataObj->bAttachVFXToActor : false; 
+	if(!bShouldAttachVFX || !bReceivingActorIsPawn)
 	{
 		if(UNiagaraSystem* CastedNiagaraSystem = Cast<UNiagaraSystem>(K2_GetEffectParticleSystem()))
 		{
@@ -83,7 +84,7 @@ void ABaseEffect::Internal_PlayEffectParticleSystem()
 
 void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Activation()
 {
-	ITaggable* TaggableReceiver = Cast<ITaggable>(EffectContext.ReceivingActor);
+	const ITaggable* TaggableReceiver = Cast<ITaggable>(EffectContext.ReceivingActor);
 	if(!TaggableReceiver)
 	{
 		return;
@@ -94,12 +95,12 @@ void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Activation()
 
 void ABaseEffect::Internal_AddAndRemoveTagsFromReceiver_Deactivation()
 {
-	if(!EffectDataObj->EffectData.bShouldReverseEffectsOnDestroy)
+	if(!EffectDataObj || !EffectDataObj->EffectData.bShouldReverseEffectsOnDestroy)
 	{
 		return;
 	}
 	
-	ITaggable* TaggableReceiver = Cast<ITaggable>(EffectContext.ReceivingActor);
+	const ITaggable* TaggableReceiver = Cast<ITaggable>(EffectContext.ReceivingActor);
 	if(!TaggableReceiver)
 	{
 		return;
@@ -141,7 +142,7 @@ void ABaseEffect::DestroyEffect()
 
 UFXSystemAsset* ABaseEffect::K2_GetEffectParticleSystem_Implementation()
 {
-	if(EffectDataObj->ImpactVFXRowHandle.IsNull())
+	if(!EffectDataObj || EffectDataObj->ImpactVFXRowHandle.IsNull())
 	{
 		return nullptr;
 	}
@@ -151,7 +152,7 @@ UFXSystemAsset* ABaseEffect::K2_GetEffectParticleSystem_Implementation()
 
 USoundCue* ABaseEffect::K2_GetEffectSound_Implementation()
 {
-	if(EffectDataObj->ImpactSFXRowHandle.IsNull())
+	if(!EffectDataObj || EffectDataObj->ImpactSFXRowHandle.IsNull())
 	{
 		return nullptr;
 	}

@@ -49,12 +49,9 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 				NewActorTargeted.Broadcast(FNewActorTargetedPayload(CurrentInteractableActor));
 			}
 		} else {
-			if(CurrentInteractableActor && bOldActorAlive)
+			if(CurrentInteractableActor)
 			{
-				CurrentInteractableActor->SwitchOutlineOnMesh(true);
-			} else
-			{
-				CurrentInteractableActor->SwitchOutlineOnMesh(false);
+				CurrentInteractableActor->SwitchOutlineOnMesh(bOldActorAlive);
 			}
 		}
 	}

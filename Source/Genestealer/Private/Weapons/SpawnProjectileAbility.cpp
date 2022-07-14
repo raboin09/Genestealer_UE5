@@ -28,6 +28,11 @@ void ASpawnProjectileAbility::Deactivate()
 	Internal_StopAttack();
 }
 
+void ASpawnProjectileAbility::ResetActivatable()
+{
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ATTACK_COMMITTED);
+}
+
 void ASpawnProjectileAbility::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
 	const FVector Origin = GetRaycastOriginLocation();

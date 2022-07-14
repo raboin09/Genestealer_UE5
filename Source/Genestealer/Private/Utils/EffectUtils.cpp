@@ -10,6 +10,84 @@
 #include "Characters/EffectContainerComponent.h"
 #include "Effects/BaseStatModifierEffect.h"
 #include "Genestealer/Genestealer.h"
+#include "Utils/WorldUtils.h"
+
+void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TArray<TSubclassOf<AActor>> EffectsToApply, FVector TraceLocation, float TraceRadius, ETraceTypeQuery ValidationTraceType, bool bValidateHit, FVector ValidationTraceStartLocation, FName HitValidationBone)
+{
+	if(EffectsToApply.IsEmpty() || !InstigatingActor || TraceRadius < 1.f || TraceLocation.IsZero())
+	{
+		return;
+	}
+
+	TArray<FHitResult> HitResults;
+	UKismetSystemLibrary::SphereTraceMulti(InstigatingActor, TraceLocation, TraceLocation, TraceRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), true, {}, EDrawDebugTrace::ForDuration, HitResults, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+
+	TArray<AActor*> AllHitActors;
+	for(FHitResult SumHit : HitResults)
+	{
+		AllHitActors.AddUnique(SumHit.GetActor());
+	}
+
+	if(HitResults.Num() <= 0)
+	{
+		return;
+	}
+	
+	if(bValidateHit)
+	{
+		TArray<AActor*> ValidatedHitActors;
+		for(FHitResult ValidationHit : HitResults)
+		{
+			AActor* CurrActor = ValidationHit.GetActor(); 
+			if(!CurrActor)
+			{
+				continue;
+			}
+		
+			if(ValidatedHitActors.Contains(CurrActor))
+			{
+				continue;
+			}
+
+			USkeletalMeshComponent* MeshComponent = CurrActor->FindComponentByClass<USkeletalMeshComponent>();
+			if(!MeshComponent || !MeshComponent->DoesSocketExist(HitValidationBone))
+			{
+				continue;
+			}
+
+			AllHitActors.Remove(CurrActor);
+
+			FHitResult ValidationLineTraceHit;
+			UKismetSystemLibrary::LineTraceSingle(InstigatingActor, ValidationTraceStartLocation, MeshComponent->GetSocketLocation(HitValidationBone), ValidationTraceType, true, AllHitActors, EDrawDebugTrace::ForDuration, ValidationLineTraceHit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+			if(ValidationLineTraceHit.bBlockingHit)
+			{
+				ApplyEffectsToHitResult(EffectsToApply, ValidationLineTraceHit, InstigatingActor);
+			}
+			
+			ValidatedHitActors.AddUnique(CurrActor);
+			AllHitActors.AddUnique(CurrActor);
+		}
+	} else
+	{
+		for(FHitResult Hit : HitResults)
+		{
+			ApplyEffectsToHitResult(EffectsToApply, Hit, InstigatingActor);
+		}
+	}
+}
+
+void UEffectUtils::ApplyEffectAtLocation(AActor* InstigatingActor, TSubclassOf<AActor> EffectToApply, FVector Location, bool bActivateImmediately)
+{
+	FTransform SpawnTransform = FTransform();
+	SpawnTransform.SetLocation(Location);
+
+	ABaseEffect* EffectActor = UWorldUtils::SpawnActorToWorld_Deferred<ABaseEffect>(InstigatingActor, EffectToApply, InstigatingActor, Cast<APawn>(InstigatingActor));
+	UWorldUtils::FinishSpawningActor_Deferred(EffectActor, SpawnTransform);
+	if(bActivateImmediately)
+	{
+		EffectActor->ActivateEffect();
+	}
+}
 
 void UEffectUtils::ApplyEffectToActor(AActor* ReceivingActor, TSubclassOf<AActor> EffectToApply)
 {
@@ -45,6 +123,16 @@ void UEffectUtils::ApplyEffectsToHitResult(TArray<TSubclassOf<AActor>> EffectsTo
 
 void UEffectUtils::ApplyEffectToHitResult(TSubclassOf<AActor> BaseEffectClass, const FHitResult& Impact, AActor* InstigatingActor, bool bShouldRotateHitResult)
 {
+	if (!InstigatingActor)
+	{
+		UKismetSystemLibrary::PrintString(InstigatingActor, "Bad Inst");	
+	}
+
+	if (!BaseEffectClass)
+	{
+		UKismetSystemLibrary::PrintString(InstigatingActor, "Bad Class");	
+	}
+	
 	if (!InstigatingActor || !BaseEffectClass)
 	{
 		return;

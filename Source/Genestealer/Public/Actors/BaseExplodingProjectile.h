@@ -22,11 +22,11 @@ protected:
 	virtual void OnImpact(const FHitResult& HitResult) override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	float ExplosionRadius = 512.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	USoundCue* ExplosionSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UNiagaraSystem* ExplosionNiagara;
-	UPROPERTY(VisibleDefaultsOnly)
-	USphereComponent* ExplosionRadius;
 
 private:
 	void Internal_ExplodeAllActorsInRadius();

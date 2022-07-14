@@ -15,17 +15,16 @@
 void AMeleeWeapon::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
 	AdditionalEffectsToApply = ActivationEffects;
-	if (!bIsActive) {
+	if (!GetTagContainer().HasTag(TAG_STATE_ACTIVE)) {
 		HitActors.Empty();
-		bIsActive = true;
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ACTIVE);
 		Internal_StartCollisionRaycastingTick();
 	}
 }
 
 void AMeleeWeapon::Deactivate()
 {
-	AdditionalEffectsToApply.Empty();
-	if(bIsActive)
+	if(GetTagContainer().HasTag(TAG_STATE_ACTIVE))
 	{
 		Internal_StopAttack();
 	}
@@ -51,16 +50,23 @@ void AMeleeWeapon::DisableComboWindow()
 	}
 }
 
+void AMeleeWeapon::ResetActivatable()
+{
+	Internal_StopAttack();
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+	Internal_ResetComboCounter();
+}
+
 void AMeleeWeapon::StartFire()
 {	
-	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED) && !bIsActive)
+	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED) && !GetTagContainer().HasTag(TAG_STATE_ACTIVE))
 	{
 		Internal_StartAttack();
 		return;
 	}
 
 	if(GetTagContainer().HasTag(TAG_STATE_COMBO_WINDOW_ENABLED))
-	{		
+	{
 		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_COMBO_ACTIVATED);
 		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
 		if(ComboSectionIncrement >= MaxComboSections)
@@ -90,7 +96,7 @@ void AMeleeWeapon::BeginPlay()
 	Super::BeginPlay();
 	MeshComponentRef = GetWeaponMesh();
 	ComboSectionIncrement = 1;
-	bIsActive = false;
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
 	HitActors.Empty();
 	for(const FName& Socket : MeshComponentRef->GetAllSocketNames())
 	{
@@ -147,7 +153,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		AActor* HitActor = Hit.GetActor();
-		if(Hit.bBlockingHit && bIsActive && HitActor && !HitActors.Contains(Hit.GetActor()))
+		if(Hit.bBlockingHit && GetTagContainer().HasTag(TAG_STATE_ACTIVE) && HitActor && !HitActors.Contains(Hit.GetActor()))
 		{
 			if(IsWeaponPlayerControlled() && HitActor->GetClass()->ImplementsInterface(UAIPawn::StaticClass()))
 			{
@@ -194,8 +200,9 @@ void AMeleeWeapon::Internal_StartAttack()
 void AMeleeWeapon::Internal_StopAttack()
 {
 	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ATTACK_COMMITTED);
-	bIsActive = false;
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
 	HitActors.Empty();
+	AdditionalEffectsToApply.Empty();
 	Internal_StopCollisionRaycastingTick();
 }
 

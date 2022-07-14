@@ -12,14 +12,6 @@
 ABaseExplodingProjectile::ABaseExplodingProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	ExplosionRadius = CreateDefaultSubobject<USphereComponent>(TEXT("ExplosionRadius"));
-	ExplosionRadius->SetupAttachment(RootComponent);
-	ExplosionRadius->SetSphereRadius(128.f);
-	ExplosionRadius->SetCollisionResponseToAllChannels(ECR_Ignore);
-	ExplosionRadius->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	ExplosionRadius->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	ExplosionRadius->SetGenerateOverlapEvents(true);
 }
 
 void ABaseExplodingProjectile::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -75,38 +67,9 @@ FHitResult ABaseExplodingProjectile::Internal_TraceToLocation(const FVector& Sta
 
 void ABaseExplodingProjectile::Internal_ExplodeAllActorsInRadius()
 {
-	if(!ExplosionRadius)
-	{
-		return;
-	}
 	bExplodedAlready = true;
-	TArray<AActor*> OverlappingActors;
-	ExplosionRadius->GetOverlappingActors(OverlappingActors);
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetOwner(), ExplosionNiagara, GetActorLocation(), GetActorRotation());
 	UAudioManager::SpawnSoundAtLocation(GetOwner(), ExplosionSound, GetActorLocation(), GetActorRotation());
-
-	const FVector StartTrace = GetActorLocation();
-	
-	for(AActor* CurrActor : OverlappingActors)
-	{
-		if(!CurrActor)
-		{
-			continue;
-		}
-		
-		if(const IAttackable* AttackableCast = Cast<IAttackable>(CurrActor))
-		{
-			const FVector& TargetPelvisTrace = AttackableCast->GetPelvisLocation();
-			const FVector& TargetHeadTrace = AttackableCast->GetHeadLocation();
-			if(const FHitResult& PelvisImpact = Internal_TraceToLocation(StartTrace, TargetPelvisTrace); PelvisImpact.bBlockingHit)
-			{
-				if(Internal_TryTraceToOverlappedActor(PelvisImpact, StartTrace, CurrActor)) {	continue; }
-			}			
-			if(const FHitResult& HeadImpact = Internal_TraceToLocation(StartTrace, TargetHeadTrace); HeadImpact.bBlockingHit)
-			{
-				Internal_TryTraceToOverlappedActor(HeadImpact, StartTrace, CurrActor);
-			}
-		}
-	}
+	UEffectUtils::ApplyEffectsToHitResultsInRadius(GetInstigator(), ProjectileEffectsToApply, GetActorLocation(), ExplosionRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), true, GetActorLocation());
 }
