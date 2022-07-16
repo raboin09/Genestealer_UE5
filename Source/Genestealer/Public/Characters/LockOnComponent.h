@@ -39,7 +39,7 @@ protected:
 	
 private:
 	AActor* Internal_TraceForTarget() const;
-	AActor* Internal_FindBestTargetFromActors(const TArray<FHitResult> PotentialHitResults) const;
+	AActor* Internal_FindBestTargetFromActors(TArray<FHitResult> PotentialHitResults) const;
 	FRotator Internal_GetControllerAndActorBlendedRotation(AActor* SourceActor) const;
 	
 	void Internal_StartInterpTransition();

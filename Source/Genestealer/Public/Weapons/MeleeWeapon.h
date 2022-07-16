@@ -16,7 +16,7 @@ class GENESTEALER_API AMeleeWeapon : public ABaseWeapon, public IActivatable
 	GENERATED_BODY()
 	
 public:
-	AMeleeWeapon() { WeaponType = EWeaponType::Melee; }
+	AMeleeWeapon();
 	
 	///////////////////////////////////////////
 	/// IActivatable code
@@ -56,8 +56,7 @@ protected:
 	FString SocketPrefix = "R_";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
-	int32 MaxComboSections = 2;
+
 
 private:
 	UFUNCTION()
@@ -72,12 +71,17 @@ private:
 	void Internal_SetCurrentSocketLocations();
 	void Internal_StartAttack();
 	void Internal_StopAttack();
+
+	void Internal_ResetStateForCombo();
+	void Internal_IncrementComboCounter();
 	void Internal_ResetComboCounter();
 	
 	TMap<FString, FVector> Sockets;
 	FTimerHandle Timer_Raycasting;
 	
 	int32 ComboSectionIncrement;
+	int32 MaxComboSections;
+	const FString ComboPrefix = "Combo";
 
 	UPROPERTY()
 	UMeshComponent* MeshComponentRef;

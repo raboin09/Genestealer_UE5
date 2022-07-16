@@ -12,83 +12,9 @@
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
-void AMeleeWeapon::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
+AMeleeWeapon::AMeleeWeapon()
 {
-	AdditionalEffectsToApply = ActivationEffects;
-	if (!GetTagContainer().HasTag(TAG_STATE_ACTIVE)) {
-		HitActors.Empty();
-		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ACTIVE);
-		Internal_StartCollisionRaycastingTick();
-	}
-}
-
-void AMeleeWeapon::Deactivate()
-{
-	if(GetTagContainer().HasTag(TAG_STATE_ACTIVE))
-	{
-		Internal_StopAttack();
-	}
-}
-
-void AMeleeWeapon::EnableComboWindow()
-{
-	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_ACTIVATED);
-	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
-}
-
-void AMeleeWeapon::DisableComboWindow()
-{
-	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
-	if(GetTagContainer().HasTag(TAG_STATE_COMBO_ACTIVATED))
-	{
-		HitActors.Empty();
-		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_ACTIVATED);
-		Internal_StartAttack();
-	}
-	else {
-		Internal_ResetComboCounter();
-	}
-}
-
-void AMeleeWeapon::ResetActivatable()
-{
-	Internal_StopAttack();
-	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
-	Internal_ResetComboCounter();
-}
-
-void AMeleeWeapon::StartFire()
-{	
-	if(!GetTagContainer().HasTag(TAG_STATE_ATTACK_COMMITTED) && !GetTagContainer().HasTag(TAG_STATE_ACTIVE))
-	{
-		Internal_StartAttack();
-		return;
-	}
-
-	if(GetTagContainer().HasTag(TAG_STATE_COMBO_WINDOW_ENABLED))
-	{
-		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_COMBO_ACTIVATED);
-		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
-		if(ComboSectionIncrement >= MaxComboSections)
-		{
-			Internal_ResetComboCounter();
-		} else
-		{
-			ComboSectionIncrement++;
-		}
-	}
-}
-
-void AMeleeWeapon::StopFire()
-{
-	
-}
-
-void AMeleeWeapon::OnUnEquip()
-{
-	Super::OnUnEquip();
-	Internal_StopAttack();
-	StopWeaponAnimation(FireAnim);
+	WeaponType = EWeaponType::Melee;
 }
 
 void AMeleeWeapon::BeginPlay()
@@ -105,6 +31,75 @@ void AMeleeWeapon::BeginPlay()
 			Sockets.Add(Socket.ToString(), FVector::ZeroVector);
 		}
 	}
+	MaxComboSections = FireAnim ? FireAnim->CompositeSections.Num() : 1;
+}
+
+void AMeleeWeapon::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
+{
+	AdditionalEffectsToApply = ActivationEffects;
+	if (!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE)) {
+		HitActors.Empty();
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ACTIVE);
+		Internal_StartCollisionRaycastingTick();
+	}
+}
+
+void AMeleeWeapon::Deactivate()
+{
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
+	{
+		Internal_StopAttack();
+	}
+}
+
+void AMeleeWeapon::EnableComboWindow()
+{
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_ACTIVATED);
+	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+}
+
+void AMeleeWeapon::DisableComboWindow()
+{
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+}
+
+void AMeleeWeapon::ResetActivatable()
+{
+	Internal_StopAttack();
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_ACTIVATED);
+	Internal_ResetComboCounter();
+}
+
+void AMeleeWeapon::StartFire()
+{
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_COMBO_WINDOW_ENABLED))
+	{
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_COMBO_ACTIVATED);
+		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+		Internal_IncrementComboCounter();
+		if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
+		{
+			Internal_ResetStateForCombo();
+			Internal_StartAttack();
+		}
+	}
+	else if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ATTACK_COMMITTED) && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
+	{
+		Internal_StartAttack();
+	}
+}
+
+void AMeleeWeapon::StopFire()
+{
+	
+}
+
+void AMeleeWeapon::OnUnEquip()
+{
+	Super::OnUnEquip();
+	Internal_StopAttack();
+	StopWeaponAnimation(FireAnim);
 }
 
 FAnimMontagePlayData AMeleeWeapon::Internal_GetPlayData() const
@@ -153,7 +148,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		AActor* HitActor = Hit.GetActor();
-		if(Hit.bBlockingHit && GetTagContainer().HasTag(TAG_STATE_ACTIVE) && HitActor && !HitActors.Contains(Hit.GetActor()))
+		if(Hit.bBlockingHit && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE) && HitActor && !HitActors.Contains(Hit.GetActor()))
 		{
 			if(IsWeaponPlayerControlled() && HitActor->GetClass()->ImplementsInterface(UAIPawn::StaticClass()))
 			{
@@ -171,7 +166,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 
 FName AMeleeWeapon::Internal_GetNextMontageSection() const
 {
-	return FName("Combo" + FString::FromInt(ComboSectionIncrement));
+	return FName(ComboPrefix + FString::FromInt(ComboSectionIncrement));
 }
 
 void AMeleeWeapon::Internal_SetCurrentSocketLocations()
@@ -186,7 +181,6 @@ void AMeleeWeapon::Internal_SetCurrentSocketLocations()
 
 void AMeleeWeapon::Internal_StartAttack()
 {
-	K2_OnFireWeapon();
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);
@@ -195,6 +189,7 @@ void AMeleeWeapon::Internal_StartAttack()
 	{
 		LockOnComponent->InterpToBestTargetForMeleeAttack();
 	}
+	K2_OnFireWeapon();
 }
 
 void AMeleeWeapon::Internal_StopAttack()
@@ -204,6 +199,26 @@ void AMeleeWeapon::Internal_StopAttack()
 	HitActors.Empty();
 	AdditionalEffectsToApply.Empty();
 	Internal_StopCollisionRaycastingTick();
+}
+
+void AMeleeWeapon::Internal_ResetStateForCombo()
+{
+	HitActors.Empty();
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_WINDOW_ENABLED);
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_COMBO_ACTIVATED);
+	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
+	Internal_StopCollisionRaycastingTick();
+}
+
+void AMeleeWeapon::Internal_IncrementComboCounter()
+{
+	if(ComboSectionIncrement >= MaxComboSections)
+	{
+		Internal_ResetComboCounter();
+	} else
+	{
+		ComboSectionIncrement++;
+	}
 }
 
 void AMeleeWeapon::Internal_ResetComboCounter()

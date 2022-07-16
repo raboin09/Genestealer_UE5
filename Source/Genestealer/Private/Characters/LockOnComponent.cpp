@@ -127,14 +127,27 @@ AActor* ULockOnComponent::Internal_TraceForTarget() const
 	return Internal_FindBestTargetFromActors(OutHitResults);
 }
 
-AActor* ULockOnComponent::Internal_FindBestTargetFromActors(const TArray<FHitResult> PotentialHitResults) const
+AActor* ULockOnComponent::Internal_FindBestTargetFromActors(TArray<FHitResult> PotentialHitResults) const
 {
 	if(PotentialHitResults.Num() <= 0)
 	{
 		return nullptr;
 	}
-
-	return Cast<AActor>(PotentialHitResults[0].GetActor());
+	FHitResult ClosestHit = PotentialHitResults[0];
+	TArray<AActor*> HitActors;
+	for(FHitResult TempHit : PotentialHitResults)
+	{
+		if(!UGameplayTagUtils::ActorHasGameplayTag(TempHit.GetActor(), TAG_STATE_DEAD))
+		{
+			HitActors.Add(TempHit.GetActor());
+		}
+		// if(TempHit.Distance < ClosestHit.Distance)
+		// {
+		// 	ClosestHit = TempHit;
+		// }
+	}
+	//return ClosestHit.GetActor();
+	return HitActors[0];
 }
 
 FRotator ULockOnComponent::Internal_GetControllerAndActorBlendedRotation(AActor* SourceActor) const
