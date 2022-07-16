@@ -84,7 +84,8 @@ void AHitscanWeapon::Internal_FireShot()
 	const FVector& StartTrace = GetCameraDamageStartLocation(AimDirection);
 	const FVector ShootDirection = GetShootDirection(AimDirection);
 	const FVector& EndTrace = StartTrace + ShootDirection * TraceRange;
-	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace());
+	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this) * 1.5f; 
+	const FHitResult& Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RaycastCircleRadius);
 	Internal_ProcessInstantHit(Impact, StartTrace, ShootDirection);
 }
 
