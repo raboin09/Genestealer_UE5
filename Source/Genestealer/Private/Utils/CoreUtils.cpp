@@ -9,6 +9,16 @@
 #include "Core/BasePlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
+UPlayerStatsComponent* UCoreUtils::GetPlayerStatsComponent(const UObject* ContextObject)
+{
+	if(const ABasePlayerController* CurrCon = GetBasePlayerController(ContextObject))
+	{
+		return CurrCon->GetPlayerStatsComponent();
+	}
+	return nullptr;
+}
+
+
 ABasePlayerController* UCoreUtils::GetBasePlayerController(const UObject* ContextObject)
 {
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(ContextObject, 0);
@@ -42,6 +52,20 @@ UInventoryComponent* UCoreUtils::GetPlayerInventoryComponent(const UObject* Cont
 		return CurrChar->GetInventoryComponent();
 	}
 	return nullptr;
+}
+
+bool UCoreUtils::IsObjectPlayerControlled(const UObject* Object)
+{
+	if(!Object)
+	{
+		return false;
+	}
+
+	if(const APawn* CastedPawn = Cast<APawn>(Object))
+	{
+		return CastedPawn->IsPlayerControlled();
+	}
+	return false;
 }
 
 ABaseHUD* UCoreUtils::GetBaseHUD(const UObject* ContextObject)

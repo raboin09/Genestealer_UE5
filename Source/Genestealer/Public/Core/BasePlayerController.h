@@ -23,7 +23,8 @@ public:
 	ABasePlayerController();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-	
+
+	FORCEINLINE class UPlayerStatsComponent* GetPlayerStatsComponent() const { return PlayerStats; }
 	FORCEINLINE class UQuestManagerComponent* GetQuestManager() const { return QuestManager; }
 	FORCEINLINE FNewActorTargeted& OnNewActorTargeted() { return NewActorTargeted; }
 	TScriptInterface<IInteractable> GetTargetedActor() const;
@@ -57,6 +58,8 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UQuestManagerComponent* QuestManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UPlayerStatsComponent* PlayerStats;
 	
 private:
 	UFUNCTION()

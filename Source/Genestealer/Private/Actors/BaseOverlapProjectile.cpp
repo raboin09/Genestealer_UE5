@@ -9,6 +9,7 @@
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 
@@ -148,6 +149,14 @@ void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 
 void ABaseOverlapProjectile::ApplyHitEffects(const FHitResult& Impact) const
 {
+	if(!UCoreUtils::IsObjectPlayerControlled(Impact.GetActor()) && UCombatUtils::AreActorsEnemies(Impact.GetActor(), GetInstigator()))
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, ShotHit);
+		if(UCombatUtils::IsBoneNameHead(Impact.BoneName))
+		{
+			UPlayerStatsComponent::RecordStatsEvent(this, Headshot);
+		}
+	}
 	UEffectUtils::ApplyEffectsToHitResult(ProjectileEffectsToApply, Impact, GetInstigator());
 }
 

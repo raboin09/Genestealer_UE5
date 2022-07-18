@@ -10,6 +10,7 @@
 #include "Core/BasePlayerController.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/FeedbackUtils.h"
@@ -232,6 +233,14 @@ FTransform ABaseWeapon::GetLeftHandSocketTransform() const
 	return GetWeaponMesh()->GetSocketTransform(ik_hand_l_Socket, RTS_Component);
 }
 
+void ABaseWeapon::RecordStatsEvent(EStatsEvent StatEvent, float Mod, AActor* ActorRef)
+{
+	if(IsWeaponPlayerControlled() && (UCombatUtils::AreActorsEnemies(ActorRef, GetInstigator()) || !ActorRef))
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, StatEvent, Mod, ActorRef);
+	}
+}
+
 void ABaseWeapon::HandleFiring()
 {
 	if (CheckChildFireCondition() && CanFire())
@@ -359,7 +368,7 @@ UAudioComponent* ABaseWeapon::PlayWeaponSound(USoundCue* Sound) const
 	UAudioComponent* AC = nullptr;
 	if (Sound && OwningPawn)
 	{
-		if(const ABasePlayerCharacter* PlayerCharacter = UCoreUtils::GetPlayerCharacter(this); !IsWeaponPlayerControlled())
+		if(const ABasePlayerCharacter* PlayerCharacter = UCoreUtils::GetPlayerCharacter(this); PlayerCharacter && !IsWeaponPlayerControlled())
 		{
 			if(PlayerCharacter->GetDistanceTo(this) <= 1000)
 			{

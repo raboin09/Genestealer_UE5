@@ -17,6 +17,7 @@ ABasePlayerController::ABasePlayerController()
 {
 	OutlineTraceRange = 3000.f;
 	QuestManager = CreateDefaultSubobject<UQuestManagerComponent>(TEXT("QuestManager"));
+	PlayerStats = CreateDefaultSubobject<UPlayerStatsComponent>(TEXT("PlayerStats"));
 }
 
 void ABasePlayerController::BeginPlay()

@@ -6,6 +6,7 @@
 #include "Characters/EffectContainerComponent.h"
 #include "Characters/HealthComponent.h"
 #include "Genestealer/Genestealer.h"
+#include "Types/GenestealerTags.h"
 #include "Utils/GameplayTagUtils.h"
 
 ABaseDestructibleActor::ABaseDestructibleActor()

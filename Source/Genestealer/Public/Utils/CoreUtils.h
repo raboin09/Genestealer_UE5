@@ -21,10 +21,13 @@ class GENESTEALER_API UCoreUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	static bool IsObjectPlayerControlled(const UObject* Object);
 	static ABaseHUD* GetBaseHUD(const UObject* ContextObject);
 	static UUIEventHub* GetUIEventHub(const UObject* ContextObject);
 	static float GetPlayerControllerSphereTraceRadius(const UObject* ContextObject);
 	static float GetCoverPointValidDistance();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
+	static UPlayerStatsComponent* GetPlayerStatsComponent(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static UQuestManagerComponent* GetQuestManager(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")

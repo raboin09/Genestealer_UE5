@@ -5,10 +5,12 @@
 
 #include "API/AIPawn.h"
 #include "Characters/LockOnComponent.h"
+#include "Core/PlayerStatsComponent.h"
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
 
@@ -36,6 +38,8 @@ void AMeleeWeapon::BeginPlay()
 
 void AMeleeWeapon::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
+	RecordStatsEvent(MeleeSwung);
+	
 	AdditionalEffectsToApply = ActivationEffects;
 	if (!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE)) {
 		HitActors.Empty();
@@ -98,7 +102,7 @@ void AMeleeWeapon::StopFire()
 void AMeleeWeapon::OnUnEquip()
 {
 	Super::OnUnEquip();
-	Internal_StopAttack();
+	ResetActivatable();
 	StopWeaponAnimation(FireAnim);
 }
 
@@ -130,13 +134,14 @@ void AMeleeWeapon::Internal_StopCollisionRaycastingTick()
 
 void AMeleeWeapon::Internal_CheckForCollisionHit()
 {
-	if(!MeshComponentRef)
+	if(!MeshComponentRef || !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
 	{
 		return;
 	}
 	
 	TArray<FString> Keys;
 	Sockets.GetKeys(Keys);
+	
 	for(const FString& Key : Keys)
 	{
 		FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
@@ -147,18 +152,24 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		const FVector EndTrace = MeshComponentRef->GetSocketLocation(FName(Key));
 		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
-		AActor* HitActor = Hit.GetActor();
-		if(Hit.bBlockingHit && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE) && HitActor && !HitActors.Contains(Hit.GetActor()))
+		if(!Hit.bBlockingHit)
 		{
-			if(IsWeaponPlayerControlled() && HitActor->GetClass()->ImplementsInterface(UAIPawn::StaticClass()))
+			continue;
+		}
+		
+		AActor* HitActor = Hit.GetActor();
+		if(HitActor && !HitActors.Contains(HitActor) && HitActor->GetClass()->ImplementsInterface(UAttackable::StaticClass()))
+		{
+			if(!bRecordedHit)
 			{
-				K2_PlayHitEffects();
+				bRecordedHit = true;
+				RecordStatsEvent(MeleeHit, 1.f, HitActor);
 			}
+			K2_PlayHitEffects();
 			HitActors.Add(Hit.GetActor());
 			TArray<TSubclassOf<AActor>> EffectsToApply = WeaponEffects;
 			EffectsToApply.Append(AdditionalEffectsToApply);
 			UEffectUtils::ApplyEffectsToHitResult(EffectsToApply, Hit, GetInstigator());
-			break;
 		}
 	}
 	Internal_SetCurrentSocketLocations();
@@ -197,6 +208,7 @@ void AMeleeWeapon::Internal_StopAttack()
 	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ATTACK_COMMITTED);
 	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
 	HitActors.Empty();
+	bRecordedHit = false;
 	AdditionalEffectsToApply.Empty();
 	Internal_StopCollisionRaycastingTick();
 }

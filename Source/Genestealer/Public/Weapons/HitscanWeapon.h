@@ -16,6 +16,7 @@ class GENESTEALER_API AHitscanWeapon : public ABaseRangedWeapon
 protected:
 	// BaseRangedWeapon overrides
 	virtual void FireWeapon() override;
+	virtual void StopFire() override;
 	virtual void StopSimulatingWeaponFire() override;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="1", EditCondition = "FiringMechanism == EFiringMechanism::Burst || FiringMechanism == EFiringMechanism::ScatterShot", EditConditionHides))

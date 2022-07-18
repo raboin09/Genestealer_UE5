@@ -4,6 +4,7 @@
 #include "Weapons/ProjectileWeapon.h"
 #include "GameFramework/Character.h"
 #include "Actors/BaseOverlapProjectile.h"
+#include "Core/PlayerStatsComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
@@ -65,6 +66,7 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 	SpawnTrans.SetLocation(SpawnOrigin);
 	if (ABaseOverlapProjectile* Projectile = UWorldUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
+		RecordStatsEvent(ShotFired);
 		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());

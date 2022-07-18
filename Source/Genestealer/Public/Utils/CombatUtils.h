@@ -6,6 +6,7 @@
 #include "API/Attackable.h"
 #include "API/Interactable.h"
 #include "Characters/HealthComponent.h"
+#include "Core/PlayerStatsComponent.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CombatUtils.generated.h"
 

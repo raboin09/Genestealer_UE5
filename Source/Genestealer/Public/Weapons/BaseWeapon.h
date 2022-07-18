@@ -6,6 +6,7 @@
 #include "API/Animatable.h"
 #include "API/Weapon.h"
 #include "Components/SphereComponent.h"
+#include "Core/PlayerStatsComponent.h"
 #include "Effects/BaseEffect.h"
 
 #include "BaseWeapon.generated.h"
@@ -94,7 +95,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ACharacter* GetOwningPawn() const override { return OwningPawn; }
 	virtual FTransform GetLeftHandSocketTransform() const override;
-
+	void RecordStatsEvent(EStatsEvent StatEvent, float Mod = 1.f, AActor* ActorRef = nullptr);
+	
 	UPROPERTY()
 	ACharacter* OwningPawn;
 	EWeaponState CurrentState;

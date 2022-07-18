@@ -4,11 +4,13 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/EffectContainerComponent.h"
+#include "Core/PlayerStatsComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Niagara/Public/NiagaraComponent.h"
 #include "Sound/SoundCue.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 
@@ -43,7 +45,17 @@ void AHitscanWeapon::FireWeapon()
 	{
 		Internal_FireShot();
 	}
+
+	if(FiringMechanism != EFiringMechanism::Continuous)
+	{
+		RecordStatsEvent(ShotFired, NumberOfShotsPerFire);	
+	}
 	Super::FireWeapon();
+}
+
+void AHitscanWeapon::StopFire()
+{
+	Super::StopFire();
 }
 
 void AHitscanWeapon::StopSimulatingWeaponFire()
@@ -105,6 +117,14 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 		Internal_PlayWeaponMissEffectFX(Impact);
 	} else
 	{
+		if(FiringMechanism != EFiringMechanism::Continuous)
+		{
+			RecordStatsEvent(ShotHit, 1.f, Impact.GetActor());
+			if(UCombatUtils::IsBoneNameHead(Impact.BoneName))
+			{
+				RecordStatsEvent(Headshot);
+			}
+		}
 		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());
 	}
 }

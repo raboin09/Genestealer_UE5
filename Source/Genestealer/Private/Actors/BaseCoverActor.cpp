@@ -179,7 +179,8 @@ void ABaseCoverActor::OccupyMount(ABaseCharacter* InActor, const FVector& InTarg
 	Internal_SetWalkingGait();
 	UGameplayTagUtils::AddTagToActor(OccupiedActor, TAG_STATE_IN_COVER);
 	
-	TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
+	// TargetCoverLocation = InTargetCoverLocation - (UKismetMathLibrary::GetRightVector(MiddleCoverWall->K2_GetComponentRotation()) * (CoverWallOffset * -1.f));
+	TargetCoverLocation = DissolveMesh->GetComponentLocation();
 	TargetCoverRotation = UKismetMathLibrary::MakeRotFromZX(UKismetMathLibrary::Vector_Up(), InHitNormal * -1);
 	
 	Internal_ActivateOverlapBoxes(true);	

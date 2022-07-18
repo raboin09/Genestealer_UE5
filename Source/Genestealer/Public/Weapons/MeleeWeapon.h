@@ -78,7 +78,8 @@ private:
 	
 	TMap<FString, FVector> Sockets;
 	FTimerHandle Timer_Raycasting;
-	
+
+	bool bRecordedHit;
 	int32 ComboSectionIncrement;
 	int32 MaxComboSections;
 	const FString ComboPrefix = "Combo";

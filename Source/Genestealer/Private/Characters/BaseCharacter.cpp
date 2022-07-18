@@ -128,6 +128,14 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		return;
 	}
 
+	if(!IsPlayerControlled())
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta, this);
+	} else
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta);
+	}
+
 	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 	SetInCombat(true, EventPayload.InstigatingActor);
 	GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
@@ -588,7 +596,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	
 	if(IMountable* CoverPoint = Cast<IMountable>(HitResult.GetActor()))
 	{
-		CoverPoint->OccupyMount(this, HitResult.ImpactPoint, HitResult.ImpactNormal);
+		CoverPoint->OccupyMount(this, FVector::ZeroVector, HitResult.ImpactNormal);
 		TScriptInterface<IMountable> NewCover;
 		NewCover.SetObject(HitResult.GetActor());
 		NewCover.SetInterface(CoverPoint);
