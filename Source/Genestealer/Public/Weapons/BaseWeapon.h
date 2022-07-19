@@ -126,7 +126,7 @@ protected:
 	float FireWarmUpTime = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float AI_UseRange = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	bool bForceAimOnFire = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TimeBetweenShots = .2f;

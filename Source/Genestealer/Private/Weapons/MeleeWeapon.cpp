@@ -17,6 +17,7 @@
 AMeleeWeapon::AMeleeWeapon()
 {
 	WeaponType = EWeaponType::Melee;
+	bForceAimOnFire = false;
 }
 
 void AMeleeWeapon::BeginPlay()
