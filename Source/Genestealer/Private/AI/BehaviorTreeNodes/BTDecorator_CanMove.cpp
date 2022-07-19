@@ -4,6 +4,7 @@
 #include "AI/BehaviorTreeNodes/BTDecorator_CanMove.h"
 
 #include "AIController.h"
+#include "Types/GenestealerTags.h"
 #include "Utils/GameplayTagUtils.h"
 
 bool UBTDecorator_CanMove::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const

@@ -9,6 +9,7 @@
 #define TAG_HITREACT_FRONT FGameplayTag::RequestGameplayTag("Animation.HitReact.Front")
 #define TAG_HITREACT_RIGHT FGameplayTag::RequestGameplayTag("Animation.HitReact.Right")
 #define TAG_HITREACT_BACK FGameplayTag::RequestGameplayTag("Animation.HitReact.Back")
+#define TAG_HITREACT_CHAINSAW FGameplayTag::RequestGameplayTag("Animation.HitReact.Chainsaw")
 
 #define TAG_ACTOR_PLAYER FGameplayTag::RequestGameplayTag("ActorType.Player")
 #define TAG_ACTOR_AI FGameplayTag::RequestGameplayTag("ActorType.AI")

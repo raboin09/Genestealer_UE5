@@ -106,13 +106,8 @@ TSubclassOf<AActor> UInventoryComponent::GetPrimaryWeaponClass() const
 }
 
 void UInventoryComponent::EquipAlternateWeapon()
-{
-	if(PrimaryWeapon)
-	{
-		PrimaryWeapon->StopFire();
-	}
-	
-	if(AlternateWeapon)
+{	
+	if(AlternateWeapon && CurrentWeapon != AlternateWeapon)
 	{
 		Internal_SetCurrentWeapon(AlternateWeapon, CurrentWeapon);
 	}
@@ -120,7 +115,7 @@ void UInventoryComponent::EquipAlternateWeapon()
 
 void UInventoryComponent::EquipPrimaryWeapon()
 {
-	if(PrimaryWeapon)
+	if(PrimaryWeapon && CurrentWeapon != PrimaryWeapon)
 	{
 		Internal_SetCurrentWeapon(PrimaryWeapon, CurrentWeapon);
 	}
@@ -279,6 +274,11 @@ void UInventoryComponent::Internal_RemoveWeapon(TScriptInterface<IWeapon> Weapon
 
 void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> NewWeapon, TScriptInterface<IWeapon> LastWeapon)
 {
+	if(NewWeapon == LastWeapon)
+	{
+		return;
+	}
+	
 	TScriptInterface<IWeapon> LocalLastWeapon = nullptr;
 	if (LastWeapon != nullptr)
 	{

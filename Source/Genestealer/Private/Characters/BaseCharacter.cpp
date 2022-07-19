@@ -363,13 +363,21 @@ void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitRea
 	{
 		return;
 	}
-	
+
 	Internal_StopAllAnimMontages();
 	FAnimMontagePlayData PlayData;
-	PlayData.MontageToPlay = K2_GetHitReactAnimation(Internal_GetHitDirectionTag(HitReactEvent.HitDirection));
-	PlayData.PlayRate = 1.f;
-	PlayData.bShouldBlendOut = true;
 	PlayData.MontageSection = FName();
+	PlayData.PlayRate = 1.f;
+	
+	if(HitReactEvent.HitReactType == EHitReactType::HitReact_Chainsaw || HitReactEvent.DeathReactType == EHitReactType::HitReact_Chainsaw)
+	{
+		PlayData.MontageToPlay = K2_GetHitReactAnimation(TAG_HITREACT_CHAINSAW);
+		PlayData.bShouldBlendOut = false;
+	} else
+	{
+		PlayData.MontageToPlay = K2_GetHitReactAnimation(Internal_GetHitDirectionTag(HitReactEvent.HitDirection));
+		PlayData.bShouldBlendOut = true;
+	}
 	ForcePlayAnimMontage(PlayData);
 }
 

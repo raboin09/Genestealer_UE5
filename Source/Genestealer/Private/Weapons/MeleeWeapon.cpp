@@ -124,7 +124,7 @@ void AMeleeWeapon::Internal_StartCollisionRaycastingTick()
 	K2_StartWeaponTrace();
 
 	Internal_SetCurrentSocketLocations();
-	GetWorldTimerManager().SetTimer(Timer_Raycasting, this, &AMeleeWeapon::Internal_CheckForCollisionHit, .01f, true);
+	GetWorldTimerManager().SetTimer(Timer_Raycasting, this, &AMeleeWeapon::Internal_CheckForCollisionHit, .001f, true);
 }
 
 void AMeleeWeapon::Internal_StopCollisionRaycastingTick()
@@ -151,7 +151,8 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		TArray<AActor*> IgnoreActors = { GetInstigator(), this, GetOwner() };
 		const FVector StartTrace = *Sockets.Find(Key);
 		const FVector EndTrace = MeshComponentRef->GetSocketLocation(FName(Key));
-		const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
+		// const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
+		constexpr float Radius = 35.f;
 		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(!Hit.bBlockingHit)
 		{
@@ -161,16 +162,28 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor && !HitActors.Contains(HitActor) && HitActor->GetClass()->ImplementsInterface(UAttackable::StaticClass()))
 		{
+			if(!bCanHitMultipleEnemies && HitActors.Num() > 0)
+			{
+				break;
+			}
+			
 			if(!bRecordedHit)
 			{
 				bRecordedHit = true;
 				RecordStatsEvent(MeleeHit, 1.f, HitActor);
 			}
-			K2_PlayHitEffects();
-			HitActors.Add(Hit.GetActor());
+			
+			K2_PlayHitEffects(Hit, HitActor);
+			HitActors.Add(HitActor);
 			TArray<TSubclassOf<AActor>> EffectsToApply = WeaponEffects;
 			EffectsToApply.Append(AdditionalEffectsToApply);
 			UEffectUtils::ApplyEffectsToHitResult(EffectsToApply, Hit, GetInstigator());
+		}
+		
+		if(!bCanHitMultipleEnemies && HitActors.Num() > 0)
+		{
+			ResetActivatable();
+			break;
 		}
 	}
 	Internal_SetCurrentSocketLocations();

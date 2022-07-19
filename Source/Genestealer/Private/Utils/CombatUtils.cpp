@@ -33,6 +33,7 @@ bool UCombatUtils::ShouldHitKnockback(EHitReactType InHit)
 	case EHitReactType::Knockback_Huge:
 		return true;
 	case EHitReactType::HitReact_Light:
+	case EHitReactType::HitReact_Chainsaw:
 	case EHitReactType::None:
 	default:
 		return false;
@@ -73,6 +74,11 @@ bool UCombatUtils::IsBoneNameHead(const FName& InBone)
 
 FName UCombatUtils::GetNearestValidBoneForImpact(FName InBone)
 {
+	if(InBone.IsEqual(NAME_None))
+	{
+		return "spine_03";
+	}
+	
 	const TArray<FName> LeftArmBones = {
 		"upperarm_l",
 		"lowerarm_l",

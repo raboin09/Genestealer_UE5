@@ -63,6 +63,9 @@ public:
 	virtual void StartFire() PURE_VIRTUAL(IWeapon::StartFire,);
 	virtual void StopFire() PURE_VIRTUAL(IWeapon::StopFire,);
 
+	virtual bool CanExecute() const PURE_VIRTUAL(IWeapon::CanExecute, return false;)
+	virtual void StartExecution() PURE_VIRTUAL(IWeapon::StartExecution, )
+
 	virtual bool ShouldForceAimOnFire() const PURE_VIRTUAL(IWeapon::ShouldForceAimOnFire, return false;);
 	virtual bool CanFire() const PURE_VIRTUAL(IWeapon::CanFire, return false;);
 	virtual bool CanReload() PURE_VIRTUAL(IWeapon::CanReload, return false;);

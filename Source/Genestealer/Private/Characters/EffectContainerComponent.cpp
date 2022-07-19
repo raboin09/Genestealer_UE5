@@ -204,7 +204,7 @@ void UEffectContainerComponent::Internal_TickEffect(const int32 CurrentTickingEf
 	const FTickingEffect CurrentTickingEffect = *EffectsToTick.Find(CurrentTickingEffectKey);
 	const TScriptInterface<IEffect> CurrentEffect = CurrentTickingEffect.TickingEffect;
 	
-	if(!CurrentEffect)
+	if(!CurrentEffect || CurrentEffect->GetEffectInitializationData().EffectInterval == EEffectInterval::Apply_Once)
 	{
 		return;
 	}

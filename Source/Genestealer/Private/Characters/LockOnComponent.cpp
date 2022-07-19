@@ -32,14 +32,20 @@ void ULockOnComponent::BeginPlay()
 	LockOnInterpTimeline->SetTimelineFinishedFunc(CoverLerpFinishedEvent);
 }
 
-void ULockOnComponent::InterpToBestTargetForMeleeAttack()
+void ULockOnComponent::InterpToBestTargetForMeleeAttack(TFunction<void()> InFinishedFunction)
 {	
-	SelectedActor = Internal_TraceForTarget();
+	InterpToActor(Internal_TraceForTarget(), InFinishedFunction);
+}
+
+void ULockOnComponent::InterpToActor(AActor* ActorToInterpTo, TFunction<void()> InFinishedFunction)
+{
+	SelectedActor = ActorToInterpTo;
 	if(!SelectedActor)
 	{
 		return;
 	}
 	
+	OnFinishedFunction = InFinishedFunction;	
 	if(AActor* SourceActor = GetOwner(); bUseControllerRotation)
 	{
 		SourceActor->SetActorRotation(Internal_GetControllerAndActorBlendedRotation(SourceActor));
@@ -80,6 +86,11 @@ void ULockOnComponent::Internal_CoverTransitionUpdate(float Alpha)
 void ULockOnComponent::Internal_CoverTransitionFinished()
 {
 	SelectedActor = nullptr;
+	if(OnFinishedFunction)
+	{
+		OnFinishedFunction();
+	}
+	OnFinishedFunction.Reset();
 }
 
 AActor* ULockOnComponent::Internal_TraceForTarget() const

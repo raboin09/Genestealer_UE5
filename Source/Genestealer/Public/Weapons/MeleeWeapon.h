@@ -44,12 +44,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_PlayHitEffects();
+	void K2_PlayHitEffects(FHitResult HitResult, AActor* HitActor = nullptr);
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_StartWeaponTrace();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_StopWeaponTrace();
 
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bCanHitMultipleEnemies = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")

@@ -17,7 +17,8 @@ public:
 	ULockOnComponent();
 	virtual void BeginPlay() override;
 	
-	void InterpToBestTargetForMeleeAttack();
+	void InterpToBestTargetForMeleeAttack(TFunction<void()> InFinishedFunction = TFunction<void()>());
+	void InterpToActor(AActor* ActorToInterpTo, TFunction<void()> InFinishedFunction = TFunction<void()>());
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
@@ -48,6 +49,8 @@ private:
 	UFUNCTION()
 	void Internal_CoverTransitionFinished();
 
+	TFunction<void()> OnFinishedFunction;
+	
 	FVector TargetActorLocation;
 	FRotator TargetActorRotation;
 
