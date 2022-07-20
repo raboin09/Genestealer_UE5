@@ -206,7 +206,11 @@ void ABaseCoverActor::VacateMount(ABaseCharacter* InActor)
 	
 	UGameplayTagUtils::RemoveTagsFromActor(OccupiedActor, {TAG_STATE_IN_COVER,
 		TAG_COVER_LEFTEDGE, TAG_COVER_RIGHTEDGE,
-		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK});
+		TAG_COVER_LEFTPEEK, TAG_COVER_RIGHTPEEK, TAG_COVER_ROLLEDOUT});
+	if(IAnimatable* AnimatableOwner = Internal_GetAnimatableOwner())
+	{
+		AnimatableOwner->SetCameraOverRightShoulder(true);
+	}
 	Internal_ResetCharacterValuesOnCoverExit();
 	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 	OccupiedActor = nullptr;

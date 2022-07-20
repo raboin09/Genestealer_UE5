@@ -53,7 +53,7 @@ void ABaseOverlapPickup::K2_HandleOverlapEvent_Implementation(AActor* OtherActor
 					MaterialDissolver->StartDissolveTimeline(true);
 				}
 			}
-			Super::K2_HandleOverlapEvent(OtherActor, HitResult);	
+			Super::K2_HandleOverlapEvent_Implementation(OtherActor, HitResult);
 		}
 	}
 }

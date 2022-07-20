@@ -11,6 +11,7 @@ float UCombatUtils::GetHitImpulseValue(EHitReactType InHit)
 	const float Multiplier = 30000.f;
 	switch (InHit)
 	{
+	case EHitReactType::Knockback_Tiny: return .25f * Multiplier;
 	case EHitReactType::Knockback_VeryLight: return .5f * Multiplier;
 	case EHitReactType::Knockback_Light: return .7f * Multiplier;
 	case EHitReactType::Knockback_Medium: return .85f * Multiplier;
@@ -25,6 +26,7 @@ bool UCombatUtils::ShouldHitKnockback(EHitReactType InHit)
 {
 	switch (InHit)
 	{
+	case EHitReactType::Knockback_Tiny:
 	case EHitReactType::Knockback_VeryLight:
 	case EHitReactType::Knockback_Light:
 	case EHitReactType::Knockback_Medium:
@@ -44,6 +46,8 @@ float UCombatUtils::GetKnockbackRecoveryTime(EHitReactType InHit)
 {
 	switch (InHit)
 	{
+	case EHitReactType::Knockback_Tiny:
+		return .5f;
 	case EHitReactType::Knockback_VeryLight:
 		return 1.f;
 	case EHitReactType::Knockback_Light:

@@ -174,6 +174,11 @@ void ABaseOverlapProjectile::ApplyMissEffects(const FHitResult Impact)
 
 void ABaseOverlapProjectile::HandleActorDeath()
 {
+	if(SummonedMesh)
+	{
+		SummonedMesh->SetVisibility(false);
+	}
+	
 	if (UAudioComponent* ProjAudioComp = FindComponentByClass<UAudioComponent>(); ProjAudioComp && ProjAudioComp->IsPlaying())
 	{
 		ProjAudioComp->FadeOut(0.1f, 0.f);

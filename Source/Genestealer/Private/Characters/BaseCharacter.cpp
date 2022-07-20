@@ -146,6 +146,7 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		if(IsPlayerControlled() && GetCurrentPlayingMontage())
 		{
 			if(HitReactType == EHitReactType::Knockback_VeryLight
+				|| HitReactType == EHitReactType::Knockback_Tiny
 				|| HitReactType == EHitReactType::Knockback_Light
 				|| HitReactType == EHitReactType::HitReact_Light)
 			{

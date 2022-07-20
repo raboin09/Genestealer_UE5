@@ -9,6 +9,7 @@ UENUM(BlueprintType)
 enum class EHitReactType : uint8
 {
 	None,
+	Knockback_Tiny,
 	Knockback_VeryLight,
 	Knockback_Light,
 	Knockback_Medium,
