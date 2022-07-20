@@ -162,6 +162,11 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		AActor* HitActor = Hit.GetActor();
 		if(HitActor && !HitActors.Contains(HitActor) && HitActor->GetClass()->ImplementsInterface(UAttackable::StaticClass()))
 		{
+			if(bCanHitMultipleEnemies && UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_DEAD))
+			{
+				break;
+			}
+			
 			if(!bCanHitMultipleEnemies && HitActors.Num() > 0)
 			{
 				break;
