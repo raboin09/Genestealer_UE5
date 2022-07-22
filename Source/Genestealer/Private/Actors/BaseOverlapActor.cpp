@@ -21,9 +21,10 @@ void ABaseOverlapActor::BeginPlay()
 		ShapeComponent->IgnoreComponentWhenMoving(GetMesh(), true);
 	}
 
-	if(!bActivateOnStart)
+	// Add ACTIVE tag to activate at start
+	if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
 	{
-		Deactivate();	
+		Deactivate();
 	} else
 	{
 		Activate();
@@ -58,12 +59,14 @@ void ABaseOverlapActor::Activate()
 			ShapeComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			ShapeComponent->SetGenerateOverlapEvents(true);
 		}
+		K2_Activate();
 	}
 }
 
 void ABaseOverlapActor::Deactivate()
 {
 	if (IsActive()) {
+		K2_Deactivate();
 		UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ACTIVE);
 		if(UShapeComponent* ShapeComponent = GetCollisionComponent())
 		{

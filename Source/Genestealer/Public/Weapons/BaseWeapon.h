@@ -76,6 +76,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnEnterInventory();
 	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnLeaveInventory();
+	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstStarted();
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnBurstFinished();

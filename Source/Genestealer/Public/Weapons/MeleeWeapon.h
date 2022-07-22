@@ -44,7 +44,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_PlayHitEffects(FHitResult HitResult, AActor* HitActor = nullptr);
+	void K2_PlayHitEffects(FHitResult HitResult, int32 ComboCounter = 0, int32 MaxCombos = 0);
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_StartWeaponTrace();
 	UFUNCTION(BlueprintImplementableEvent)

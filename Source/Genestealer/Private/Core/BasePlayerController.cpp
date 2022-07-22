@@ -69,6 +69,7 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 
 TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 {
+	// Remember to add a new class type if it needs to be considered alive via IsActorAlive()
 	FVector CamLoc = FVector::ZeroVector;
 	FRotator CamRot;	
 	GetPlayerViewPoint(CamLoc, CamRot);
@@ -119,11 +120,23 @@ bool ABasePlayerController::IsActorAlive(UObject* InObject) const
 		GetPlayerViewPoint(CamLoc, CamRot);
 		return !CoverPoint->HasOccupant() && UKismetMathLibrary::Vector_Distance(CamLoc, CoverPoint->GetActorLocation()) <= UCoreUtils::GetCoverPointValidDistance();
 	}
+	if(ABaseOverlapPickup* Pickup = Cast<ABaseOverlapPickup>(InObject))
+	{
+		return true;
+	}
 	return false;
 }
 
 bool ABasePlayerController::ShouldOutlineInteractable(TScriptInterface<IInteractable> InInteractable) const
 {
+	if(const UObject* InterObj = InInteractable.GetObject())
+	{
+		if(InterObj->IsA(ABaseOverlapPickup::StaticClass()))
+		{
+			return true;
+		}	
+	}
+	
 	if(UCombatUtils::IsActorNeutral(InInteractable))
 	{
 		return true;
@@ -160,5 +173,13 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 	if(PlayerCharacter)
 	{
 		PlayerCharacter->OnPlayerAimingChanged().AddDynamic(this, &ABasePlayerController::HandlePlayerAimingChanged);
+	}
+}
+
+void ABasePlayerController::InteractAction(const FInputActionValue& Value)
+{
+	if(CurrentInteractableActor)
+	{
+		CurrentInteractableActor->InteractWithActor(PlayerCharacter);
 	}
 }

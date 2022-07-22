@@ -20,11 +20,15 @@ public:
 	UInventoryComponent();
 	
 	void SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeaponClass, TSubclassOf<AActor> AlternateWeaponClass);
+	void ReplaceCurrentWeapon(TSubclassOf<AActor> WeaponClass);
 	void DestroyInventory(bool bRagdollWeapon, bool bSpawnWeaponPickup);
 	bool DoesCurrentWeaponForceAimOnFire() const;
 	bool CanWeaponAim() const;
 	TSubclassOf<AActor> GetAlternateWeaponClass() const;
 	TSubclassOf<AActor> GetPrimaryWeaponClass() const;
+	FORCEINLINE TScriptInterface<IWeapon> GetPrimaryWeapon() const { return PrimaryWeapon; }
+	FORCEINLINE TScriptInterface<IWeapon> GetAlternateWeapon() const { return PrimaryWeapon; }
+	FORCEINLINE bool IsPrimaryWeaponEquipped() const { return CurrentWeapon == PrimaryWeapon; }
 	
 	UFUNCTION(BlueprintCallable)
 	void StartReload();

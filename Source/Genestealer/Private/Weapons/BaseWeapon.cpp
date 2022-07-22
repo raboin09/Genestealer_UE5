@@ -193,6 +193,7 @@ void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
 void ABaseWeapon::StartWeaponRagdoll(bool bSpawnPickup)
 {
 	Internal_StartMeshRagdoll(GetWeaponMesh());
+	SetLifeSpan(5.f);
 	// TODO Alternate Mesh
 }
 

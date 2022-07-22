@@ -3,6 +3,9 @@
 
 #include "Characters/InteractionComponent.h"
 
+#include "Actors/BaseOverlapActor.h"
+#include "Actors/BaseOverlapPickup.h"
+#include "Actors/BaseWeaponPickup.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CombatUtils.h"
 
@@ -56,5 +59,11 @@ EAffiliation UInteractionComponent::Internal_GetOwnerAffiliation() const
 	{
 		return OwnerCast->GetAffiliation();
 	}
+
+	if(const IInteractable* InterCast = Cast<IInteractable>(GetOwner()))
+	{
+		return InterCast->GetInteractableAffiliation();
+	}
+	
 	return EAffiliation::Neutral;
 }

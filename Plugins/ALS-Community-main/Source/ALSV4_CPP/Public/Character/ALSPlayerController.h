@@ -55,6 +55,9 @@ protected:
 	virtual void AimAction(const FInputActionValue& Value);
 
 	UFUNCTION()
+	virtual void InteractAction(const FInputActionValue& Value) {};
+
+	UFUNCTION()
 	void CameraTapAction(const FInputActionValue& Value);
 
 	UFUNCTION()

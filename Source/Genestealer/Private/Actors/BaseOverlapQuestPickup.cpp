@@ -18,7 +18,6 @@ ABaseOverlapQuestPickup::ABaseOverlapQuestPickup()
 void ABaseOverlapQuestPickup::BeginPlay()
 {
 	Super::BeginPlay();
-	UWorldUtils::TryAddActorToQuestableArray(this);
 }
 
 bool ABaseOverlapQuestPickup::CanPickup(ACharacter* PotentialChar)

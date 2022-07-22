@@ -183,8 +183,6 @@ protected:
 
 private:
 	FTimerHandle TimerHandle_InCombat;
-	FTimerHandle TimerHandle_Destroy;
-	FTimerHandle TimerHandle_DeathRagoll;
 	FTimerHandle TimerHandle_Ragdoll;
 
 	UPROPERTY(Transient)

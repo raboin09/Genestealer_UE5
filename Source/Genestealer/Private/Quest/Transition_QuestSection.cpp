@@ -50,6 +50,11 @@ void UTransition_QuestSection::ActivateAllObjectivesOfClass(UClass* ObjectiveCla
 	
 	for(AActor* CurrActor : UWorldUtils::QuestRelevantActors)
 	{
+		if(!CurrActor)
+		{
+			continue;
+		}
+		
 		if(QuestSectionData.ObjectiveTag.IsNone() || CurrActor->ActorHasTag(QuestSectionData.ObjectiveTag))
 		{
 			ActivateQuestObjectiveActor(CurrActor);	
@@ -59,6 +64,11 @@ void UTransition_QuestSection::ActivateAllObjectivesOfClass(UClass* ObjectiveCla
 
 void UTransition_QuestSection::ActivateQuestObjectiveActor(AActor* InActor)
 {
+	if(!InActor)
+	{
+		return;
+	}
+
 	if(IQuestable* CastedActor = Cast<IQuestable>(InActor))
 	{
 		CastedActor->OnQuestObjectiveEvent().AddDynamic(this, &UTransition_QuestSection::HandleQuestEventTrigger);

@@ -145,6 +145,11 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 	
 	for(const FString& Key : Keys)
 	{
+		if(!bCanHitMultipleEnemies && HitActors.Num() > 0)
+		{
+			break;
+		}
+		
 		FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), true, GetInstigator());
 		TraceParams.bReturnPhysicalMaterial = true;
 		FHitResult Hit(ForceInit);
@@ -178,17 +183,11 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 				RecordStatsEvent(MeleeHit, 1.f, HitActor);
 			}
 			
-			K2_PlayHitEffects(Hit, HitActor);
+			K2_PlayHitEffects(Hit, ComboSectionIncrement, MaxComboSections);
 			HitActors.Add(HitActor);
 			TArray<TSubclassOf<AActor>> EffectsToApply = WeaponEffects;
 			EffectsToApply.Append(AdditionalEffectsToApply);
 			UEffectUtils::ApplyEffectsToHitResult(EffectsToApply, Hit, GetInstigator());
-		}
-		
-		if(!bCanHitMultipleEnemies && HitActors.Num() > 0)
-		{
-			ResetActivatable();
-			break;
 		}
 	}
 	Internal_SetCurrentSocketLocations();

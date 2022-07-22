@@ -20,11 +20,19 @@ void UInventoryComponent::SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeapon
 {
 	if(PrimaryWeaponClass)
 	{
+		if(PrimaryWeapon)
+		{
+			Internal_RemoveWeapon(PrimaryWeapon, EWeaponSlot::Primary);
+		}
 		Internal_SpawnWeaponFromClass(PrimaryWeaponClass, EWeaponSlot::Primary);
 	}
 	
 	if(AlternateWeaponClass)
 	{
+		if(AlternateWeapon)
+		{
+			Internal_RemoveWeapon(AlternateWeapon, EWeaponSlot::Alternate);
+		}
 		Internal_SpawnWeaponFromClass(AlternateWeaponClass, EWeaponSlot::Alternate);
 	}
 
@@ -32,6 +40,27 @@ void UInventoryComponent::SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeapon
 	{
 		EquipPrimaryWeapon();
 	} else if(AlternateWeapon)
+	{
+		EquipAlternateWeapon();
+	}
+}
+
+void UInventoryComponent::ReplaceCurrentWeapon(TSubclassOf<AActor> WeaponClass)
+{
+	const auto Slot = IsPrimaryWeaponEquipped() ? EWeaponSlot::Primary : EWeaponSlot::Alternate;
+	if(WeaponClass)
+	{
+		if(CurrentWeapon)
+		{
+			Internal_RemoveWeapon(CurrentWeapon, Slot);
+		}
+		Internal_SpawnWeaponFromClass(WeaponClass, Slot);
+	}
+
+	if(Slot == EWeaponSlot::Primary)
+	{
+		EquipPrimaryWeapon();
+	} else if (Slot == EWeaponSlot::Alternate)
 	{
 		EquipAlternateWeapon();
 	}
@@ -203,6 +232,11 @@ void UInventoryComponent::AddWeapon(TScriptInterface<IWeapon> Weapon, EWeaponSlo
 
 bool UInventoryComponent::HasWeapon(const UClass* WeaponClass) const
 {
+	if(!WeaponClass)
+	{
+		return false;
+	}
+	
 	const UObject* TempWeapon = WeaponClass->GetDefaultObject();
 	if(!TempWeapon)
 		return false;
@@ -268,6 +302,10 @@ void UInventoryComponent::Internal_RemoveWeapon(TScriptInterface<IWeapon> Weapon
 	if (Weapon)
 	{
 		Weapon->OnLeaveInventory();
+		if(AActor* CastedWeapon = Cast<AActor>(Weapon.GetObject()))
+		{
+			CastedWeapon->Destroy();
+		}
 		WeaponRemoved.Broadcast(Weapon);
 	}
 }

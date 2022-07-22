@@ -28,7 +28,7 @@ public:
 	FORCEINLINE class UQuestManagerComponent* GetQuestManager() const { return QuestManager; }
 	FORCEINLINE FNewActorTargeted& OnNewActorTargeted() { return NewActorTargeted; }
 	TScriptInterface<IInteractable> GetTargetedActor() const;
-
+	
 
 	UFUNCTION()
 	void CoverAction(const FInputActionValue& Value);
@@ -50,7 +50,9 @@ public:
 	}
 #endif
 	
-protected:	
+protected:
+	virtual void InteractAction(const FInputActionValue& Value) override;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")

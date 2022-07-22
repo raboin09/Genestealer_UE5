@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Actors/BaseOverlapPickup.h"
-#include "API/Weapon.h"
 #include "BaseWeaponPickup.generated.h"
 
 
@@ -20,15 +19,22 @@ public:
 	virtual UMeshComponent* GetMesh_Implementation() const override;
 	
 protected:
+	FORCEINLINE virtual EAffiliation GetInteractableAffiliation() const override { return OutlineAffiliation; }
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
 	virtual bool CanPickup(ACharacter* PotentialChar) override;
 
-	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
+	UFUNCTION(BlueprintCallable)
+	void GiveWeaponToPlayer(ACharacter* ConsumingChar);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
+	EAffiliation OutlineAffiliation = EAffiliation::Allies;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	UStaticMeshComponent* SummonedStaticMesh;
-	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	USkeletalMeshComponent* SummonedSkelMesh;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer", meta=(MustImplement="Weapon"))
+	UPROPERTY(EditAnywhere, Category="Genestealer", meta=(MustImplement="Weapon"))
 	TSubclassOf<AActor> WeaponPickupClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UParticleSystemComponent* HologramParticleSystem;

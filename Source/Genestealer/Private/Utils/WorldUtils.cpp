@@ -44,3 +44,17 @@ void UWorldUtils::TryAddActorToQuestableArray(AActor* InActor)
 	}
 	QuestRelevantActors.AddUnique(InActor);
 }
+
+void UWorldUtils::TryRemoveActorFromQuestableArray(AActor* InActor)
+{
+	if(!InActor || !InActor->GetClass() || !InActor->GetClass()->ImplementsInterface(UQuestable::StaticClass()))
+	{
+		return;
+	}
+	QuestRelevantActors.Remove(InActor);
+}
+
+AActor* UWorldUtils::K2_SpawnActorToWorld(UObject* ContextObject, TSubclassOf<AActor> ClassToSpawn, FTransform SpawnTransform, AActor* Owner, APawn* Instigator, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride)
+{
+	return SpawnActorToWorld<AActor>(ContextObject, ClassToSpawn, SpawnTransform, Owner, Instigator, CollisionHandlingOverride);
+}

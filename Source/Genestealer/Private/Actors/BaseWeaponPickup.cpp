@@ -33,10 +33,7 @@ void ABaseWeaponPickup::ConsumePickup(ACharacter* ConsumingChar)
 {
 	if(ConsumingChar)
 	{
-		if(UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(ConsumingChar))
-		{
-			InventoryComponent->GiveWeaponClassAmmo(WeaponPickupClass, 20);
-		}
+		GiveWeaponToPlayer(ConsumingChar);
 	}
 }
 
@@ -49,7 +46,15 @@ bool ABaseWeaponPickup::CanPickup(ACharacter* PotentialChar)
 	
 	if(const UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(PotentialChar))
 	{
-		return InventoryComponent->HasWeapon(WeaponPickupClass);
+		return !InventoryComponent->HasWeapon(WeaponPickupClass);
 	}
 	return false;
+}
+
+void ABaseWeaponPickup::GiveWeaponToPlayer(ACharacter* ConsumingChar)
+{
+	if(UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(ConsumingChar))
+	{
+		InventoryComponent->ReplaceCurrentWeapon(WeaponPickupClass);
+	}
 }

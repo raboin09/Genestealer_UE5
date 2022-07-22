@@ -38,12 +38,17 @@ protected:
 	FORCEINLINE virtual UMeshComponent* GetMesh_Implementation() const override { return PickupBase; }
 	virtual bool CanPickup(ACharacter* PotentialChar) PURE_VIRTUAL(ABaseOverlapPickup::CanPickup, return false;)
 	virtual void ConsumePickup(ACharacter* ConsumingChar) PURE_VIRTUAL(ABaseOverlapPickup::ConsumePickup,)
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleMeshOutlining(bool bIsOutlining);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleInteraction(AActor* InstigatingActor);
 	
 	UPROPERTY(EditAnywhere)
 	USphereComponent* CollisionComp;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	USoundCue* PickupSound;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	UStaticMeshComponent* PickupBase;
 	UPROPERTY(EditAnywhere, Category="Genestealer")
 	URotatingMovementComponent* RotatingMovementComponent;

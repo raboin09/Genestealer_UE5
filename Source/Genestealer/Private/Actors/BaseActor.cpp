@@ -19,6 +19,12 @@ void ABaseActor::BeginPlay()
 	UQuestManagerComponent::TryAddActorToActiveQuests(this);
 }
 
+void ABaseActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UWorldUtils::TryRemoveActorFromQuestableArray(this);
+	Super::EndPlay(EndPlayReason);
+}
+
 void ABaseActor::HandleTagChanged(const FGameplayTag& ChangedTag, bool bAdded)
 {
 	if(bAdded)

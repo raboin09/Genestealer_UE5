@@ -19,11 +19,16 @@ class GENESTEALER_API ABaseOverlapActor : public ABaseActor
 public:
 	ABaseOverlapActor();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_Activate();
 	UFUNCTION(BlueprintCallable)
-	void Activate();
+	virtual void Activate();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_Deactivate();
 	UFUNCTION(BlueprintCallable)
-	void Deactivate();
-	bool ShouldActivateOnStart() const { return bActivateOnStart; };
+	virtual void Deactivate();
+	
 	UFUNCTION(BlueprintNativeEvent)
 	UMeshComponent* GetMesh() const;
 	virtual UMeshComponent* GetMesh_Implementation() const PURE_VIRTUAL(ABaseOverlapActor::GetMesh, return nullptr;);
@@ -36,7 +41,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void K2_HandleOverlapEvent(AActor* OtherActor, const FHitResult& HitResult);
 	virtual void K2_HandleOverlapEvent_Implementation(AActor* OtherActor, const FHitResult& HitResult);
 	UFUNCTION(BlueprintNativeEvent)
@@ -55,8 +60,6 @@ protected:
 	TArray<FGameplayTag> BlockedOverlapTags;
 	UPROPERTY(EditAnywhere, Category = "Genestealer")
 	TArray<FGameplayTag> RequiredOverlapTags;
-	UPROPERTY(EditAnywhere, Category = "Genestealer")
-	bool bActivateOnStart;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer")
 	bool bDiesAfterOverlap;
 

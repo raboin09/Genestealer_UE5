@@ -88,6 +88,8 @@ void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEven
 	{
 		QuestObjectiveEvent.Broadcast(FQuestObjectiveEventPayload(this, EQuestObjectiveAction::Death));
 	}
+
+	UWorldUtils::TryRemoveActorFromQuestableArray(this);
 	
 	Super::HandleDeathEvent(DeathEventPayload);
 }

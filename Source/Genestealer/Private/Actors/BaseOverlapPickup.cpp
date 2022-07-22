@@ -10,7 +10,7 @@
 ABaseOverlapPickup::ABaseOverlapPickup()
 {
 	bDiesAfterOverlap = true;
-	bActivateOnStart = true;
+	DefaultGameplayTags.Add(TAG_STATE_ACTIVE);
 	
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
 	CollisionComp->InitSphereRadius(15.f);
@@ -64,11 +64,13 @@ void ABaseOverlapPickup::SwitchOutlineOnMesh(bool bShouldOutline)
 	{
 		InteractionComponent->SwitchOutlineOnAllMeshes(bShouldOutline);
 	}
+	K2_HandleMeshOutlining(bShouldOutline);
 }
 
 void ABaseOverlapPickup::InteractWithActor(AActor* InstigatingActor)
 {
-	
+	K2_HandleOverlapEvent(InstigatingActor, FHitResult());
+	K2_HandleInteraction(InstigatingActor);
 }
 
 void ABaseOverlapPickup::PostInitializeComponents()
