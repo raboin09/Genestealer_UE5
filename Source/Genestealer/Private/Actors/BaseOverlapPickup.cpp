@@ -69,7 +69,6 @@ void ABaseOverlapPickup::SwitchOutlineOnMesh(bool bShouldOutline)
 
 void ABaseOverlapPickup::InteractWithActor(AActor* InstigatingActor)
 {
-	K2_HandleOverlapEvent(InstigatingActor, FHitResult());
 	K2_HandleInteraction(InstigatingActor);
 }
 

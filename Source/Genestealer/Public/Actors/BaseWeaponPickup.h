@@ -20,8 +20,12 @@ public:
 	
 protected:
 	FORCEINLINE virtual EAffiliation GetInteractableAffiliation() const override { return OutlineAffiliation; }
+	UFUNCTION(BlueprintCallable, Category="Genestealer")
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
+	UFUNCTION(BlueprintPure, Category="Genestealer")
 	virtual bool CanPickup(ACharacter* PotentialChar) override;
+	UFUNCTION(BlueprintPure, Category="Genestealer")
+	virtual bool PlayerCharacterDoesNotHaveWeapon(ACharacter* PotentialChar);
 
 	UFUNCTION(BlueprintCallable)
 	void GiveWeaponToPlayer(ACharacter* ConsumingChar);

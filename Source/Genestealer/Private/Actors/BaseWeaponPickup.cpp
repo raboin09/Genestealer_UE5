@@ -44,6 +44,11 @@ bool ABaseWeaponPickup::CanPickup(ACharacter* PotentialChar)
 		return false;
 	}
 	
+	return PlayerCharacterDoesNotHaveWeapon(PotentialChar);
+}
+
+bool ABaseWeaponPickup::PlayerCharacterDoesNotHaveWeapon(ACharacter* PotentialChar)
+{
 	if(const UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(PotentialChar))
 	{
 		return !InventoryComponent->HasWeapon(WeaponPickupClass);

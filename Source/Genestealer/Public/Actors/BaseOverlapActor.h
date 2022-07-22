@@ -22,12 +22,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Activate();
 	UFUNCTION(BlueprintCallable)
-	virtual void Activate();
+	void Activate();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_Deactivate();
 	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate();
+	void Deactivate();
 	
 	UFUNCTION(BlueprintNativeEvent)
 	UMeshComponent* GetMesh() const;
@@ -37,6 +37,7 @@ public:
 	virtual UShapeComponent* GetCollisionComponent_Implementation() const  PURE_VIRTUAL(ABaseOverlapActor::GetCollisionComponent, return nullptr;);
 	
 protected:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FORCEINLINE bool IsActive() { return UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE); }
 	
 	virtual void BeginPlay() override;

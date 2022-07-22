@@ -31,7 +31,7 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
 	void K2_HandleTagRemoved(const FGameplayTag& RemovedTag);
 	
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	TArray<FGameplayTag> DefaultGameplayTags;
 
 private:
