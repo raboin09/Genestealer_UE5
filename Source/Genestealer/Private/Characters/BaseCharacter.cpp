@@ -468,7 +468,6 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			CurrentMount->StartMountedFire();
 		} else
 		{
-			UKismetSystemLibrary::PrintString(this, "Firing");
 			InventoryComponent->StartFiring();
 			if(InventoryComponent->DoesCurrentWeaponForceAimOnFire())
 			{
@@ -489,7 +488,6 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 			CurrentMount->StopMountedFire();
 		} else
 		{
-			UKismetSystemLibrary::PrintString(this, "Stop Firing");
 			InventoryComponent->StopFiring();
 			if(!IsAiming())
 			{

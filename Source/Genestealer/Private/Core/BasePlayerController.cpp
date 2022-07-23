@@ -136,6 +136,14 @@ bool ABasePlayerController::ShouldOutlineInteractable(TScriptInterface<IInteract
 			return true;
 		}	
 	}
+
+	if(const UObject* InterObj = InInteractable.GetObject())
+	{
+		if(InterObj->IsA(ABaseCoverActor::StaticClass()))
+		{
+			return true;
+		}	
+	}
 	
 	if(UCombatUtils::IsActorNeutral(InInteractable))
 	{

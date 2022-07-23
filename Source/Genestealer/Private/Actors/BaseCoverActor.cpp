@@ -97,7 +97,7 @@ void ABaseCoverActor::SwitchOutlineOnMesh(bool bShouldOutline)
 {
 	if(CoverMesh)
 	{
-		const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Gray);
+		const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Green);
 		CoverMesh->SetRenderCustomDepth(bShouldOutline);
 		CoverMesh->SetCustomDepthStencilValue(OutlineColorInt);
 	}
