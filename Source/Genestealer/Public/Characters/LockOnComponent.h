@@ -56,7 +56,7 @@ private:
 
 	UPROPERTY(Transient)
 	AActor* SelectedActor;
-	UPROPERTY(Transient)
+	UPROPERTY()
 	UTimelineComponent* LockOnInterpTimeline;
 };
 

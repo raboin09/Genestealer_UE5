@@ -174,6 +174,7 @@ void ABaseOverlapProjectile::ApplyMissEffects(const FHitResult Impact)
 
 void ABaseOverlapProjectile::HandleActorDeath()
 {
+	K2_HandleActorDeath();
 	if(SummonedMesh)
 	{
 		SummonedMesh->SetVisibility(false);

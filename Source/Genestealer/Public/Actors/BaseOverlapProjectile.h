@@ -32,13 +32,15 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Genestealer")
 	void K2_HandleImpact(const FHitResult& HitResult);
 	virtual void K2_HandleImpact_Implementation(const FHitResult& HitResult);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleActorDeath();
 	void PlayFlybySound();	
 	UFUNCTION()
 	virtual void OnImpact(const FHitResult& HitResult);
 	virtual void HandleActorDeath();
 	void ApplyMissEffects(const FHitResult Impact);
 	
-	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Genestealer")
 	UProjectileMovementComponent* MovementComp;
 	UPROPERTY(VisibleDefaultsOnly, Category="Genestealer")
 	UParticleSystemComponent* ParticleComp;

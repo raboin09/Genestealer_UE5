@@ -214,7 +214,7 @@ void AMeleeWeapon::Internal_StartAttack()
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);
 	PlayWeaponSound(FireSound);
-	if(ULockOnComponent* LockOnComponent = GetOwningPawn()->FindComponentByClass<ULockOnComponent>(); IsWeaponPlayerControlled())
+	if(ULockOnComponent* LockOnComponent = GetOwningPawn()->FindComponentByClass<ULockOnComponent>(); LockOnComponent && IsWeaponPlayerControlled())
 	{
 		LockOnComponent->InterpToBestTargetForMeleeAttack();
 	}

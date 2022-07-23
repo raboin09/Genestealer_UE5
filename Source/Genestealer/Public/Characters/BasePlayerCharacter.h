@@ -29,8 +29,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds")
 	USoundCue* AimOutSound;
 	
-	UPROPERTY()
-	UTimelineComponent* LockOnInterpTimeline;
 	UPROPERTY(EditDefaultsOnly)
 	ULockOnComponent* LockOnComponent;
 

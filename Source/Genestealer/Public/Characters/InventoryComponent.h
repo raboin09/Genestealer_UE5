@@ -28,7 +28,7 @@ public:
 	TSubclassOf<AActor> GetPrimaryWeaponClass() const;
 	FORCEINLINE TScriptInterface<IWeapon> GetPrimaryWeapon() const { return PrimaryWeapon; }
 	FORCEINLINE TScriptInterface<IWeapon> GetAlternateWeapon() const { return PrimaryWeapon; }
-	FORCEINLINE bool IsPrimaryWeaponEquipped() const { return CurrentWeapon == PrimaryWeapon; }
+	bool IsPrimaryWeaponEquipped() const { return CurrentWeapon == PrimaryWeapon; }
 	
 	UFUNCTION(BlueprintCallable)
 	void StartReload();

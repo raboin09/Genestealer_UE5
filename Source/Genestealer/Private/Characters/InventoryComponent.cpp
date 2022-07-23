@@ -152,6 +152,11 @@ void UInventoryComponent::EquipPrimaryWeapon()
 
 FPlayerAimingChangedPayload UInventoryComponent::GetCrosshairPayload() const
 {
+	if(!CurrentWeapon)
+	{
+		return FPlayerAimingChangedPayload(false, nullptr, 0.f);
+	}
+	
 	if(const IRangedEntity* RangedEntity = Cast<IRangedEntity>(CurrentWeapon.GetObject()))
 	{
 		return RangedEntity->GetCrosshairPayload();

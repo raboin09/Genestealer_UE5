@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Blueprintable)
 class GENESTEALER_API UAudioManager : public UObject
 {
 	GENERATED_BODY()

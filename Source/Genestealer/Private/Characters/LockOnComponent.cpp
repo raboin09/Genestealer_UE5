@@ -33,7 +33,7 @@ void ULockOnComponent::BeginPlay()
 }
 
 void ULockOnComponent::InterpToBestTargetForMeleeAttack(TFunction<void()> InFinishedFunction)
-{	
+{
 	InterpToActor(Internal_TraceForTarget(), InFinishedFunction);
 }
 
@@ -74,7 +74,6 @@ void ULockOnComponent::Internal_CoverTransitionUpdate(float Alpha)
 	{
 		return;
 	}
-
 	const FTransform& SelectedActorTransform = GetOwner()->GetActorTransform();
 	FTransform TargetTransform;
 	TargetTransform.SetLocation(FVector(TargetActorLocation.X, TargetActorLocation.Y, SelectedActorTransform.GetLocation().Z));
