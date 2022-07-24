@@ -23,7 +23,7 @@ public:
 	ABaseOverlapProjectile();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PostInitializeComponents() override;
-	
+	void IgnoreActor(AActor* InActor) const;
 	void InitVelocity(const FVector& ShootDirection) const;
 
 	FORCEINLINE void AddAdditionalEffectsToApply(TArray<TSubclassOf<AActor>> AdditionalEffectsToApply) { ProjectileEffectsToApply.Append(AdditionalEffectsToApply);}

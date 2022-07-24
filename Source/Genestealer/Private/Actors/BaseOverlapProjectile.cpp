@@ -81,6 +81,19 @@ void ABaseOverlapProjectile::PostInitializeComponents()
 	}
 }
 
+void ABaseOverlapProjectile::IgnoreActor(AActor* InActor) const
+{
+	if(CollisionComp)
+	{
+		CollisionComp->IgnoreActorWhenMoving(InActor, true);
+	}
+
+	if(SummonedMesh)
+	{
+		SummonedMesh->IgnoreActorWhenMoving(InActor, true);
+	}
+}
+
 void ABaseOverlapProjectile::BeginPlay()
 {
 	Super::BeginPlay();

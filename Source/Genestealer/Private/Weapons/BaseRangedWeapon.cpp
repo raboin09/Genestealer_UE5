@@ -637,6 +637,23 @@ void ABaseRangedWeapon::HandleFiring()
 	}
 }
 
+void ABaseRangedWeapon::OnLeaveInventory()
+{
+	Super::OnLeaveInventory();
+	if(FireVFXSystem)
+	{
+		FireVFXSystem->DeactivateImmediate();
+	}
+	if(ReloadAudio)
+	{
+		ReloadAudio->Stop();
+	}
+	if(FireAudio)
+	{
+		FireAudio->Stop();
+	}
+}
+
 void ABaseRangedWeapon::DetermineWeaponState()
 {
 	EWeaponState NewState = EWeaponState::Idle;
