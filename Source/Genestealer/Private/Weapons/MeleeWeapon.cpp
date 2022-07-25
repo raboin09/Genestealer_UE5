@@ -8,6 +8,7 @@
 #include "Core/PlayerStatsComponent.h"
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
@@ -105,6 +106,12 @@ void AMeleeWeapon::OnUnEquip()
 	Super::OnUnEquip();
 	ResetActivatable();
 	StopWeaponAnimation(FireAnim);
+}
+
+void AMeleeWeapon::OnEnterInventory(ACharacter* NewOwner)
+{
+	Super::OnEnterInventory(NewOwner);
+	UGameplayStatics::PrimeSound(FireSound);
 }
 
 FAnimMontagePlayData AMeleeWeapon::Internal_GetPlayData() const

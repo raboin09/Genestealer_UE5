@@ -594,11 +594,12 @@ void ABaseRangedWeapon::StartReload()
 	{
 		bPendingReload = true;
 		DetermineWeaponState();
+		StopWeaponAnimation(FireAnim);
 		if(ReloadAnim)
 		{
 			FAnimMontagePlayData PlayData;
 			PlayData.MontageToPlay = ReloadAnim;
-			const float AnimDuration = PlayWeaponAnimation(PlayData);	
+			const float AnimDuration = PlayWeaponAnimation(PlayData);
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, AnimDuration, false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		} else
@@ -635,6 +636,12 @@ void ABaseRangedWeapon::HandleFiring()
 		Super::HandleFiring();
 		UseAmmo();
 	}
+}
+
+void ABaseRangedWeapon::OnEnterInventory(ACharacter* NewOwner)
+{
+	Super::OnEnterInventory(NewOwner);
+	UGameplayStatics::PrimeSound(FireSound);
 }
 
 void ABaseRangedWeapon::OnLeaveInventory()

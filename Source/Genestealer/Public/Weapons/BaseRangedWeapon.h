@@ -67,6 +67,7 @@ protected:
 	virtual void OnUnEquip() override;
 	virtual bool CanFire() const override;
 	virtual void HandleFiring() override;
+	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	virtual void OnLeaveInventory() override;
 	virtual void DetermineWeaponState() override;
 

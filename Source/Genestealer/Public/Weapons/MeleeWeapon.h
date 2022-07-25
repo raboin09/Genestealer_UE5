@@ -37,6 +37,7 @@ protected:
 	virtual void StartFire() override;
 	virtual void StopFire() override;
 	virtual void OnUnEquip() override;
+	virtual void OnEnterInventory(ACharacter* NewOwner) override;
 	
 	///////////////////////////////////////////
 	/// AMeleeWeapon code

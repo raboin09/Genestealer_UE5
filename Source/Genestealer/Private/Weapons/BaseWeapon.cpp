@@ -412,6 +412,7 @@ void ABaseWeapon::OnEnterInventory(ACharacter* NewOwner)
 	SetOwningPawn(NewOwner);
 	Internal_HideMesh(true);
 	K2_OnEnterInventory();
+	UGameplayStatics::PrimeSound(FireWarmupSound);
 }
 
 void ABaseWeapon::OnLeaveInventory()

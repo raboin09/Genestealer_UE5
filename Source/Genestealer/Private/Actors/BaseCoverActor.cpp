@@ -168,6 +168,8 @@ void ABaseCoverActor::OccupyMount(ABaseCharacter* InActor, const FVector& InTarg
 	{
 		return;
 	}
+
+	UGameplayStatics::PrimeSound(HitCoverFoley);
 	
 	OccupiedActor = InActor;
 	if(bCrouchingCover)
