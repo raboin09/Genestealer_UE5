@@ -46,7 +46,7 @@ protected:
 	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
 	FORCEINLINE virtual int32 GetMaxAmmo() override { return HasInfiniteAmmo() ? 1 : MaxAmmo; }
 	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
-	FORCEINLINE virtual bool HasInfiniteAmmo() override { return true; }
+	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual FPlayerAimingChangedPayload GetCrosshairPayload() const override { return FPlayerAimingChangedPayload(false, Crosshair, CrosshairSize); }
@@ -73,6 +73,8 @@ protected:
 
 	
 	virtual FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleOutOfAmmo(bool bIsOutOfAmmo);
 	virtual void UseAmmo();
 	virtual void ReloadWeapon();
 	
@@ -99,8 +101,6 @@ protected:
 	UTexture2D* Crosshair;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
 	float CrosshairSize = 50.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon", meta = (EditCondition = "WeaponType != EWeaponType::Rifle && WeaponType != EWeaponType::Heavy"))
-	bool bAkimbo = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TraceRange = 10000.f;
 
@@ -190,16 +190,12 @@ protected:
 
 	UPROPERTY(Transient)
 	UFXSystemComponent* FireVFXSystem;
-	UPROPERTY()
-	UMeshComponent* NextFiringMesh;
 private:
 	void Internal_PlayShellEffects() const;
 	UFUNCTION()
 	void HandleShellParticleCollision(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName, UPhysicalMaterial* PhysMat);
 	UFUNCTION()
 	UFXSystemComponent* Internal_PlayParticleFireEffects();
-	UFUNCTION()
-	void Internal_AlternateFiringMesh();
 	bool Internal_IsInCover();
 	bool Internal_HasRightInput();
 	

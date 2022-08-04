@@ -59,12 +59,13 @@ void ABaseWeapon::InitWeaponMesh(UMeshComponent* InMeshComp)
 
 void ABaseWeapon::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	CachedTransform = GetWeaponMesh()->GetRelativeTransform();
 	Internal_HideMesh(true);
 }
 
@@ -73,7 +74,8 @@ void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 	Internal_HideMesh(false);
 	bPendingEquip = true;
 	DetermineWeaponState();
-
+	GetWeaponMesh()->SetRelativeLocation(CachedTransform.GetLocation());
+	GetWeaponMesh()->SetRelativeRotation(CachedTransform.GetRotation());
 	if(WeaponType == EWeaponType::Heavy)
 	{
 		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_CANNOT_MOUNT);
@@ -132,6 +134,10 @@ void ABaseWeapon::OnUnEquip()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
+	CachedTransform = GetWeaponMesh()->GetRelativeTransform();
+	GetWeaponMesh()->SetRelativeLocation(UnEquipTransform.GetLocation());
+	GetWeaponMesh()->SetRelativeRotation(UnEquipTransform.GetRotation());
+	
 	DetermineWeaponState();
 }
 
@@ -154,7 +160,7 @@ void ABaseWeapon::StartFire()
 void ABaseWeapon::StopFire()
 {
 	if (bWantsToFire)
-	{
+	{  
 		bWantsToFire = false;
 		if(FireStartAudio)
 		{
@@ -175,8 +181,8 @@ bool ABaseWeapon::CanFire() const
 		TagContainer.AddTag(TAG_STATE_DEAD);
 		bCanFire = !OwnerTag->GetTagContainer().HasAny(TagContainer);
 	}
-	const bool bStateOKToFire = (CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing);	
-	return  bCanFire && bStateOKToFire ;
+	const bool bStateOKToFire = (CurrentState == EWeaponState::Idle) || (CurrentState == EWeaponState::Firing);
+	return bCanFire && bStateOKToFire;
 }
 
 void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)

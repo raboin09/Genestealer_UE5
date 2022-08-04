@@ -35,6 +35,7 @@ void ABaseWeaponPickup::ConsumePickup(ACharacter* ConsumingChar)
 	{
 		GiveWeaponToPlayer(ConsumingChar);
 	}
+	Super::ConsumePickup(ConsumingChar);
 }
 
 bool ABaseWeaponPickup::CanPickup(ACharacter* PotentialChar)
@@ -43,8 +44,8 @@ bool ABaseWeaponPickup::CanPickup(ACharacter* PotentialChar)
 	{
 		return false;
 	}
-	
-	return PlayerCharacterDoesNotHaveWeapon(PotentialChar);
+	return true;
+	// return PlayerCharacterDoesNotHaveWeapon(PotentialChar);
 }
 
 bool ABaseWeaponPickup::PlayerCharacterDoesNotHaveWeapon(ACharacter* PotentialChar)
@@ -60,6 +61,12 @@ void ABaseWeaponPickup::GiveWeaponToPlayer(ACharacter* ConsumingChar)
 {
 	if(UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(ConsumingChar))
 	{
-		InventoryComponent->ReplaceCurrentWeapon(WeaponPickupClass);
+		if(InventoryComponent->HasWeapon(WeaponPickupClass))
+		{
+			InventoryComponent->GiveWeaponClassAmmo(WeaponPickupClass, 10000);
+		} else
+		{
+			InventoryComponent->ReplaceCurrentWeapon(WeaponPickupClass);	
+		}
 	}
 }

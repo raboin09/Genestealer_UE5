@@ -16,7 +16,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_PlayCooldownEffects(float CooldownTime);
 
-	virtual void BeginPlay() override;
 	virtual void FireWeapon() override;
 	virtual float SimulateWeaponFire() override;
 	virtual void OnBurstFinished() override;

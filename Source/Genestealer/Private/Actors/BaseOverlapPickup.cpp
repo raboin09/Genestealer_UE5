@@ -58,6 +58,11 @@ void ABaseOverlapPickup::K2_HandleOverlapEvent_Implementation(AActor* OtherActor
 	}
 }
 
+void ABaseOverlapPickup::ConsumePickup(ACharacter* ConsumingChar)
+{
+	K2_HandleConsumePickup(ConsumingChar);
+}
+
 void ABaseOverlapPickup::SwitchOutlineOnMesh(bool bShouldOutline)
 {
 	if(InteractionComponent)

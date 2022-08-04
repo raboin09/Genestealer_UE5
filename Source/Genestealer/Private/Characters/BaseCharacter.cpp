@@ -216,7 +216,7 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 		FName SocketAttach = "WeaponBack_R";
 		if(OldWeapon->GetWeaponType() == EWeaponType::Pistol)
 		{
-			SocketAttach = "WeaponSide_R";
+			SocketAttach = "WeaponSide_L";
 		} else if(OldWeapon->GetWeaponType() == EWeaponType::Melee)
 		{
 			SocketAttach = "WeaponBack_L";

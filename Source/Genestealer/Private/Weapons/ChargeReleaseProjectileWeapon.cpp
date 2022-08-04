@@ -10,12 +10,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-void AChargeReleaseProjectileWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	NextFiringMesh = GetWeaponMesh();
-}
-
 void AChargeReleaseProjectileWeapon::FireWeapon()
 {
 	Internal_TryIncreaseChargeState();
@@ -26,7 +20,7 @@ float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
 {
 	if(!ChargingNiagara && FireFXClass)
 	{
-		ChargingNiagara = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+		ChargingNiagara = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 		if(ChargingNiagara)
 		{
 			ChargingNiagara->SetVariableInt(ChargeBlastNiagaraSmokeSpawnMaxName, SmokeSpawnMax * CurrentChargeState);
@@ -131,7 +125,7 @@ void AChargeReleaseProjectileWeapon::Internal_PlayChargeBlastVFX()
 {
 	if(ChargeBlastVFX)
 	{
-		ChargeBlastNiagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ChargeBlastVFX, NextFiringMesh ? NextFiringMesh->GetSocketLocation(RaycastSourceSocketName) : FVector::ZeroVector, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true);
+		ChargeBlastNiagara = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ChargeBlastVFX, GetWeaponMesh() ? GetWeaponMesh()->GetSocketLocation(RaycastSourceSocketName) : FVector::ZeroVector, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true);
 		if(ChargeBlastNiagara)
 		{
 			ChargeBlastNiagara->SetVariableInt(ChargeBlastNiagaraSmokeSpawnMaxName, SmokeSpawnMax * CurrentChargeState);

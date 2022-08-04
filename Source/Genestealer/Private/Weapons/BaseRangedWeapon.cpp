@@ -80,7 +80,6 @@ void ABaseRangedWeapon::PlayMuzzleFX()
 float ABaseRangedWeapon::SimulateWeaponFire()
 {
 	const FAnimMontagePlayData PlayData = GetPlayData();
-	Internal_AlternateFiringMesh();
 	PlayMuzzleFX();
 	
 	if(bSpawnShellFX && IsWeaponPlayerControlled())
@@ -146,12 +145,12 @@ void ABaseRangedWeapon::StopSimulatingWeaponFire()
 
 void ABaseRangedWeapon::Internal_PlayShellEffects() const
 {
-	if(!NextFiringMesh)
+	if(!GetWeaponMesh())
 	{
 		return;
 	}
 	
-	const FTransform SpawnTransform = NextFiringMesh->GetSocketTransform(ShellSpawnSocket);	
+	const FTransform SpawnTransform = GetWeaponMesh()->GetSocketTransform(ShellSpawnSocket);	
 	if(ShellFXClass->IsA(UParticleSystem::StaticClass()))
 	{
 		if(UParticleSystemComponent* ShellFXSystem = UGameplayStatics::SpawnEmitterAtLocation(this, Cast<UParticleSystem>(ShellFXClass), SpawnTransform.GetLocation(), SpawnTransform.Rotator()))
@@ -171,13 +170,13 @@ void ABaseRangedWeapon::HandleShellParticleCollision(FName EventName, float Emit
 
 UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 {
-	UParticleSystemComponent* ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	UParticleSystemComponent* ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	return ParticleFX;
 } 
 
 UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 {
-	UNiagaraComponent* NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), NextFiringMesh, RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
+	UNiagaraComponent* NiagaraFX = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 
 	if(NiagaraFX && AdjustVFX != EWeaponVFXAdjustmentType::NeverAdjust)
 	{		
@@ -213,55 +212,10 @@ UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 }
 
 FAnimMontagePlayData ABaseRangedWeapon::GetPlayData()
-{
-	// if not akimbo, if in cover return 
-	
+{	
 	FAnimMontagePlayData PlayData;	
-	if(bAkimbo)
-	{
-		if(Internal_IsInCover())
-		{
-			PlayData.MontageToPlay = Internal_HasRightInput() ? CoverFireRightAnim : CoverFireLeftAnim;
-		} else
-		{
-			PlayData.MontageToPlay = FireAnim;
-			PlayData.MontageSection = bSecondaryWeaponsTurn ? "AltFire" : "MainFire";
-		}
-
-	} else
-	{
-		PlayData.MontageToPlay = FireAnim;
-	}
+	PlayData.MontageToPlay = FireAnim;
 	return PlayData;
-}
-
-void ABaseRangedWeapon::Internal_AlternateFiringMesh()
-{
-	if(bAkimbo)
-	{
-		if(Internal_IsInCover())
-		{
-			if(Internal_HasRightInput())
-			{
-				NextFiringMesh = GetWeaponMesh();
-			} else
-			{
-				NextFiringMesh = GetSecondaryWeaponMesh();
-			}
-		} else
-		{
-			if(bSecondaryWeaponsTurn)
-			{
-				NextFiringMesh = GetSecondaryWeaponMesh();
-			} else
-			{
-				NextFiringMesh = GetWeaponMesh();
-			}	
-		}
-	} else
-	{
-		NextFiringMesh = GetWeaponMesh();
-	}
 }
 
 bool ABaseRangedWeapon::Internal_IsInCover()
@@ -331,10 +285,28 @@ void ABaseRangedWeapon::GiveAmmo(int AddAmount)
 	AddAmount = FMath::Min(AddAmount, MissingAmmo);
 	CurrentAmmo += AddAmount;
 
-	UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(OwningPawn);
+	const UInventoryComponent* InventoryComponent = UCoreUtils::GetInventoryComponentFromActor(OwningPawn);
+	if(!InventoryComponent)
+	{
+		return;
+	}
 	
-	if (GetCurrentAmmoInClip() <= 0 && CanReload() && InventoryComponent && InventoryComponent->GetEquippedWeapon() == this) {
-		StartReload();
+	if(InventoryComponent->GetEquippedWeapon() == this)
+	{
+		if (GetCurrentAmmoInClip() <= 0) {
+			StartReload();
+		}
+	} else
+	{
+		if(CanReload())
+		{
+			ReloadWeapon();	
+		}
+	}
+
+	if(GetCurrentAmmo() > 0)
+	{
+		K2_HandleOutOfAmmo(false);
 	}
 	BroadcastAmmoUsage();
 }
@@ -349,6 +321,14 @@ void ABaseRangedWeapon::UseAmmo()
 	if (!HasInfiniteAmmo())
 	{
 		CurrentAmmo--;
+	}
+
+	if(GetCurrentAmmo() <= 0 && GetCurrentAmmoInClip() <= 0)
+	{
+		K2_HandleOutOfAmmo(true);
+	} else
+	{
+		K2_HandleOutOfAmmo(false);	
 	}
 	BroadcastAmmoUsage();
 }
@@ -402,11 +382,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginLocation()
 {
 	if(bRaycastFromWeaponMeshInsteadOfPawnMesh)
 	{
-		if(!NextFiringMesh)
+		if(!GetWeaponMesh())
 		{
 			return FVector::ZeroVector;
 		}
-		return NextFiringMesh->GetSocketLocation(RaycastSourceSocketName);
+		return GetWeaponMesh()->GetSocketLocation(RaycastSourceSocketName);
 	}
 	
 	if(!GetInstigator())
@@ -473,11 +453,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginRotation()
 {
 	if(bRaycastFromWeaponMeshInsteadOfPawnMesh)
 	{
-		if(!NextFiringMesh)
+		if(!GetWeaponMesh())
 		{
 			return FVector::ZeroVector;
 		}
-		return NextFiringMesh->GetSocketRotation(RaycastSourceSocketName).Vector();
+		return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName).Vector();
 	}
 	
 	if(!GetInstigator())
@@ -494,11 +474,11 @@ FVector ABaseRangedWeapon::GetRaycastOriginRotation()
 
 FRotator ABaseRangedWeapon::GetRaycastSocketRotation() const
 {
-	if(!NextFiringMesh)
+	if(!GetWeaponMesh())
 	{
 		return FRotator::ZeroRotator;
 	}
-	return NextFiringMesh->GetSocketRotation(RaycastSourceSocketName);
+	return GetWeaponMesh()->GetSocketRotation(RaycastSourceSocketName);
 }
 
 FVector ABaseRangedWeapon::GetAdjustedAim() const
@@ -668,7 +648,7 @@ void ABaseRangedWeapon::DetermineWeaponState()
 	{
 		if(bPendingReload)
 		{
-			if(CanReload() == false )
+			if(!CanReload())
 			{
 				NewState = CurrentState;
 			}

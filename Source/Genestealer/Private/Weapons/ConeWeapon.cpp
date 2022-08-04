@@ -29,8 +29,6 @@ void AConeWeapon::FireWeapon()
 	{
 		return;
 	}
-
-	// RecordStatsEvent(ShotFired);
 	
 	TArray<AActor*> OverlappingActors;
 	ConeComponent->GetOverlappingActors(OverlappingActors);
@@ -112,7 +110,6 @@ bool AConeWeapon::TryTraceToOverlappedActor(const FHitResult& Impact, const FVec
 {
 	if(TargetActor == Impact.GetActor())
 	{
-		// RecordStatsEvent(ShotHit, 1.f, Impact.GetActor());
 		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());
 		return true;
 	}

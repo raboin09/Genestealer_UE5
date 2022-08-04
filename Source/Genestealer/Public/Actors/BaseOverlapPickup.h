@@ -37,8 +37,10 @@ protected:
 	virtual void K2_HandleOverlapEvent_Implementation(AActor* OtherActor, const FHitResult& HitResult) override;
 	FORCEINLINE virtual UMeshComponent* GetMesh_Implementation() const override { return PickupBase; }
 	virtual bool CanPickup(ACharacter* PotentialChar) PURE_VIRTUAL(ABaseOverlapPickup::CanPickup, return false;)
-	virtual void ConsumePickup(ACharacter* ConsumingChar) PURE_VIRTUAL(ABaseOverlapPickup::ConsumePickup,)
+	virtual void ConsumePickup(ACharacter* ConsumingChar);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleConsumePickup(ACharacter* ConsumingChar);
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_HandleMeshOutlining(bool bIsOutlining);
 	UFUNCTION(BlueprintImplementableEvent)

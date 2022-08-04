@@ -44,7 +44,7 @@ public:
 	FORCEINLINE virtual EWeaponType GetWeaponType() const override { return WeaponType; }
 	FORCEINLINE virtual EALSOverlayState GetWeaponOverlay() override { return WeaponOverlayState; }
 	FORCEINLINE virtual void DestroyWeapon() override { Destroy(); }
-	FORCEINLINE virtual float GetWeaponRange() override { return  AI_UseRange; }
+	FORCEINLINE virtual float GetWeaponRange() override { return AI_UseRange; }
 	
 	virtual bool CanReload() override PURE_VIRTUAL(ABaseWeapon::CanReload, return false;)
 	virtual bool CheckChildFireCondition() PURE_VIRTUAL(ABaseWeapon::CheckChildFireCondition, return false;)
@@ -122,6 +122,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	EALSOverlayState WeaponOverlayState;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	FTransform UnEquipTransform;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	FName ik_hand_l_Socket = "ik_hand_l";
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta = (ClampMin="0", EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
@@ -166,11 +168,13 @@ private:
 	void Internal_HideMesh(bool bShouldHide);
 	void InitWeaponMesh(UMeshComponent* InMeshComp);
 	
+private:
 	UPROPERTY()
 	UInventoryComponent* OwningInventory;
 	UPROPERTY(Transient)
 	UAudioComponent* FireStartAudio;	
-
+	UPROPERTY(Transient)
+	FTransform CachedTransform;
 
 	FTimerHandle TimerHandle_OnEquipFinished;
 	FTimerHandle TimerHandle_FireBlendIn;

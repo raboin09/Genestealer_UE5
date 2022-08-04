@@ -28,4 +28,5 @@ bool ABaseOverlapQuestPickup::CanPickup(ACharacter* PotentialChar)
 void ABaseOverlapQuestPickup::ConsumePickup(ACharacter* ConsumingChar)
 {
 	QuestObjectiveEvent.Broadcast(FQuestObjectiveEventPayload(this, EQuestObjectiveAction::Overlap));
+	Super::ConsumePickup(ConsumingChar);
 }
