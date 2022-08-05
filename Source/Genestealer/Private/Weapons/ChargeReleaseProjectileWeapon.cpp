@@ -110,7 +110,7 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 	
 	if(ABaseOverlapProjectile* Projectile = HandleProjectileFire())
 	{
-		const float StateScale = CurrentChargeState + 1;
+		const float StateScale = (CurrentChargeState * 1.25) + 1;
 		Projectile->SetActorScale3D(FVector(StateScale, StateScale, StateScale));
 	}
 	
@@ -119,6 +119,11 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 		K2_PlayCooldownEffects(TimeBetweenShots);
 	}
 	CurrentChargeState = -1;
+	
+	if(GetCurrentAmmoInClip() <= 0)
+	{
+		StartReload();
+	}
 }
 
 void AChargeReleaseProjectileWeapon::Internal_PlayChargeBlastVFX()

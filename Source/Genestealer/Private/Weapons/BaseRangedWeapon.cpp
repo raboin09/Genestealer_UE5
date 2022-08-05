@@ -9,7 +9,6 @@
 #include "Components/AudioComponent.h"
 #include "Characters//InventoryComponent.h"
 #include "GameFramework/Character.h"
-#include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -263,9 +262,10 @@ void ABaseRangedWeapon::StopReload()
 	{
 		bPendingReload = false;
 		CurrentState = EWeaponState::Idle;
-		DetermineWeaponState();
 		StopWeaponAnimation(ReloadAnim);
+		DetermineWeaponState();
 	}
+	K2_HandleStopReload();
 	BroadcastAmmoUsage();
 }
 
@@ -578,12 +578,14 @@ void ABaseRangedWeapon::StartReload()
 		if(ReloadAnim)
 		{
 			FAnimMontagePlayData PlayData;
-			PlayData.MontageToPlay = ReloadAnim;
+			PlayData.MontageToPlay = ReloadAnim; 
 			const float AnimDuration = PlayWeaponAnimation(PlayData);
+			K2_HandleStartReload(AnimDuration);
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, AnimDuration, false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		} else
 		{
+			K2_HandleStartReload(ReloadDurationIfNoAnim);
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, ReloadDurationIfNoAnim, false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, ReloadDurationIfNoAnim - .1f, false);
 		}

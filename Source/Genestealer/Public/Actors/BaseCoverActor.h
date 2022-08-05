@@ -93,6 +93,14 @@ protected:
 	TSubclassOf<AMaterialDissolver> MaterialDissolverClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
 	USkeletalMeshComponent* DissolveMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
+	TSubclassOf<AMaterialDissolver> RightMaterialDissolverClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
+	USkeletalMeshComponent* RightDissolveMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
+	TSubclassOf<AMaterialDissolver> LeftMaterialDissolverClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Dissolve")
+	USkeletalMeshComponent* LeftDissolveMesh;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Camera")
 	TSubclassOf<UCameraShakeBase> CoverHitCameraShake;
@@ -102,6 +110,7 @@ protected:
 	float DistanceWhenCameraShakePlays = 100.f;
 private:
 	void InitCoverBox(UBoxComponent* InBox, FColor InBoxColor, FVector Offset, FVector BoxExtent);
+	void InitDissolveMesh(UMeshComponent* InDissolveMesh, FVector InOffset, FVector InScale);;
 	
 	void Internal_StartPeekFire();
 	void Internal_StopPeekFire() const;
@@ -151,6 +160,10 @@ private:
 	UTimelineComponent* CoverTransitionTimeline;
 	UPROPERTY()
 	AMaterialDissolver* MaterialDissolver;
+	UPROPERTY()
+	AMaterialDissolver* LeftMaterialDissolver;
+	UPROPERTY()
+	AMaterialDissolver* RightMaterialDissolver;
 	
 	float CameraShakeScale;
 	bool bShouldPlayCoverDissolve;

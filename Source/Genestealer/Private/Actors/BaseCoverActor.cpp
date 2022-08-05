@@ -63,10 +63,11 @@ ABaseCoverActor::ABaseCoverActor()
 	CoverTransitionTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoverTransitionTimeline"));
 	
 	DissolveMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DissolveMesh"));
-	DissolveMesh->SetupAttachment(MiddleCoverWall);
-	DissolveMesh->AddWorldOffset(FVector(0.f, 600.f, -60.f));
-	DissolveMesh->SetUsingAbsoluteScale(true);
-	DissolveMesh->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
+	InitDissolveMesh(DissolveMesh, FVector(0.f, 600.f, -60.f), FVector(1.f, 1.f, 1.f));
+	LeftDissolveMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftDissolveMesh"));
+	InitDissolveMesh(LeftDissolveMesh, FVector(-70.f, 600.f, -60.f), FVector(1.f, 1.f, 1.f));
+	RightDissolveMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightDissolveMesh"));
+	InitDissolveMesh(RightDissolveMesh, FVector(70.f, 600.f, -60.f), FVector(1.f, 1.f, 1.f));
 	
 	DefaultGameplayTags.Add(TAG_ACTOR_COVER);
 	CoverWallOffset = 40.f;
@@ -93,6 +94,19 @@ void ABaseCoverActor::InitCoverBox(UBoxComponent* InBox, FColor InBoxColor, FVec
 	InBox->SetWorldScale3D(FVector(1.f, 1.f, 1.f));
 }
 
+void ABaseCoverActor::InitDissolveMesh(UMeshComponent* InDissolveMesh, FVector InOffset, FVector InScale)
+{
+	if(!InDissolveMesh)
+	{
+		return;
+	}
+	
+	InDissolveMesh->SetupAttachment(MiddleCoverWall);
+	InDissolveMesh->AddWorldOffset(InOffset);
+	InDissolveMesh->SetUsingAbsoluteScale(true);
+	InDissolveMesh->SetWorldScale3D(InScale);
+}
+
 void ABaseCoverActor::SwitchOutlineOnMesh(bool bShouldOutline)
 {
 	if(CoverMesh)
@@ -102,19 +116,24 @@ void ABaseCoverActor::SwitchOutlineOnMesh(bool bShouldOutline)
 		CoverMesh->SetCustomDepthStencilValue(OutlineColorInt);
 	}
 
-	if(!MaterialDissolver)
-	{
-		return;
-	}
-
 	if(!bShouldOutline)
 	{
-		MaterialDissolver->StartDissolveTimeline();
+		if(MaterialDissolver)
+		{
+			MaterialDissolver->StartDissolveTimeline();
+		}
 		bShouldPlayCoverDissolve = true;
-	} else if(bShouldPlayCoverDissolve && bShouldOutline)
+	} else
 	{
-		bShouldPlayCoverDissolve = false;
-		MaterialDissolver->StartAppearTimeline();
+		if(!bShouldPlayCoverDissolve)
+		{
+			return;
+		}
+
+		if(MaterialDissolver)
+		{
+			MaterialDissolver->StartAppearTimeline();
+		}
 	}
 }
 
@@ -126,11 +145,44 @@ void ABaseCoverActor::InteractWithActor(AActor* InstigatingActor)
 void ABaseCoverActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
 	MaterialDissolver = UWorldUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, MaterialDissolverClass, this);
 	UWorldUtils::FinishSpawningActor_Deferred(MaterialDissolver, FTransform());
 	if(MaterialDissolver)
 	{
 		MaterialDissolver->InitDissolveableMesh(DissolveMesh);
+	}
+
+	if(bLeftCoverEnabled && LeftMaterialDissolverClass)
+	{
+		LeftMaterialDissolver = UWorldUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, LeftMaterialDissolverClass, this);
+		UWorldUtils::FinishSpawningActor_Deferred(LeftMaterialDissolver, FTransform());
+		if(LeftMaterialDissolver)
+		{
+			LeftMaterialDissolver->InitDissolveableMesh(LeftDissolveMesh);
+		}
+	} else
+	{
+		if(LeftDissolveMesh)
+		{
+			LeftDissolveMesh->SetVisibility(false);
+		}
+	}
+
+	if(bRightCoverEnabled && RightMaterialDissolverClass)
+	{
+		RightMaterialDissolver = UWorldUtils::SpawnActorToWorld_Deferred<AMaterialDissolver>(this, RightMaterialDissolverClass, this);
+		UWorldUtils::FinishSpawningActor_Deferred(RightMaterialDissolver, FTransform());
+		if(RightMaterialDissolver)
+		{
+			RightMaterialDissolver->InitDissolveableMesh(RightDissolveMesh);
+		}
+	} else
+	{
+		if(RightDissolveMesh)
+		{
+			RightDissolveMesh->SetVisibility(false);
+		}
 	}
 }
 
@@ -192,6 +244,16 @@ void ABaseCoverActor::OccupyMount(ABaseCharacter* InActor, const FVector& InTarg
 	{
 		MaterialDissolver->ResetDissolveState(true);
 	}
+
+	if(LeftMaterialDissolver && bLeftCoverEnabled)
+	{
+		LeftMaterialDissolver->StartAppearTimeline();
+	}
+
+	if(RightMaterialDissolver&& bRightCoverEnabled)
+	{
+		RightMaterialDissolver->StartAppearTimeline();
+	}
 }
 
 void ABaseCoverActor::VacateMount(ABaseCharacter* InActor)
@@ -216,7 +278,17 @@ void ABaseCoverActor::VacateMount(ABaseCharacter* InActor)
 	Internal_ResetCharacterValuesOnCoverExit();
 	GetWorldTimerManager().ClearTimer(TimerHandle_StartFiringDelay);
 	OccupiedActor = nullptr;
-	Internal_ActivateOverlapBoxes(false);	
+	Internal_ActivateOverlapBoxes(false);
+
+	if(LeftMaterialDissolver)
+	{
+		LeftMaterialDissolver->StartDissolveTimeline();
+	}
+
+	if(RightMaterialDissolver)
+	{
+		RightMaterialDissolver->StartDissolveTimeline();
+	}
 }
 
 void ABaseCoverActor::StartMountedFire()
@@ -367,9 +439,17 @@ void ABaseCoverActor::ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		Internal_HandlePeekCoverOverlap(false, OtherActor);
 	} else if(OverlappedComp == LeftCoverEdgeBox)
 	{
+		if(LeftMaterialDissolver)
+		{
+			LeftMaterialDissolver->StartDissolveTimeline();
+		}
 		Internal_ApplyEdgeTagToActor(true);
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
+		if(RightMaterialDissolver)
+		{
+			RightMaterialDissolver->StartDissolveTimeline();
+		}
 		Internal_ApplyEdgeTagToActor(false);
 	}
 }
@@ -391,12 +471,20 @@ void ABaseCoverActor::ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActo
 	{
 		if(!UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_ROLLEDOUT))
 		{
+			if(LeftMaterialDissolver)
+			{
+				LeftMaterialDissolver->StartAppearTimeline();
+			}
 			UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_LEFTEDGE);	
 		}
 	} else if(OverlappedComp == RightCoverEdgeBox)
 	{
 		if(!UGameplayTagUtils::ActorHasGameplayTag(OccupiedActor, TAG_COVER_ROLLEDOUT))
 		{
+			if(RightMaterialDissolver)
+			{
+				RightMaterialDissolver->StartAppearTimeline();
+			}
 			UGameplayTagUtils::RemoveTagFromActor(OtherActor, TAG_COVER_RIGHTEDGE);	
 		}
 	}

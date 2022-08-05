@@ -6,16 +6,13 @@
 #include "Characters/BaseCharacter.h"
 #include "Characters/EffectContainerComponent.h"
 #include "Components/AudioComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Core/BasePlayerController.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
-#include "Utils/FeedbackUtils.h"
 #include "Utils/GameplayTagUtils.h"
-#include "Utils/WorldUtils.h"
 
 ABaseWeapon::ABaseWeapon()
 {
@@ -30,14 +27,6 @@ ABaseWeapon::ABaseWeapon()
 	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
 	InitWeaponMesh(WeaponStaticMesh);
 	WeaponStaticMesh->SetupAttachment(WeaponRootComponent);
-
-	SecondaryWeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SecondaryWeaponSkeletalMesh"));
-	InitWeaponMesh(SecondaryWeaponSkeletalMesh);
-	SecondaryWeaponSkeletalMesh->SetupAttachment(WeaponRootComponent);
-
-	SecondaryWeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SecondaryWeaponStaticMesh"));
-	InitWeaponMesh(SecondaryWeaponStaticMesh);
-	SecondaryWeaponStaticMesh->SetupAttachment(WeaponRootComponent);
 
 	DefaultGameplayTags.Add(TAG_ACTOR_WEAPON);
 	
@@ -213,20 +202,6 @@ UMeshComponent* ABaseWeapon::GetWeaponMesh() const
 	if(WeaponStaticMesh && WeaponStaticMesh->GetStaticMesh())
 	{
 		return WeaponStaticMesh;
-	}
-	return nullptr;
-}
-
-UMeshComponent* ABaseWeapon::GetSecondaryWeaponMesh() const
-{
-	if(SecondaryWeaponSkeletalMesh && SecondaryWeaponSkeletalMesh->SkeletalMesh)
-	{
-		return SecondaryWeaponSkeletalMesh;
-	}
-	
-	if(SecondaryWeaponStaticMesh && SecondaryWeaponStaticMesh->GetStaticMesh())
-	{
-		return SecondaryWeaponStaticMesh;
 	}
 	return nullptr;
 }

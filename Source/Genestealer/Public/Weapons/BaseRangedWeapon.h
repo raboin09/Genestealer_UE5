@@ -77,6 +77,11 @@ protected:
 	void K2_HandleOutOfAmmo(bool bIsOutOfAmmo);
 	virtual void UseAmmo();
 	virtual void ReloadWeapon();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleStartReload(float ReloadDuration);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleStopReload();
 	
 	UFUNCTION()
 	UFXSystemComponent* PlayNiagaraFireEffects();
@@ -151,7 +156,7 @@ protected:
 	FVector MinVFXScaleAdjust = FVector(.1, .1, 30);
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (ClampMin="1", EditCondition = "bSpawnMuzzleFX && AdjustVFX == EWeaponVFXAdjustmentType::AdjustOnImpact && FiringMechanism == EFiringMechanism::Continuous", EditConditionHides))
 	float ParticleMeshZ = 33.f;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle")
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX|Muzzle", meta = (EditCondition = "bSpawnMuzzleFX && FireFXClass != nullptr", EditConditionHides))
 	bool bDeactivateVFXImmediately = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|VFX")
 	bool bSpawnShellFX = false;

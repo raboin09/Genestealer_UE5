@@ -92,7 +92,6 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
     virtual UMeshComponent* GetWeaponMesh() const override;
-	virtual UMeshComponent* GetSecondaryWeaponMesh() const override;
 	FORCEINLINE virtual EWeaponState GetCurrentState() const override { return CurrentState; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ACharacter* GetOwningPawn() const override { return OwningPawn; }
@@ -112,10 +111,6 @@ protected:
 	UStaticMeshComponent* WeaponStaticMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
 	USkeletalMeshComponent* WeaponSkeletalMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
-	UStaticMeshComponent* SecondaryWeaponStaticMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer|Weapon|Meshes")
-	USkeletalMeshComponent* SecondaryWeaponSkeletalMesh;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* EquipAnim;
