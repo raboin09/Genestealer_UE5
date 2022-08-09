@@ -13,7 +13,8 @@ class GENESTEALER_API ABaseExplodingProjectile : public ABaseOverlapProjectile
 
 public:
 	ABaseExplodingProjectile();
-	
+
+	bool bFriendlyFire = false;
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

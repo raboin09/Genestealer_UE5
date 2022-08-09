@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/EffectUtils.h"
 #include "Utils/GameplayTagUtils.h"
@@ -138,6 +139,7 @@ void AMeleeWeapon::Internal_StopCollisionRaycastingTick()
 {
 	GetWorldTimerManager().ClearTimer(Timer_Raycasting);
 	K2_StopWeaponTrace();
+	CachedComboSection = "";
 }
 
 void AMeleeWeapon::Internal_CheckForCollisionHit()
@@ -163,9 +165,7 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 		TArray<AActor*> IgnoreActors = { GetInstigator(), this, GetOwner() };
 		const FVector StartTrace = *Sockets.Find(Key);
 		const FVector EndTrace = MeshComponentRef->GetSocketLocation(FName(Key));
-		// const float Radius = UKismetMathLibrary::Vector_Distance(StartTrace, EndTrace) / 2;
-		constexpr float Radius = 35.f;
-		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, Radius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
+		UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, TraceRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), false, IgnoreActors, EDrawDebugTrace::None, Hit, true, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(!Hit.bBlockingHit)
 		{
 			continue;
@@ -189,6 +189,11 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 				bRecordedHit = true;
 				RecordStatsEvent(MeleeHit, 1.f, HitActor);
 			}
+
+			if(!bFriendlyFire && UCombatUtils::AreActorsAllies(HitActor, GetOwningPawn()))
+			{
+				break;
+			}
 			
 			K2_PlayHitEffects(Hit, ComboSectionIncrement, MaxComboSections);
 			HitActors.Add(HitActor);
@@ -202,6 +207,10 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 
 FName AMeleeWeapon::Internal_GetNextMontageSection() const
 {
+	if(const IAIPawn* AIPawn = Cast<IAIPawn>(OwningPawn))
+	{
+		return FName(ComboPrefix + FString::FromInt(UKismetMathLibrary::RandomIntegerInRange(1, MaxComboSections))); 
+	}
 	return FName(ComboPrefix + FString::FromInt(ComboSectionIncrement));
 }
 
@@ -220,6 +229,7 @@ void AMeleeWeapon::Internal_StartAttack()
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = Internal_GetPlayData();
 	PlayWeaponAnimation(PlayData);
+	CachedComboSection = PlayData.MontageSection;
 	PlayWeaponSound(FireSound);
 	if(ULockOnComponent* LockOnComponent = GetOwningPawn()->FindComponentByClass<ULockOnComponent>(); LockOnComponent && IsWeaponPlayerControlled())
 	{

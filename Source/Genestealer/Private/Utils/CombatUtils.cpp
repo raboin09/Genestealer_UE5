@@ -276,6 +276,24 @@ bool UCombatUtils::IsActorNeutral(TScriptInterface<IInteractable> FirstActor)
 	return false;
 }
 
+bool UCombatUtils::IsActorDestructible(AActor* FirstActor)
+{
+	if(const IAttackable* CastedChar = Cast<IAttackable>(FirstActor))
+	{
+		return CastedChar->GetAffiliation() == EAffiliation::Destructible;
+	}
+	return false;
+}
+
+
+bool UCombatUtils::IsActorDestructible(TScriptInterface<IInteractable> FirstActor)
+{
+	if(FirstActor)
+	{
+		return FirstActor->GetInteractableAffiliation() == EAffiliation::Destructible;
+	}
+	return false;
+}
 
 int32 UCombatUtils::GetOutlineIntFromColor(const EOutlineColor InColor)
 {

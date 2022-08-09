@@ -129,6 +129,8 @@ protected:
 	bool bForceAimOnFire = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(ClampMin="0"))
 	float TimeBetweenShots = .2f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	bool bFriendlyFire = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
 

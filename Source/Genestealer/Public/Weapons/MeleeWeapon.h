@@ -52,6 +52,8 @@ protected:
 	void K2_StopWeaponTrace();
 
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	float TraceRadius = 35.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bCanHitMultipleEnemies = true;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Sound")
 	USoundCue* FireSound;
@@ -59,7 +61,8 @@ protected:
 	FString SocketPrefix = "R_";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
-
+	UPROPERTY(BlueprintReadOnly)
+	FName CachedComboSection;
 
 private:
 	UFUNCTION()
@@ -86,7 +89,7 @@ private:
 	int32 ComboSectionIncrement;
 	int32 MaxComboSections;
 	const FString ComboPrefix = "Combo";
-
+	
 	UPROPERTY()
 	UMeshComponent* MeshComponentRef;
 	UPROPERTY(Transient)

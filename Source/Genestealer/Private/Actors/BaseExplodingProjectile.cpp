@@ -48,5 +48,5 @@ void ABaseExplodingProjectile::Internal_ExplodeAllActorsInRadius()
 	bExplodedAlready = true;
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetOwner(), ExplosionNiagara, GetActorLocation(), GetActorRotation());
 	UAudioManager::SpawnSoundAtLocation(GetOwner(), ExplosionSound, GetActorLocation(), GetActorRotation());
-	UEffectUtils::ApplyEffectsToHitResultsInRadius(GetInstigator(), ProjectileEffectsToApply, GetActorLocation(), ExplosionRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), true, GetActorLocation());
+	UEffectUtils::ApplyEffectsToHitResultsInRadius(GetInstigator(), ProjectileEffectsToApply, GetActorLocation(), ExplosionRadius, UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON), bFriendlyFire ? EAffiliation::Enemies : EAffiliation::All, true, GetActorLocation());
 }

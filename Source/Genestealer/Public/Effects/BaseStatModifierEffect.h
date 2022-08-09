@@ -58,7 +58,7 @@ protected:
 	void K2_ApplyStatChange(float ModifiedStatValue);
 	virtual void K2_ApplyStatChange_Implementation(float ModifiedStatValue);
 
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Genestealer")
 	UBaseStatsModifierData* StatEffectDataObj;
 	
 private:

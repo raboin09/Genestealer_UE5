@@ -32,6 +32,8 @@ public:
 	static bool AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, AActor* SecondActor);
 	static bool IsActorNeutral(AActor* FirstActor);
 	static bool IsActorNeutral(TScriptInterface<IInteractable> FirstActor);
+	static bool IsActorDestructible(AActor* FirstActor);
+	static bool IsActorDestructible(TScriptInterface<IInteractable> FirstActor);
 	static int32 GetOutlineIntFromColor(const EOutlineColor InColor);
 	static int32 GetOutlineIntFromAffiliation(const EAffiliation InAffiliation);
 };
