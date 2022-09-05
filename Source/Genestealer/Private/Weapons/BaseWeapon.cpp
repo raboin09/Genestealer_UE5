@@ -135,7 +135,10 @@ void ABaseWeapon::StartFire()
 	if (!bWantsToFire)
 	{
 		bWantsToFire = true;
-		FireStartAudio = PlayWeaponSound(FireWarmupSound);
+		if(CanFire())
+		{
+			FireStartAudio = PlayWeaponSound(FireWarmupSound);	
+		}
 		if(FireWarmUpTime > 0.f)
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_FireBlendIn, this, &ABaseWeapon::DetermineWeaponState, FireWarmUpTime, false);	
