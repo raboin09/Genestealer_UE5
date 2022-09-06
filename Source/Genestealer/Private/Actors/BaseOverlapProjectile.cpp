@@ -162,7 +162,7 @@ void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 
 void ABaseOverlapProjectile::ApplyHitEffects(const FHitResult& Impact) const
 {
-	if(!UCoreUtils::IsObjectPlayerControlled(Impact.GetActor()) && UCombatUtils::AreActorsEnemies(Impact.GetActor(), GetInstigator()))
+	if(!UCoreUtils::IsObjectPlayerControlled(Impact.GetActor()) && !UCombatUtils::AreActorsAllies(Impact.GetActor(), GetInstigator()))
 	{
 		UPlayerStatsComponent::RecordStatsEvent(this, ShotHit);
 		if(UCombatUtils::IsBoneNameHead(Impact.BoneName))

@@ -219,15 +219,15 @@ bool UCombatUtils::AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, 
 
 bool UCombatUtils::AreActorsAllies(AActor* FirstActor, AActor* SecondActor)
 {
-	IAttackable* CastedChar = Cast<IAttackable>(FirstActor);
-	IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
+	const IAttackable* CastedChar = Cast<IAttackable>(FirstActor);
+	const IAttackable* CastedOwner = Cast<IAttackable>(SecondActor);
 	if(CastedChar && CastedOwner)
 	{
 		if(IsActorNeutral(FirstActor))
 		{
 			return false;
 		}
-
+  
 		if(IsActorNeutral(SecondActor))
 		{
 			return false;
