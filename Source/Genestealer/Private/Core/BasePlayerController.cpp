@@ -23,7 +23,7 @@ ABasePlayerController::ABasePlayerController()
 void ABasePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 	CreateSandboxUI();
 #endif
 }

@@ -39,7 +39,7 @@ public:
 	UPROPERTY()
 	ABasePlayerCharacter* PlayerCharacter;
 	
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 	void CreateSandboxUI()
 	{		
 		const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("WidgetBlueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxMainMenu.GL_DEV_SandboxMainMenu_C'"));

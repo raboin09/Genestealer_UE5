@@ -19,9 +19,6 @@
 
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	MovementModel.DataTable = LoadObject<UDataTable>(this , TEXT("DataTable'/Game/_Genestealer/Data/Genestealer_MovementModel.Genestealer_MovementModel'"));
-	MovementModel.RowName = "Responsive";
-	
 	InitCapsuleCollisionDefaults();
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	

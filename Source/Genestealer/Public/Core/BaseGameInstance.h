@@ -19,7 +19,7 @@ class GENESTEALER_API UBaseGameInstance : public UGameInstance
 public:
 	virtual void Init() override;
 	
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 	UDevSandboxManager* DevSandboxManager;
 #endif
 

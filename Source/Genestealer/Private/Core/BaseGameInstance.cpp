@@ -13,7 +13,7 @@ void UBaseGameInstance::Internal_SetupManagers()
 {
 	AudioManager = NewObject<UAudioManager>(this);
 
-#if !UE_BUILD_SHIPPING
+#if WITH_EDITOR
 	const TSubclassOf<UDevSandboxManager> DevSandboxClass = LoadClass<UDevSandboxManager>(nullptr, TEXT("Blueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxManager.GL_DEV_SandboxManager_C'"));
 	DevSandboxManager = NewObject<UDevSandboxManager>(this, DevSandboxClass);
 #endif
