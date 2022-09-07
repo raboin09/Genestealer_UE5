@@ -54,15 +54,17 @@ protected:
 	virtual void ActorBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void ActorEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Genestealer")
-	float DeathBuffer;
+	
 	UPROPERTY(EditAnywhere, Category = "Genestealer")
 	TArray<FGameplayTag> BlockedOverlapTags;
 	UPROPERTY(EditAnywhere, Category = "Genestealer")
 	TArray<FGameplayTag> RequiredOverlapTags;
+	UPROPERTY(EditDefaultsOnly, Category = "Genestealer")
+	bool bActivateOnStart = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer")
 	bool bDiesAfterOverlap;
+	UPROPERTY(EditDefaultsOnly, Category = "Genestealer", meta = (EditCondition = "bDiesAfterOverlap", EditConditionHides))
+	float DeathBuffer;
 
 	UPROPERTY()
 	TArray<AActor*> HitActors;

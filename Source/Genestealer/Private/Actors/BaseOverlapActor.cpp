@@ -21,8 +21,13 @@ void ABaseOverlapActor::BeginPlay()
 		ShapeComponent->IgnoreComponentWhenMoving(GetMesh(), true);
 	}
 
+	if(bActivateOnStart)
+	{
+		UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ACTIVE);
+	}
+
 	// Add ACTIVE tag to activate at start
-	if(!GameplayTagContainer.HasTag(TAG_STATE_ACTIVE))
+	if(!UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ACTIVE))
 	{
 		Deactivate();
 	} else
