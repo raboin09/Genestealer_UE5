@@ -70,20 +70,26 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 {
 	// Remember to add a new class type if it needs to be considered alive via IsActorAlive()
-	FVector CamLoc = FVector::ZeroVector;
-	FRotator CamRot;	
-	GetPlayerViewPoint(CamLoc, CamRot);
+	FVector StartLocation = FVector::ZeroVector;
+	FRotator CamRot;
+	GetPlayerViewPoint(StartLocation, CamRot);
 	const FVector AimDir = CamRot.Vector();
-	if(GetPawn())
+	if(PlayerCharacter)
 	{
-		const FVector OutStartTrace = CamLoc + AimDir * ((GetPawn()->GetActorLocation() - CamLoc) | AimDir);
+		if(!PlayerCharacter->IsAiming() && !PlayerCharacter->IsInCover())
+		{
+			StartLocation = PlayerCharacter->GetHeadLocation();
+		}
+		
+		const FVector OutStartTrace = StartLocation + AimDir * ((PlayerCharacter->GetActorLocation() - StartLocation) | AimDir);
 		const FVector OutEndTrace = OutStartTrace + AimDir * OutlineTraceRange;
 		
 		TArray<AActor*> IgnoreActors;
-		IgnoreActors.Add(GetPawn());
+		IgnoreActors.Add(PlayerCharacter);
 		
 		FHitResult Hit(ForceInit);
-		UKismetSystemLibrary::SphereTraceSingle(this, OutStartTrace, OutEndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_INTERACTION), false, IgnoreActors, EDrawDebugTrace::None, Hit, true
+		auto DrawDebug = EDrawDebugTrace::None;
+		UKismetSystemLibrary::SphereTraceSingle(this, OutStartTrace, OutEndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_INTERACTION), false, IgnoreActors, DrawDebug, Hit, true
 			, FLinearColor::Red, FLinearColor::Green, 1.f);
 		if(Hit.GetActor() && Hit.GetActor()->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
 		{
