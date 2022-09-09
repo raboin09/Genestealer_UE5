@@ -346,18 +346,16 @@ void ABaseCoverActor::StopMountedFire()
 		return;
 	}
 	
-	if(ActorInLeftEdge() || ActorInRightEdge())
+	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
 	{
 		if(!ActorAiming())
 		{
+			if(bCrouchingCover)
+			{
+				Internal_SetCrouching();
+			}
 			Internal_StartPeekRollback();
-		}
-		
-		if(bCrouchingCover)
-		{
-			Internal_SetCrouching();
-		}
-		
+		}		
 		Internal_StopPeekFire();
 	} else
 	{

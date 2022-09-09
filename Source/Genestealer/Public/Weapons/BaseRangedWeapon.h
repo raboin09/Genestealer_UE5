@@ -46,7 +46,7 @@ protected:
 	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
 	FORCEINLINE virtual int32 GetMaxAmmo() override { return HasInfiniteAmmo() ? 1 : MaxAmmo; }
 	FORCEINLINE virtual int32 GetAmmoPerClip() override { return HasInfiniteClip() ? 1 : AmmoPerClip; }
-	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo; }
+	FORCEINLINE virtual bool HasInfiniteAmmo() override { return bInfiniteAmmo || !IsWeaponPlayerControlled(); }
 	FORCEINLINE virtual bool HasInfiniteClip() override { return bInfiniteClip; }
 	FORCEINLINE virtual FAmmoAmountChanged& OnAmmoAmountChanged() override { return AmmoAmountChanged; }
 	FORCEINLINE virtual FPlayerAimingChangedPayload GetCrosshairPayload() const override { return FPlayerAimingChangedPayload(false, Crosshair, CrosshairSize); }
