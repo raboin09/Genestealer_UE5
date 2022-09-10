@@ -41,7 +41,9 @@ public:
 	
 #if WITH_EDITOR
 	void CreateSandboxUI()
-	{		
+	{
+		if(!bSandboxMode)
+			return;
 		const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("WidgetBlueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxMainMenu.GL_DEV_SandboxMainMenu_C'"));
 		UUserWidget* UserWidget = CreateWidget<UUserWidget>(this, UserWidgetClass);
 		UserWidget->AddToViewport(1);
@@ -52,7 +54,9 @@ public:
 	
 protected:
 	virtual void InteractAction(const FInputActionValue& Value) override;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
+	bool bSandboxMode = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
