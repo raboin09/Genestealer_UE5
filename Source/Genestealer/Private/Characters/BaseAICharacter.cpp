@@ -5,8 +5,10 @@
 
 #include "AI/BaseAIController.h"
 #include "Characters/InteractionComponent.h"
+#include "Core/BasePlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Quest/QuestManagerComponent.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
 
 ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -75,6 +77,17 @@ void ABaseAICharacter::BeginPlay()
 	Super::BeginPlay();
 	UWorldUtils::TryAddActorToQuestableArray(this);
 	UQuestManagerComponent::TryAddActorToActiveQuests(this);
+
+	if(CurrentAffiliation == EAffiliation::Allies && bIsASquadMember)
+	{
+		if(ABasePlayerController* BasePlayerController = UCoreUtils::GetBasePlayerController(this))
+		{
+			TScriptInterface<IAIPawn> NewAIPawn;
+			NewAIPawn.SetInterface(Cast<IAIPawn>(this));
+			NewAIPawn.SetObject(this);
+			BasePlayerController->AddNewAISquadMember(NewAIPawn);
+		}
+	}
 }
 
 void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload)

@@ -67,6 +67,11 @@ void ABasePlayerController::Tick(float DeltaSeconds)
 	}
 }
 
+void ABasePlayerController::AddNewAISquadMember(TScriptInterface<IAIPawn> InAIPawn)
+{
+	AISquadMembers.AddUnique(InAIPawn);
+}
+
 TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 {
 	// Remember to add a new class type if it needs to be considered alive via IsActorAlive()
@@ -166,14 +171,6 @@ bool ABasePlayerController::ShouldOutlineInteractable(TScriptInterface<IInteract
 	return bIsAlly || bIsEnemy;
 }
 
-void ABasePlayerController::CoverAction(const FInputActionValue& Value)
-{
-	if (PlayerCharacter)
-	{
-		PlayerCharacter->CoverDodgeAction();
-	}
-}
-
 void ABasePlayerController::OnPossess(APawn* NewPawn)
 {
 	Super::OnPossess(NewPawn);
@@ -190,10 +187,34 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 	}
 }
 
+void ABasePlayerController::CoverAction(const FInputActionValue& Value)
+{
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->CoverDodgeAction();
+	}
+}
+
 void ABasePlayerController::InteractAction(const FInputActionValue& Value)
 {
 	if(CurrentInteractableActor)
 	{
 		CurrentInteractableActor->InteractWithActor(PlayerCharacter);
+	}
+}
+
+void ABasePlayerController::FireAction(const FInputActionValue& Value)
+{
+	if (PossessedCharacter)
+	{
+		PossessedCharacter->FireAction(Value.Get<bool>());
+	}
+}
+
+void ABasePlayerController::SecureLocationOrder(const FInputActionValue& Value)
+{
+	for(TScriptInterface<IAIPawn> Act : AISquadMembers)
+	{
+		UKismetSystemLibrary::PrintString(this, Act.GetObject()->GetName() + " is securing location");		
 	}
 }

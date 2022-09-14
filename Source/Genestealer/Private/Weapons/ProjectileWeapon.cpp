@@ -72,6 +72,10 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
 		Projectile->IgnoreActor(this);
 		Projectile->IgnoreActor(GetInstigator());
+		for(AActor* TempActor : GetActorsToIgnoreCollision())
+		{
+			Projectile->IgnoreActor(TempActor);
+		}
 		UWorldUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
 		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
 		{

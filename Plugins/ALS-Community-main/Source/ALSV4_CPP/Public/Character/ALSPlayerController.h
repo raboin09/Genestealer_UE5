@@ -55,9 +55,6 @@ protected:
 	virtual void AimAction(const FInputActionValue& Value);
 
 	UFUNCTION()
-	virtual void InteractAction(const FInputActionValue& Value) {};
-
-	UFUNCTION()
 	void CameraTapAction(const FInputActionValue& Value);
 
 	UFUNCTION()
@@ -77,11 +74,6 @@ protected:
 
 	UFUNCTION()
 	void LookingDirectionAction(const FInputActionValue& Value);
-
-	// Genestealer Inputs
-
-	UFUNCTION()
-	void FireAction(const FInputActionValue& Value);
 
 	// Debug actions
 	UFUNCTION()

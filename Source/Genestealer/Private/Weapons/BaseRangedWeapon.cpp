@@ -171,7 +171,20 @@ UFXSystemComponent* ABaseRangedWeapon::Internal_PlayParticleFireEffects()
 {
 	UParticleSystemComponent* ParticleFX = UGameplayStatics::SpawnEmitterAttached(Cast<UParticleSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
 	return ParticleFX;
-} 
+}
+
+TArray<AActor*> ABaseRangedWeapon::GetActorsToIgnoreCollision() const
+{
+	TArray<AActor*> IgnoredActors;
+	if(const ABaseCharacter* CastedChar = Cast<ABaseCharacter>(OwningPawn))
+	{
+		if(AActor* CastedMount = Cast<AActor>(CastedChar->GetCurrentMount().GetObject()))
+		{
+			IgnoredActors.AddUnique(CastedMount);
+		}
+	}
+	return IgnoredActors;
+}
 
 UFXSystemComponent* ABaseRangedWeapon::PlayNiagaraFireEffects()
 {
@@ -556,6 +569,7 @@ FHitResult ABaseRangedWeapon::WeaponTrace(const FVector& StartTrace, const FVect
 	FHitResult Hit(ForceInit);
 	TArray<AActor*> IgnoreActors; 
 	IgnoreActors.Add(GetInstigator());
+	IgnoreActors.Append(GetActorsToIgnoreCollision());
 	auto DrawDebugTrace = EDrawDebugTrace::None;
 	auto WeaponTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility); //bUseWeaponTraceType ? UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_WEAPON) : UEngineTypes::ConvertToTraceType(ECC_Visibility);
 	if(bLineTrace)

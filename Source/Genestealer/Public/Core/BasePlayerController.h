@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "API/AIPawn.h"
 #include "API/Interactable.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Character/ALSPlayerController.h"
 #include "Characters/BasePlayerCharacter.h"
 #include "BasePlayerController.generated.h"
@@ -24,14 +24,12 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	void AddNewAISquadMember(TScriptInterface<IAIPawn> InAIPawn);
 	FORCEINLINE class UPlayerStatsComponent* GetPlayerStatsComponent() const { return PlayerStats; }
 	FORCEINLINE class UQuestManagerComponent* GetQuestManager() const { return QuestManager; }
 	FORCEINLINE FNewActorTargeted& OnNewActorTargeted() { return NewActorTargeted; }
 	TScriptInterface<IInteractable> GetTargetedActor() const;
 	
-
-	UFUNCTION()
-	void CoverAction(const FInputActionValue& Value);
 	virtual void OnPossess(APawn* NewPawn) override;
 
 	UPROPERTY()
@@ -44,17 +42,24 @@ public:
 	{
 		if(!bSandboxMode)
 			return;
-		const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("WidgetBlueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxMainMenu.GL_DEV_SandboxMainMenu_C'"));
-		UUserWidget* UserWidget = CreateWidget<UUserWidget>(this, UserWidgetClass);
-		UserWidget->AddToViewport(1);
-		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, UserWidget, EMouseLockMode::DoNotLock);
-		bShowMouseCursor = true;
+		// const TSubclassOf<UUserWidget> UserWidgetClass = LoadClass<UUserWidget>(nullptr, TEXT("WidgetBlueprint'/Game/_Genestealer/_TESTING/GL_DEV_SandboxMainMenu.GL_DEV_SandboxMainMenu_C'"));
+		// UUserWidget* UserWidget = CreateWidget<UUserWidget>(this, UserWidgetClass);
+		// UserWidget->AddToViewport(1);
+		// UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, UserWidget, EMouseLockMode::DoNotLock);
+		// bShowMouseCursor = true;
 	}
 #endif
 	
 protected:
-	virtual void InteractAction(const FInputActionValue& Value) override;
-
+	UFUNCTION()
+	void CoverAction(const FInputActionValue& Value);
+	UFUNCTION()
+	void InteractAction(const FInputActionValue& Value);
+	UFUNCTION()
+	void FireAction(const FInputActionValue& Value);
+	UFUNCTION()
+	void SecureLocationOrder(const FInputActionValue& Value);
+	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	bool bSandboxMode = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
@@ -77,4 +82,6 @@ private:
 	FGameplayTagContainer GameplayTagContainer;
 	TScriptInterface<IInteractable> CurrentInteractableActor;
 	FNewActorTargeted NewActorTargeted;
+
+	TArray<TScriptInterface<IAIPawn>> AISquadMembers;
 };

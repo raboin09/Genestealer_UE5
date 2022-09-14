@@ -82,7 +82,8 @@ protected:
 	void K2_HandleStartReload(float ReloadDuration);
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_HandleStopReload();
-	
+
+	TArray<AActor*> GetActorsToIgnoreCollision() const;
 	UFUNCTION()
 	UFXSystemComponent* PlayNiagaraFireEffects();
 	FVector GetRaycastOriginLocation();

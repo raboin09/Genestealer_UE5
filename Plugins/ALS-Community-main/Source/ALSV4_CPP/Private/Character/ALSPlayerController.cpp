@@ -214,14 +214,6 @@ void AALSPlayerController::RagdollAction(const FInputActionValue& Value)
 	}
 }
 
-void AALSPlayerController::FireAction(const FInputActionValue& Value)
-{
-	if (PossessedCharacter)
-	{
-		PossessedCharacter->FireAction(Value.Get<bool>());
-	}
-}
-
 void AALSPlayerController::VelocityDirectionAction(const FInputActionValue& Value)
 {
 	if (PossessedCharacter && Value.Get<bool>())

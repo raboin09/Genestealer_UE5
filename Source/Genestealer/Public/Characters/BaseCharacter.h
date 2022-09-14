@@ -86,6 +86,7 @@ public:
 	FORCEINLINE FCharacterInCombatChanged& OnCharacterInCombatChanged() { return CharacterInCombatChanged; }
 	bool IsInCombat();
 	void SetInCombat(bool bInNewState, AActor* DamageCauser);
+	FORCEINLINE TScriptInterface<IMountable> GetCurrentMount() const { return CurrentMount; }
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Genestealer")
 	void K2_OnDeath();

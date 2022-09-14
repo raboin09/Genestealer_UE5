@@ -576,11 +576,15 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	{
 		return;
 	}
-	FVector CamLoc;
-	FRotator CamRot;
-	Controller->GetPlayerViewPoint(CamLoc, CamRot);
-	const FVector StartTrace = CamLoc;
-	const FVector EndTrace = StartTrace + (CamRot.Vector() * UCoreUtils::GetCoverPointValidDistance());
+	FVector StartTrace; 
+	FRotator StartRotation;
+	Controller->GetPlayerViewPoint(StartTrace, StartRotation);
+	if(!IsAiming())
+	{
+		StartTrace = GetHeadLocation();
+	}
+	
+	const FVector EndTrace = StartTrace + (StartRotation.Vector() * UCoreUtils::GetCoverPointValidDistance());
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;
 	UKismetSystemLibrary::SphereTraceSingle(this, StartTrace, EndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_COVER_WALL), true, IgnoreActors, EDrawDebugTrace::None, HitResult, true);

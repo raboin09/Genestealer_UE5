@@ -48,7 +48,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload) override;
-	
+
+	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
+	bool bIsASquadMember = false;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	UBehaviorTree* DefaultBehaviorTree;
 

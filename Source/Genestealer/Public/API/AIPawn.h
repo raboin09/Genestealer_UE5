@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Attackable.h"
-#include "Characters/BaseCharacter.h"
+#include "Types/EventDeclarations.h"
 #include "UObject/Interface.h"
 #include "AIPawn.generated.h"
 
