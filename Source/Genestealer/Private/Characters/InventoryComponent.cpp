@@ -111,7 +111,7 @@ bool UInventoryComponent::CanWeaponAim() const
 {
 	if(CurrentWeapon)
 	{
-		return CurrentWeapon->GetWeaponType() == EWeaponType::Rifle;
+		return CurrentWeapon->GetWeaponType() == EWeaponType::Rifle || CurrentWeapon->GetWeaponType() == EWeaponType::Pistol;
 	}
 	return false;
 }

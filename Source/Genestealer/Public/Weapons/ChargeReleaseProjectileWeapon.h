@@ -15,6 +15,8 @@ class GENESTEALER_API AChargeReleaseProjectileWeapon : public AProjectileWeapon
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_PlayCooldownEffects(float CooldownTime);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ChargeStateChange(int32 NewChargeState);
 
 	virtual void FireWeapon() override;
 	virtual float SimulateWeaponFire() override;

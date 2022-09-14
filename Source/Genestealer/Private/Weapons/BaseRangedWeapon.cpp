@@ -629,8 +629,8 @@ void ABaseRangedWeapon::HandleFiring()
 		StartReload();
 	} else
 	{
-		Super::HandleFiring();
 		UseAmmo();
+		Super::HandleFiring();
 	}
 }
 

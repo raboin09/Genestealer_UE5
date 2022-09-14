@@ -69,6 +69,9 @@ void AChargeReleaseProjectileWeapon::Internal_TryIncreaseChargeState()
 	if(CurrentChargeState >= MaxChargedState)
 	{
 		Internal_FireAndReset();
+	} else
+	{
+		K2_ChargeStateChange(CurrentChargeState);
 	}
 }
 
@@ -119,6 +122,7 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 		K2_PlayCooldownEffects(TimeBetweenShots);
 	}
 	CurrentChargeState = -1;
+	K2_ChargeStateChange(CurrentChargeState);
 	
 	if(GetCurrentAmmoInClip() <= 0)
 	{
