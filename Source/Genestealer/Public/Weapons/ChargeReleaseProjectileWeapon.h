@@ -70,8 +70,10 @@ private:
 	void Internal_PlayChargeBlastVFX();
 	UFUNCTION()
 	void Internal_PlayChargeAudio();
+	bool Internal_IsWeaponOverheated() const;
 
 	int32 CurrentChargeState = -1;
+	float OverheatUntilTime = -1.f;
 
 	UPROPERTY()
 	FTimerHandle TimerHandle_DelayChargeAudio;

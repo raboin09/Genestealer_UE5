@@ -12,12 +12,22 @@
 
 void AChargeReleaseProjectileWeapon::FireWeapon()
 {
+	if(Internal_IsWeaponOverheated())
+	{
+		return;
+	}
+	
 	Internal_TryIncreaseChargeState();
 	K2_OnFireWeapon();
 }
 
 float AChargeReleaseProjectileWeapon::SimulateWeaponFire()
 {
+	if(Internal_IsWeaponOverheated())
+	{
+		return 0.f;
+	}
+	
 	if(!ChargingNiagara && FireFXClass)
 	{
 		ChargingNiagara = UNiagaraFunctionLibrary::SpawnSystemAttached(Cast<UNiagaraSystem>(FireFXClass), GetWeaponMesh(), RaycastSourceSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTargetIncludingScale, true);
@@ -48,7 +58,7 @@ void AChargeReleaseProjectileWeapon::OnBurstFinished()
 {
 	Super::OnBurstFinished();
 	GetWorldTimerManager().ClearTimer(TimerHandle_DelayChargeAudio);	
-	if(CurrentChargeState > -1.f)
+	if(CurrentChargeState > -1.f && !Internal_IsWeaponOverheated())
 	{
 		Internal_FireAndReset();
 	}
@@ -116,11 +126,21 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 		const float StateScale = (CurrentChargeState * 1.25) + 1;
 		Projectile->SetActorScale3D(FVector(StateScale, StateScale, StateScale));
 	}
-	
+
+	float OverheatDuration = TimeBetweenShots;
 	if(CurrentChargeState > 0)
 	{
-		K2_PlayCooldownEffects(TimeBetweenShots);
+		UKismetSystemLibrary::PrintString(this, "Charge");
+		OverheatDuration *= (CurrentChargeState * TimeBetweenShots);
+		K2_PlayCooldownEffects(OverheatDuration);
+	} else
+	{
+		UKismetSystemLibrary::PrintString(this, "Single");
+		OverheatDuration = 0;
+		LastFireTime = GetWorld()->GetTimeSeconds() - (TimeBetweenShots / 10);
 	}
+	OverheatUntilTime = GetWorld()->GetTimeSeconds() + OverheatDuration;
+	
 	CurrentChargeState = -1;
 	K2_ChargeStateChange(CurrentChargeState);
 	
@@ -148,4 +168,14 @@ void AChargeReleaseProjectileWeapon::Internal_PlayChargeBlastVFX()
 void AChargeReleaseProjectileWeapon::Internal_PlayChargeAudio()
 {
 	ChargingAudio = PlayWeaponSound(FireSound);	
+}
+
+bool AChargeReleaseProjectileWeapon::Internal_IsWeaponOverheated() const
+{
+	const float GameTime = GetWorld()->GetTimeSeconds();
+	if (GameTime < OverheatUntilTime)
+	{
+		return true;
+	}
+	return false;
 }
