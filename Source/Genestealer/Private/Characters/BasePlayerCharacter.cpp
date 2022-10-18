@@ -3,7 +3,9 @@
 
 #include "Characters/BasePlayerCharacter.h"
 
+#include "HttpModule.h"
 #include "Core/AudioManager.h"
+#include "Interfaces/IHttpRequest.h"
 #include "Sound/SoundCue.h"
 
 ABasePlayerCharacter::ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -27,7 +29,7 @@ void ABasePlayerCharacter::GL_HandleFireAction(bool bValue)
 	// 		LockOnComponent->InterpToBestTargetForMeleeAttack();
 	// 	}
 	// }
-	Super::GL_HandleFireAction(bValue);	
+	Super::GL_HandleFireAction(bValue);
 }
 
 void ABasePlayerCharacter::GL_HandleAimAction(bool bValue)

@@ -36,6 +36,10 @@ public:
 	// UI Event listeners coming from various Actors and Components
 	///////////////////////////////////////////////////////////////
 
+	// IWeapon
+	UFUNCTION()
+	virtual void UIEventHandler_AmmoChanged(const FAmmoAmountChangedPayload& AmmoAmountChangedPayload);
+	
 protected:
 	// ABaseCharacter
 	UFUNCTION()
@@ -46,10 +50,6 @@ protected:
 	// ABasePlayerController
 	UFUNCTION()
 	virtual void UIEventHandler_NewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload);
-	
-	// IWeapon
-	UFUNCTION()
-	virtual void UIEventHandler_AmmoChanged(const FAmmoAmountChangedPayload& AmmoAmountChangedPayload);
 	
 	// UInventoryComponent
 	UFUNCTION()

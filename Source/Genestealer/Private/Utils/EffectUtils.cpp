@@ -12,7 +12,7 @@
 #include "Genestealer/Genestealer.h"
 #include "Utils/WorldUtils.h"
 
-void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TArray<TSubclassOf<AActor>> EffectsToApply, FVector TraceLocation, float TraceRadius, ETraceTypeQuery ValidationTraceType, EAffiliation AffectedAffiliation, bool bValidateHit, FVector ValidationTraceStartLocation, FName HitValidationBone)
+void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TArray<TSubclassOf<AActor>> EffectsToApply, FVector TraceLocation, float TraceRadius, ETraceTypeQuery ValidationTraceType, EAffectedAffiliation AffectedAffiliation, bool bValidateHit, FVector ValidationTraceStartLocation, FName HitValidationBone)
 {
 	if(EffectsToApply.IsEmpty() || !InstigatingActor || TraceRadius < 1.f || TraceLocation.IsZero())
 	{
@@ -36,31 +36,25 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 	for(AActor* CurrActor : AllHitActors)
 	{
 		switch (AffectedAffiliation) {
-		case EAffiliation::Allies:
+		case EAffectedAffiliation::Allies:
 				if(!UCombatUtils::AreActorsAllies(CurrActor, InstigatingActor))
 				{
 					AllHitActors.Remove(CurrActor);
 				}
 				break;
-			case EAffiliation::Enemies:
+			case EAffectedAffiliation::Enemies:
 				if(!UCombatUtils::AreActorsEnemies(CurrActor, InstigatingActor))
 				{
 					AllHitActors.Remove(CurrActor);
 				}
 				break;
-			case EAffiliation::Destructible:
-				if(!UCombatUtils::IsActorDestructible(CurrActor))
-				{
-					AllHitActors.Remove(CurrActor);
-				}
-				break;
-			case EAffiliation::Neutral:
+			case EAffectedAffiliation::Neutral:
 				if(!UCombatUtils::IsActorNeutral(CurrActor))
 				{
 					AllHitActors.Remove(CurrActor);
 				}
 				break;
-			case EAffiliation::All:
+			case EAffectedAffiliation::All:
 			default:
 				break;
 		}

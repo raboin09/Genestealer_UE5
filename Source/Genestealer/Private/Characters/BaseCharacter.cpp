@@ -2,6 +2,7 @@
 
 #include "Characters/BaseCharacter.h"
 
+#include "Actors/BaseCoverActor.h"
 #include "API/Activatable.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/EffectContainerComponent.h"
@@ -31,7 +32,6 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) : Su
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	EffectContainerComponent = CreateDefaultSubobject<UEffectContainerComponent>(TEXT("EffectContainer"));
-	CurrentAffiliation = EAffiliation::Neutral;
 
 	InCombatTime = 5.f;
 }
@@ -90,12 +90,23 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	Internal_AddDefaultTagsToContainer();
 	CharacterInCombatChanged.Broadcast(FCharacterInCombatChangedPayload(false, nullptr));
+
+	FUnitStats TempStats = FUnitStats();
+	if(UOnlineContentManager::GetUnitStatsFromString(this, TempStats, UnitName))
+	{
+		StartingHealth.ArmorSave = TempStats.ArmorSave;
+		StartingHealth.MaxWounds = TempStats.Wounds;
+		StartingHealth.MaxHealthPerWound = TempStats.HealthPerWound;
+		BallisticSkill = TempStats.BallisticSkill;
+	}
+	
 	if(HealthComponent)
 	{
 		HealthComponent->OnCurrentWoundHealthChanged().AddDynamic(this, &ABaseCharacter::HandleCurrentWoundChangedEvent);
 		HealthComponent->OnActorDeath().AddDynamic(this, &ABaseCharacter::HandleDeathEvent);
 		HealthComponent->InitHealthComponent(StartingHealth);
 	}
+	
 	UEffectUtils::ApplyEffectsToActor(DefaultEffects, this);
 }
 
@@ -114,7 +125,7 @@ void ABaseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();	
 	if(InventoryComponent)
 	{
-		InventoryComponent->SpawnInventoryActors(StartingPrimaryWeaponClass, StartingAlternateWeaponClass);
+		InventoryComponent->SpawnInventoryActors(StartingPrimaryWeaponClass, nullptr);
 	}
 }
 
@@ -376,6 +387,12 @@ void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitRea
 		PlayData.MontageToPlay = K2_GetHitReactAnimation(Internal_GetHitDirectionTag(HitReactEvent.HitDirection));
 		PlayData.bShouldBlendOut = true;
 	}
+	
+	if(!IsPlayerControlled() && InventoryComponent)
+	{
+		InventoryComponent->StopFiring();
+	}
+	
 	ForcePlayAnimMontage(PlayData);
 }
 
@@ -509,6 +526,14 @@ void ABaseCharacter::GL_HandleCoverDodgeAction()
 	
 	if(!CurrentMount)
 	{
+		if(const ABasePlayerController* BasePlayerController = Cast<ABasePlayerController>(GetController()))
+		{
+			if(ABaseCoverActor* BaseCoverActor = Cast<ABaseCoverActor>(BasePlayerController->GetTargetedActor().GetObject()))
+			{
+				Internal_AssignNewMountable(BasePlayerController->GetTargetedActor().GetObject(), FHitResult());
+				return;
+			}
+		}
 		Internal_CoverDodgeTryStart();
 	} else
 	{
@@ -603,12 +628,16 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	{
 		return;
 	}
-	
-	if(IMountable* CoverPoint = Cast<IMountable>(HitResult.GetActor()))
+	Internal_AssignNewMountable(HitResult.GetActor(), HitResult);
+}
+
+void ABaseCharacter::Internal_AssignNewMountable(UObject* InMountableObject, FHitResult InHitResult)
+{
+	if(IMountable* CoverPoint = Cast<IMountable>(InMountableObject))
 	{
-		CoverPoint->OccupyMount(this, FVector::ZeroVector, HitResult.ImpactNormal);
+		CoverPoint->OccupyMount(this, FVector::ZeroVector, InHitResult.ImpactNormal);
 		TScriptInterface<IMountable> NewCover;
-		NewCover.SetObject(HitResult.GetActor());
+		NewCover.SetObject(InMountableObject);
 		NewCover.SetInterface(CoverPoint);
 		CurrentMount = NewCover;
 	}

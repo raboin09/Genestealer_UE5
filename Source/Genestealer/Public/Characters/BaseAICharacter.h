@@ -21,14 +21,30 @@ class GENESTEALER_API ABaseAICharacter : public ABaseCharacter, public IAIPawn, 
 public:
 	ABaseAICharacter(const FObjectInitializer& ObjectInitializer);
 
+	UFUNCTION(BlueprintCallable)
+	void IncrementMinorWaypoint()
+	{
+		if(MinorWaypointIndex < 3)
+		{
+			MinorWaypointIndex++;
+		}
+	}
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetMajorWaypoint() const { return MajorWaypointIndex; }
+	UFUNCTION(BlueprintCallable)
+	int32 GetMinorWaypoint() const { return MinorWaypointIndex; }
+
 	////////////////////////////////
 	/// IAIPawn override
 	////////////////////////////////
-	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return CurrentAffiliation; }
-	FORCEINLINE virtual UBehaviorTree* GetAIBehavior() const override { return DefaultBehaviorTree; }
+	FORCEINLINE virtual EAbsoluteAffiliation GetPawnAffiliation() const override { return AbsoluteAffiliation; }
+	FORCEINLINE virtual UBehaviorTree* GetDefaultBehavior() const override { return DefaultBehaviorTree; }
+	FORCEINLINE virtual UBehaviorTree* GetAttackBehavior() const override { return AttackBehaviorTree; }
 	FORCEINLINE virtual FCharacterInCombatChanged& OnCombatStateChanged() override { return CharacterInCombatChanged; }
 	FORCEINLINE virtual bool IsAIFiring() override { return IsFiring(); }
-	virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const override;
+	FORCEINLINE virtual EBallisticSkill GetBallisticSkill() const override { return BallisticSkill; }
+	FORCEINLINE virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const override;
 	virtual void FireWeapon(bool bStartFiring) override;
 	virtual void Aim(bool bStartAiming) override;
 	virtual float GetWeaponRange() const override;
@@ -38,7 +54,7 @@ public:
 	////////////////////////////////
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
-	virtual EAffiliation GetInteractableAffiliation() const override { return CurrentAffiliation; }
+	virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return AbsoluteAffiliation; }
 	
 	////////////////////////////////
 	// IQuestable overrides
@@ -52,11 +68,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	bool bIsASquadMember = false;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
+	UBehaviorTree* AttackBehaviorTree;
+	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	UBehaviorTree* DefaultBehaviorTree;
-
+	
 private:
 	UPROPERTY()
 	class UInteractionComponent* InteractionComponent;
 
 	FQuestObjectiveEvent QuestObjectiveEvent;
+
+	int32 MajorWaypointIndex;
+	int32 MinorWaypointIndex;
 };

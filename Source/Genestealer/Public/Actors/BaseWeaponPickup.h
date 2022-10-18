@@ -19,7 +19,7 @@ public:
 	virtual UMeshComponent* GetMesh_Implementation() const override;
 	
 protected:
-	FORCEINLINE virtual EAffiliation GetInteractableAffiliation() const override { return OutlineAffiliation; }
+	FORCEINLINE virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return OutlineAffiliation; }
 	UFUNCTION(BlueprintCallable, Category="Genestealer")
 	virtual void ConsumePickup(ACharacter* ConsumingChar) override;
 	UFUNCTION(BlueprintPure, Category="Genestealer")
@@ -31,7 +31,7 @@ protected:
 	void GiveWeaponToPlayer(ACharacter* ConsumingChar);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
-	EAffiliation OutlineAffiliation = EAffiliation::Allies;
+	EAbsoluteAffiliation OutlineAffiliation = EAbsoluteAffiliation::Neutral;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Genestealer")
 	UStaticMeshComponent* SummonedStaticMesh;

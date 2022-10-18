@@ -8,7 +8,7 @@ public class Genestealer : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "AIModule", "UMG", "PhysicsCore", "Niagara", "NavigationSystem", "EnhancedInput", "SMSystem", "GameplayTasks" });
+		PublicDependencyModuleNames.AddRange(new string[] {"RuntimeDataTable", "Http", "Json", "JsonUtilities", "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "AIModule", "UMG", "PhysicsCore", "Niagara", "NavigationSystem", "EnhancedInput", "SMSystem", "GameplayTasks" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

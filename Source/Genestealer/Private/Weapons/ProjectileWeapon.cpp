@@ -9,6 +9,11 @@
 #include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
 
+AProjectileWeapon::AProjectileWeapon()
+{
+	bHasFiringSpread = false;
+}
+
 void AProjectileWeapon::FireWeapon()
 {
 	HandleProjectileFire();
@@ -24,9 +29,9 @@ ABaseOverlapProjectile* AProjectileWeapon::HandleProjectileFire()
 
 void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity)
 {
-	OutVelocity = GetAdjustedAim();
-	OutSpawnOrigin = GetRaycastOriginLocation();
+	OutVelocity = GetShootDirection(GetAdjustedAim());
 	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
+	OutSpawnOrigin = GetRaycastOriginLocation();
 	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
 	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this) * 1.5f; 
 	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RaycastCircleRadius); Impact.bBlockingHit)

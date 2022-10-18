@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatTypes.h"
 #include "HealthTypes.generated.h"
 
 UENUM(BlueprintType)
@@ -29,6 +30,8 @@ enum class EHitReactType : uint8
  	float MaxHealthPerWound = 100;
  	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	int32 MaxWounds = 1;
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+ 	EArmorSave ArmorSave = EArmorSave::Default;
  };
 
 USTRUCT(BlueprintType)

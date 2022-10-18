@@ -7,6 +7,8 @@
 #include "Utils/CoreUtils.h"
 
 TArray<AActor*> UWorldUtils::QuestRelevantActors = {};
+TArray<AActor*> UWorldUtils::ChaosCultActors = {};
+TArray<AActor*> UWorldUtils::GenestealerCultActors = {};
 
 void UWorldUtils::FinishSpawningActor_Deferred(AActor* InActor, const FTransform& ActorTransform)
 {
@@ -34,6 +36,23 @@ AActor* UWorldUtils::Internal_SpawnActorFromClass(UWorld* World, UClass* Class, 
 		return nullptr;
 	}
 	return World->SpawnActor<AActor>(Class, SpawnTransform);
+}
+
+void UWorldUtils::TryAddActorToTeamArray(AActor* InActor, EAbsoluteAffiliation AbsoluteAffiliation)
+{
+	switch (AbsoluteAffiliation) {
+		case EAbsoluteAffiliation::GenestealerCult:
+			GenestealerCultActors.AddUnique(InActor);
+			break;
+		case EAbsoluteAffiliation::ChaosCult:
+			ChaosCultActors.AddUnique(InActor);
+			break;
+	case EAbsoluteAffiliation::Neutral:
+		case EAbsoluteAffiliation::Imperium:
+		case EAbsoluteAffiliation::Orks:
+		case EAbsoluteAffiliation::Destructible:
+		default: break;
+	}
 }
 
 void UWorldUtils::TryAddActorToQuestableArray(AActor* InActor)

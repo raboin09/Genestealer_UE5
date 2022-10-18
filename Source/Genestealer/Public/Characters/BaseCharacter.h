@@ -12,6 +12,7 @@
 #include "Character/ALSCharacter.h"
 #include "Character/Animation/ALSPlayerCameraBehavior.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Types/OnlineContentTypes.h"
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
 
@@ -63,7 +64,7 @@ public:
 	////////////////////////////////
 	/// IAttackable override
 	////////////////////////////////
-	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return CurrentAffiliation; }
+	FORCEINLINE virtual EAbsoluteAffiliation GetAffiliation() const override { return AbsoluteAffiliation; }
 	FORCEINLINE virtual UHealthComponent* GetHealthComponent() const override { return HealthComponent; }
 	FORCEINLINE virtual FVector GetHeadLocation() const override { return GetMesh()->GetSocketLocation("head"); }
 	FORCEINLINE virtual FVector GetChestLocation() const override { return GetMesh()->GetSocketLocation("spine_02");}
@@ -122,6 +123,8 @@ protected:
 	UHealthComponent* HealthComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	UInventoryComponent* InventoryComponent;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
+	FString UnitName = "Placeholder";
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults")
 	TArray<FGameplayTag> DefaultGameplayTags;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
@@ -129,11 +132,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<TSubclassOf<AActor>> DefaultEffects;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
-	EAffiliation CurrentAffiliation;
+	EAbsoluteAffiliation AbsoluteAffiliation;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
 	TSubclassOf<AActor> StartingPrimaryWeaponClass;
-	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
-	TSubclassOf<AActor> StartingAlternateWeaponClass;
+	// UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
+	// TSubclassOf<AActor> StartingAlternateWeaponClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
 	
@@ -146,7 +149,7 @@ protected:
 	UEffectContainerComponent* EffectContainerComponent;
 
 	FCharacterInCombatChanged CharacterInCombatChanged;
-	
+	EBallisticSkill BallisticSkill;
 private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
@@ -170,6 +173,8 @@ private:
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
 	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
+	void Internal_AssignNewMountable(UObject* InMountableObject, FHitResult InHitResult);
+	
 protected:
 	
 	////////////////////////////////
@@ -181,11 +186,11 @@ protected:
 	virtual void GL_HandleCoverDodgeAction() override;
 	virtual void GL_HandleAimAction(bool bValue) override;
 	virtual void GL_HandleSprintAction(bool bValue) override;
-
+	
 private:
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Ragdoll;
-
+	
 	UPROPERTY(Transient)
 	EHitReactType LastKnownHitReact;
 	

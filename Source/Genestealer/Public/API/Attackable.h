@@ -3,20 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types/CombatTypes.h"
 #include "UObject/Interface.h"
 #include "Attackable.generated.h"
 
 class UHealthComponent;
-
-UENUM(BlueprintType)
-enum class EAffiliation : uint8
-{
-	Allies,
-	Enemies,
-	Destructible,
-	Neutral,
-	All
-};
 
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UAttackable : public UInterface
@@ -33,7 +24,7 @@ class GENESTEALER_API IAttackable
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Attackable")
-	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAttackable::GetAffiliation, return EAffiliation::Neutral;)
+	virtual EAbsoluteAffiliation GetAffiliation() const PURE_VIRTUAL(IAttackable::GetAffiliation, return EAbsoluteAffiliation::Neutral;)
 	virtual UHealthComponent* GetHealthComponent() const PURE_VIRTUAL(IAttackable::GetHealthComponent, return nullptr;)
 	virtual FVector GetHeadLocation() const PURE_VIRTUAL(IAttackable::GetHeadLocation, return FVector::ZeroVector;)
 	UFUNCTION(BlueprintCallable, Category = "Attackable")

@@ -23,13 +23,15 @@ class GENESTEALER_API IAIPawn
 	GENERATED_BODY()
 
 public:
-	virtual class UBehaviorTree* GetAIBehavior() const PURE_VIRTUAL(IAIPawn::GetAIBehavior, return nullptr;)
+	virtual class UBehaviorTree* GetDefaultBehavior() const PURE_VIRTUAL(IAIPawn::GetDefaultBehavior, return nullptr;)
+	virtual UBehaviorTree* GetAttackBehavior() const PURE_VIRTUAL(IAIPawn::GetAttackBehavior, return nullptr;)
 	virtual bool IsAIFiring() PURE_VIRTUAL(IAIPawn::IsAIFiring, return false;)
 	UFUNCTION(BlueprintCallable)
 	virtual void FireWeapon(bool bStartFiring) PURE_VIRTUAL(IAIPawn::FireWeapon, )
 	virtual void Aim(bool bStartAiming) PURE_VIRTUAL(IAIPawn::Aim, )
 	virtual float GetWeaponRange() const PURE_VIRTUAL(IAIPawn::GetWeaponRange, return 0.f; )
+	virtual EBallisticSkill GetBallisticSkill() const PURE_VIRTUAL(IAIPawn::GetBallisticSkill, return EBallisticSkill::Default; )
 	virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const PURE_VIRTUAL(IAIPawn::GetWeaponMuzzleSocketLocation, return FVector::ZeroVector; )
-	virtual EAffiliation GetAffiliation() const PURE_VIRTUAL(IAIPawn::GetAffiliation, return EAffiliation::Neutral; )
+	virtual EAbsoluteAffiliation GetPawnAffiliation() const PURE_VIRTUAL(IAIPawn::GetPawnAffiliation, return EAbsoluteAffiliation::Neutral; )
 	virtual FCharacterInCombatChanged& OnCombatStateChanged() = 0;
 };

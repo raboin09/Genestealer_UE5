@@ -34,7 +34,7 @@ public:
 private:
 	UFUNCTION()
 	virtual void Internal_OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-	void InitAIComponents();
+	void InitAIComponents(UBehaviorTree* BehaviorTree);
 	void InitPerceptionComponents();
 
 	virtual FVector GetUpdatedFocalPoint();

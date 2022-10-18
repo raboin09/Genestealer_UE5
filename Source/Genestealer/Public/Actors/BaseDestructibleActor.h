@@ -22,7 +22,7 @@ protected:
 	////////////////////////////////
 	/// IAttackable override
 	////////////////////////////////
-	FORCEINLINE virtual EAffiliation GetAffiliation() const override { return DestructibleAffiliation; }
+	FORCEINLINE virtual EAbsoluteAffiliation GetAffiliation() const override { return EAbsoluteAffiliation::ChaosCult; }
 	FORCEINLINE virtual UHealthComponent* GetHealthComponent() const override { return HealthComponent; }
 	FORCEINLINE virtual FVector GetHeadLocation() const override { return GetActorLocation(); }
 	FORCEINLINE virtual FVector GetChestLocation() const override { return GetActorLocation(); }
@@ -32,7 +32,7 @@ protected:
 	////////////////////////////////
 	// Interactable overrides
 	////////////////////////////////
-	virtual EAffiliation GetInteractableAffiliation() const override { return DestructibleAffiliation; }
+	virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return EAbsoluteAffiliation::ChaosCult; }
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
 
@@ -54,8 +54,6 @@ private:
 	UFUNCTION()
 	void HandleDeathEvent(const FActorDeathEventPayload& EventPayload);
 	
-	UPROPERTY()
-	EAffiliation DestructibleAffiliation;
 	UPROPERTY()
 	UEffectContainerComponent* EffectContainerComponent;
 	UPROPERTY()

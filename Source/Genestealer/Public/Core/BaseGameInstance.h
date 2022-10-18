@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AudioManager.h"
 #include "DevSandboxManager.h"
+#include "OnlineContentManager.h"
 #include "Engine/GameInstance.h"
 #include "BaseGameInstance.generated.h"
 
@@ -18,6 +19,7 @@ class GENESTEALER_API UBaseGameInstance : public UGameInstance
 	
 public:
 	virtual void Init() override;
+	FORCEINLINE UOnlineContentManager* GetOnlineContentManager() const { return OnlineContentManager; }
 	
 #if WITH_EDITOR
 	UDevSandboxManager* DevSandboxManager;
@@ -25,11 +27,15 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	TSubclassOf<UOnlineContentManager> ContentManagerClass;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	TSoftObjectPtr<UWorld> PostProcessWorld;
 	
 private:
 	UPROPERTY()
 	UAudioManager* AudioManager;
+	UPROPERTY()
+	UOnlineContentManager* OnlineContentManager;
 
 	void Internal_SetupManagers();
 };

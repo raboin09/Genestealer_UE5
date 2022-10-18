@@ -185,6 +185,11 @@ void ABasePlayerController::OnPossess(APawn* NewPawn)
 	{
 		PlayerCharacter->OnPlayerAimingChanged().AddDynamic(this, &ABasePlayerController::HandlePlayerAimingChanged);
 	}
+
+	if(ABaseHUD* BaseHUD = UCoreUtils::GetBaseHUD(this))
+	{
+		BaseHUD->InitHUDOnNewPawnPossessed();
+	}
 }
 
 void ABasePlayerController::CoverAction(const FInputActionValue& Value)

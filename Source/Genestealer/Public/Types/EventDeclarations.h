@@ -30,10 +30,10 @@ struct FAmmoAmountChangedPayload
 {
 	GENERATED_BODY()
 
-	FAmmoAmountChangedPayload(int32 InCurrAmmoInClip, int32 InClipCapacity, int32 InCurrentAmmo)
-		: CurrentAmmoInClip(InCurrAmmoInClip), ClipCapacity(InClipCapacity),  CurrentAmmo(InCurrentAmmo) {}
+	FAmmoAmountChangedPayload(int32 InCurrAmmoInClip, int32 InClipCapacity, int32 InCurrentAmmo, int32 InMaxClips)
+		: CurrentAmmoInClip(InCurrAmmoInClip), ClipCapacity(InClipCapacity),  CurrentAmmo(InCurrentAmmo), MaxAmmo(InMaxClips) {}
 
-	FAmmoAmountChangedPayload(): CurrentAmmoInClip(0), ClipCapacity(0), CurrentAmmo(0)
+	FAmmoAmountChangedPayload(): CurrentAmmoInClip(0), ClipCapacity(0), CurrentAmmo(0), MaxAmmo(0)
 	{
 	}
 
@@ -43,6 +43,8 @@ struct FAmmoAmountChangedPayload
 	int32 ClipCapacity;
 	UPROPERTY()
 	int32 CurrentAmmo;
+	UPROPERTY()
+	int32 MaxAmmo;
 	
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAmmoAmountChanged, const FAmmoAmountChangedPayload&, AmmoAmountChangedPayload);

@@ -24,7 +24,7 @@ public:
 	//////////////////////////////////////
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
-	FORCEINLINE virtual EAffiliation GetInteractableAffiliation() const override { return EAffiliation::Neutral; }
+	FORCEINLINE virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return EAbsoluteAffiliation::Neutral; }
 
 	//////////////////////////////////////
 	// ABaseOverlapActor Overrides

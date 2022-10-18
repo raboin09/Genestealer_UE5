@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Types/CombatTypes.h"
 #include "WorldUtils.generated.h"
 
 /**
@@ -18,7 +19,10 @@ public:
 	// Static Variables
 	//////////////////////////
 	static TArray<AActor*> QuestRelevantActors;
+	static TArray<AActor*> ChaosCultActors;
+	static TArray<AActor*> GenestealerCultActors;
 
+	static void TryAddActorToTeamArray(AActor* InActor, EAbsoluteAffiliation AbsoluteAffiliation);
 	static void TryAddActorToQuestableArray(AActor* InActor);
 	static void TryRemoveActorFromQuestableArray(AActor* InActor);
 

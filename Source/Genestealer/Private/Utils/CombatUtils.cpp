@@ -4,7 +4,59 @@
 #include "Utils/CombatUtils.h"
 
 #include "API/Attackable.h"
+#include "Characters/BasePlayerCharacter.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CoreUtils.h"
+#include "Utils/WorldUtils.h"
+
+AActor* UCombatUtils::GetRandomEnemy(EAbsoluteAffiliation EnemyAffiliation)
+{
+	int32 NumEnemies;
+	switch (EnemyAffiliation) {
+	case EAbsoluteAffiliation::GenestealerCult:
+		NumEnemies = UKismetMathLibrary::RandomInteger(UWorldUtils::GenestealerCultActors.Num() - 1);
+		return UWorldUtils::GenestealerCultActors[NumEnemies];
+	case EAbsoluteAffiliation::ChaosCult:
+		NumEnemies = UKismetMathLibrary::RandomInteger(UWorldUtils::ChaosCultActors.Num() - 1);
+		return UWorldUtils::ChaosCultActors[NumEnemies];
+	case EAbsoluteAffiliation::Neutral:
+	case EAbsoluteAffiliation::Imperium:
+	case EAbsoluteAffiliation::Orks:
+	case EAbsoluteAffiliation::Destructible:
+	default:
+		return nullptr;
+	}
+}
+
+float UCombatUtils::GetArmorSaveReduction(EArmorSave InArmorSave)
+{
+	switch (InArmorSave) {
+		case EArmorSave::Default: return 1.f;
+		case EArmorSave::Invulnerable: return 0.f;
+		case EArmorSave::TwoPlus: return .17f;
+		case EArmorSave::ThreePlus: return .33f;
+		case EArmorSave::FourPlus: return .5f;
+		case EArmorSave::FivePlus: return .67f;
+		case EArmorSave::SixPlus: return .83f;
+		default: return 1.f;
+	}
+}
+
+float UCombatUtils::GetBallisticSkillValueFromEnum(EBallisticSkill InSkill)
+{
+	switch(InSkill)
+	{
+	case EBallisticSkill::Default: return 0.f;
+	case EBallisticSkill::FullAccuracy: return 0.f;
+	case EBallisticSkill::TwoPlus: return .25f;
+	case EBallisticSkill::ThreePlus: return .5f;
+	case EBallisticSkill::FourPlus: return .75f;
+	case EBallisticSkill::FivePlus: return 1.f;
+	case EBallisticSkill::SixPlus: return 3.5f;
+	default: return 0.f;
+	}
+}
 
 float UCombatUtils::GetHitImpulseValue(EHitReactType InHit)
 {
@@ -192,6 +244,17 @@ bool UCombatUtils::AreActorsAllies(TScriptInterface<IInteractable> FirstActor, A
 		{
 			return false;
 		}
+
+		if(IsActorDestructible(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorDestructible(SecondActor))
+		{
+			return false;
+		}
+		
 		return FirstActor->GetInteractableAffiliation() == CastedOwner->GetAffiliation();
 	}
 	return false;
@@ -208,6 +271,16 @@ bool UCombatUtils::AreActorsEnemies(TScriptInterface<IInteractable> FirstActor, 
 		}
 
 		if(IsActorNeutral(SecondActor))
+		{
+			return false;
+		}
+
+		if(IsActorDestructible(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorDestructible(SecondActor))
 		{
 			return false;
 		}
@@ -232,6 +305,16 @@ bool UCombatUtils::AreActorsAllies(AActor* FirstActor, AActor* SecondActor)
 		{
 			return false;
 		}
+
+		if(IsActorDestructible(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorDestructible(SecondActor))
+		{
+			return false;
+		}
 		
 		return CastedChar->GetAffiliation() == CastedOwner->GetAffiliation();
 	}
@@ -253,6 +336,17 @@ bool UCombatUtils::AreActorsEnemies(AActor* FirstActor, AActor* SecondActor)
 		{
 			return false;
 		}
+
+		if(IsActorDestructible(FirstActor))
+		{
+			return false;
+		}
+
+		if(IsActorDestructible(SecondActor))
+		{
+			return false;
+		}
+		
 		return CastedChar->GetAffiliation() != CastedOwner->GetAffiliation();
 	}
 	return false;
@@ -262,7 +356,7 @@ bool UCombatUtils::IsActorNeutral(AActor* FirstActor)
 {
 	if(const IAttackable* CastedChar = Cast<IAttackable>(FirstActor))
 	{
-		return CastedChar->GetAffiliation() == EAffiliation::Neutral;
+		return CastedChar->GetAffiliation() == EAbsoluteAffiliation::Neutral;
 	}
 	return false;
 }
@@ -271,7 +365,7 @@ bool UCombatUtils::IsActorNeutral(TScriptInterface<IInteractable> FirstActor)
 {
 	if(FirstActor)
 	{
-		return FirstActor->GetInteractableAffiliation() == EAffiliation::Neutral;
+		return FirstActor->GetInteractableAffiliation() == EAbsoluteAffiliation::Neutral;
 	}
 	return false;
 }
@@ -280,7 +374,7 @@ bool UCombatUtils::IsActorDestructible(AActor* FirstActor)
 {
 	if(const IAttackable* CastedChar = Cast<IAttackable>(FirstActor))
 	{
-		return CastedChar->GetAffiliation() == EAffiliation::Destructible;
+		return CastedChar->GetAffiliation() == EAbsoluteAffiliation::Destructible;
 	}
 	return false;
 }
@@ -290,31 +384,43 @@ bool UCombatUtils::IsActorDestructible(TScriptInterface<IInteractable> FirstActo
 {
 	if(FirstActor)
 	{
-		return FirstActor->GetInteractableAffiliation() == EAffiliation::Destructible;
+		return FirstActor->GetInteractableAffiliation() == EAbsoluteAffiliation::Destructible;
 	}
 	return false;
 }
 
-int32 UCombatUtils::GetOutlineIntFromColor(const EOutlineColor InColor)
+EAffectedAffiliation UCombatUtils::GetAffiliationRelatedToPlayerCharacter(AActor* ContextActor)
 {
-	switch (InColor)
+	if(IsActorNeutral(ContextActor))
 	{
-	case EOutlineColor::Green: return 252;
-	case EOutlineColor::Red: return 254;
-	case EOutlineColor::Gray: return 255;
-	case EOutlineColor::Purple: return 253;
-	default: return 255;
+		return EAffectedAffiliation::Neutral;
 	}
+
+	if(IsActorDestructible(ContextActor))
+	{
+		return EAffectedAffiliation::Enemies;
+	}
+
+	AActor* PlayerCharacter = UCoreUtils::GetPlayerCharacter(ContextActor);
+	if(AreActorsAllies(PlayerCharacter, ContextActor))
+	{
+		return EAffectedAffiliation::Allies;
+	}
+
+	if(AreActorsEnemies(PlayerCharacter, ContextActor))
+	{
+		return EAffectedAffiliation::Enemies;
+	}
+	return EAffectedAffiliation::Neutral;
 }
 
-int32 UCombatUtils::GetOutlineIntFromAffiliation(const EAffiliation InAffiliation)
+int32 UCombatUtils::GetOutlineInt(AActor* InActor)
 {
-	switch (InAffiliation)
+	switch(GetAffiliationRelatedToPlayerCharacter(InActor))
 	{
-	case EAffiliation::Allies: return 252;
-	case EAffiliation::Enemies: return 254;
-	case EAffiliation::Destructible: return 254;
-	case EAffiliation::Neutral: return 255;
-	default: return 255;
+		case EAffectedAffiliation::Allies: return OUTLINE_COLOR_GREEN;
+		case EAffectedAffiliation::Enemies: return OUTLINE_COLOR_RED;
+		case EAffectedAffiliation::Neutral: return OUTLINE_COLOR_GRAY;
+		default: return OUTLINE_COLOR_GRAY;
 	}
 }

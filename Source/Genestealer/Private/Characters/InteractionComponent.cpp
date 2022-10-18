@@ -20,7 +20,7 @@ void UInteractionComponent::SwitchOutlineOnAllMeshes(bool bShouldOutline)
 	{
 		if(CurrMesh)
 		{
-			const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromAffiliation(Internal_GetOwnerAffiliation());
+			const int32 OutlineColorInt = UCombatUtils::GetOutlineInt(GetOwner());
 			CurrMesh->SetRenderCustomDepth(bShouldOutline);
 			CurrMesh->SetCustomDepthStencilValue(OutlineColorInt);
 		}
@@ -51,19 +51,4 @@ void UInteractionComponent::Internal_AddOwnerMeshesToArray()
 			}
 		}
 	}
-}
-
-EAffiliation UInteractionComponent::Internal_GetOwnerAffiliation() const
-{
-	if(const IAttackable* OwnerCast = Cast<IAttackable>(GetOwner()))
-	{
-		return OwnerCast->GetAffiliation();
-	}
-
-	if(const IInteractable* InterCast = Cast<IInteractable>(GetOwner()))
-	{
-		return InterCast->GetInteractableAffiliation();
-	}
-	
-	return EAffiliation::Neutral;
 }

@@ -44,7 +44,7 @@ private:
 	FCurrentWoundHealthChanged CurrentHealthChanged;
 	FMaxWoundsChanged MaxWoundsChanged;
 	FActorDeath ActorDeath;
-
+	EArmorSave ArmorSave;
 	float ReservePool;
 	
 public:

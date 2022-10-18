@@ -59,6 +59,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void StartReload() override;
 	virtual void StopReload() override;
+	virtual void ResetOverlay();
 	virtual void StopFire() override;
 	virtual void OnEquipFinished() override;
 	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) override;
@@ -94,7 +95,7 @@ protected:
 	FVector GetCameraDamageStartLocation(const FVector& AimDirection);
 	FHitResult AdjustHitResultIfNoValidHitComponent(const FHitResult& Impact) const;
 	float GetCurrentSpread() const;
-	float GetCurrentFiringSpreadPercentage() const;
+	float GetAIAccuracy() const;
 	bool ShouldLineTrace() const;
 	FHitResult WeaponTrace(const FVector& StartTrace, const FVector& EndTrace, bool bLineTrace, float CircleRadius = 5.f) const;
 	void PlayMuzzleFX();
@@ -223,6 +224,7 @@ private:
 	UPROPERTY()
 	FAmmoAmountChanged AmmoAmountChanged;
 
+	FTimerHandle TimerHandle_ReloadOverlay;
 	FTimerHandle TimerHandle_StopReload;
 	FTimerHandle TimerHandle_ReloadWeapon;
 };

@@ -1,6 +1,7 @@
 #include "Characters/InventoryComponent.h"
 
 #include "API/RangedEntity.h"
+#include "Core/UIEventHub.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
@@ -354,5 +355,9 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 	if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(NewWeapon.GetObject()))
 	{
 		AmmoEntity->BroadcastAmmoUsage();
+		if(UUIEventHub* EventHub = UCoreUtils::GetUIEventHub(GetOwner()))
+		{
+			AmmoEntity->OnAmmoAmountChanged().AddDynamic(EventHub, &UUIEventHub::UIEventHandler_AmmoChanged);	
+		}
 	}
 }

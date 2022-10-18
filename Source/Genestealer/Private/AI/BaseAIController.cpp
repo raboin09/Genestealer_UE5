@@ -40,11 +40,12 @@ void ABaseAIController::OnPossess(APawn* InPawn)
 	
 	AIPawn.SetObject(InPawn);
 	AIPawn.SetInterface(Cast<IAIPawn>(InPawn));
-	if(AIPawn)
+	if(!AIPawn)
 	{
-		AIPawn->OnCombatStateChanged().AddDynamic(this, &ABaseAIController::SetIsInCombat);	
+		return;
 	}
-	InitAIComponents();
+	AIPawn->OnCombatStateChanged().AddDynamic(this, &ABaseAIController::SetIsInCombat);	
+	InitAIComponents(AIPawn->GetDefaultBehavior());
 	InitPerceptionComponents();
 }
 
@@ -109,10 +110,12 @@ void ABaseAIController::SetEnemy(ACharacter* InEnemy)
 		if(InEnemy)
 		{
 			SetFocus(InEnemy);
+			InitAIComponents(AIPawn->GetAttackBehavior());
 			BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, true);
 		} else
 		{
 			ClearFocus(EAIFocusPriority::Gameplay);
+			InitAIComponents(AIPawn->GetDefaultBehavior());
 			BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, false);
 		}
 	}
@@ -131,9 +134,8 @@ void ABaseAIController::SetIsInCombat(const FCharacterInCombatChangedPayload& Ch
 {
 	if(BlackboardComponent)
 	{
-		const int32 RandPick = FMath::RandRange(0, 50);
 		BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, CharacterInCombatChangedPayload.bIsInCombat);
-		if(!GetEnemy() || RandPick == 7)
+		if(!GetEnemy())
 		{
 			if(const IWeapon* Weapon = Cast<IWeapon>(CharacterInCombatChangedPayload.DamageCauser))
 			{
@@ -172,7 +174,7 @@ bool ABaseAIController::IsInCombat() const
 
 void ABaseAIController::Internal_OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
-	if(GetEnemy())
+	if(UpdatedActors.Contains(GetEnemy()))
 	{
 		return;
 	}
@@ -189,24 +191,20 @@ void ABaseAIController::Internal_OnPerceptionUpdated(const TArray<AActor*>& Upda
 	}
 }
 
-void ABaseAIController::InitAIComponents()
+void ABaseAIController::InitAIComponents(UBehaviorTree* BehaviorTree)
 {
-	if(!AIPawn)
+	if(!AIPawn || !BehaviorTree)
 	{
 		return;
 	}
-	
-	if (UBehaviorTree* BehaviorTree = AIPawn->GetAIBehavior())
+	BehaviorTreeComponent->StopTree();
+	if (BehaviorTree->BlackboardAsset)
 	{
-		if (BehaviorTree->BlackboardAsset)
-		{
-			BlackboardComponent->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
-			EnemyKeyID = BlackboardComponent->GetKeyID("Enemy");
-			IsInCombatKeyID = BlackboardComponent->GetKeyID("IsInCombat");
-		}
-		
-		BehaviorTreeComponent->StartTree(*BehaviorTree);
-	}
+		BlackboardComponent->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+		EnemyKeyID = BlackboardComponent->GetKeyID("Enemy");
+		IsInCombatKeyID = BlackboardComponent->GetKeyID("IsInCombat");
+	}	
+	BehaviorTreeComponent->StartTree(*BehaviorTree);
 }
 
 void ABaseAIController::InitPerceptionComponents()

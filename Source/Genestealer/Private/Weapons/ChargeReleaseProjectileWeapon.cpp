@@ -130,12 +130,10 @@ void AChargeReleaseProjectileWeapon::Internal_FireAndReset()
 	float OverheatDuration = TimeBetweenShots;
 	if(CurrentChargeState > 0)
 	{
-		UKismetSystemLibrary::PrintString(this, "Charge");
 		OverheatDuration *= (CurrentChargeState * TimeBetweenShots);
 		K2_PlayCooldownEffects(OverheatDuration);
 	} else
 	{
-		UKismetSystemLibrary::PrintString(this, "Single");
 		OverheatDuration = 0;
 		LastFireTime = GetWorld()->GetTimeSeconds() - (TimeBetweenShots / 10);
 	}

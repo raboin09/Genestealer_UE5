@@ -46,4 +46,6 @@ public:
 	static ABasePlayerCharacter* GetPlayerCharacter(const UObject* ContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
 	static UInventoryComponent* GetPlayerInventoryComponent(const UObject* ContextObject);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Genestealer|CoreUtils")
+	static UOnlineContentManager* GetOnlineContentManager(const UObject* ContextObject);
 };

@@ -7,15 +7,6 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-UENUM()
-enum class EOutlineColor : uint8
-{
-	Green,
-	Red,
-	Gray,
-	Purple
-};
-
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UInteractable : public UInterface
 {
@@ -30,7 +21,7 @@ class GENESTEALER_API IInteractable
 	GENERATED_BODY()
 
 public:
-	virtual EAffiliation GetInteractableAffiliation() const PURE_VIRTUAL(IInteractable::GetInteractableAffiliation, return EAffiliation::Neutral;)
+	virtual EAbsoluteAffiliation GetInteractableAffiliation() const PURE_VIRTUAL(IInteractable::GetInteractableAffiliation, return EAbsoluteAffiliation::Neutral;)
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) PURE_VIRTUAL(IInteractable::SwitchOutlineOnMesh, );
 	virtual void InteractWithActor(AActor* InstigatingActor) PURE_VIRTUAL(IInteractable::InteractWithActor, );
 };

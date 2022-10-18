@@ -5,7 +5,6 @@
 
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Core/UIEventHub.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 
@@ -21,19 +20,23 @@ void ABaseHUD::DrawHUD()
 	}
 }
 
-void ABaseHUD::BeginPlay()
+void ABaseHUD::InitHUDOnNewPawnPossessed()
 {
-	Super::BeginPlay();
 	Controller = UCoreUtils::GetBasePlayerController(this);
-	
 	HealthDisplay = Internal_CreateWidget<UUIUWHealthDisplay>(HealthDisplayClass);
 	DamageDisplay = Internal_CreateWidget<UUIUWDamageDisplay>(DamageDisplayClass);
-
+	AmmoDisplay = Internal_CreateWidget<UUIUWAmmoDisplay>(AmmoDisplayClass);
+	
 	if(UUIEventHub* UIEventHub = UCoreUtils::GetUIEventHub(this))
 	{
 		UIEventHub->OnNewActorTargeted().AddDynamic(this, &ABaseHUD::HandleNewActorTargeted);
 		UIEventHub->OnPlayerAimingChanged().AddDynamic(this, &ABaseHUD::HandlePlayerAimingChanged);
 	}
+}
+
+void ABaseHUD::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void ABaseHUD::HandleNewActorTargeted(const FNewActorTargetedPayload& NewActorTargetedPayload)

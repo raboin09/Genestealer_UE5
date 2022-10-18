@@ -23,7 +23,7 @@ protected:
 private:
 
 	void Internal_AddOwnerMeshesToArray();
-	EAffiliation Internal_GetOwnerAffiliation() const;
+	EAffectedAffiliation Internal_GetOwnerAffiliation() const;
 	
 	UPROPERTY()
 	TArray<UMeshComponent*> OwnerMeshes;

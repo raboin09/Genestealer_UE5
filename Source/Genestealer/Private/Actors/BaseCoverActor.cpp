@@ -111,9 +111,19 @@ void ABaseCoverActor::SwitchOutlineOnMesh(bool bShouldOutline)
 {
 	if(CoverMesh)
 	{
-		const int32 OutlineColorInt = UCombatUtils::GetOutlineIntFromColor(EOutlineColor::Green);
+		const int32 OutlineColorInt = UCombatUtils::GetOutlineInt(this);
 		CoverMesh->SetRenderCustomDepth(bShouldOutline);
 		CoverMesh->SetCustomDepthStencilValue(OutlineColorInt);
+	}
+
+	for(UStaticMeshComponent* AdditionalMesh : K2_GetAdditionalMeshesToOutline())
+	{
+		if(AdditionalMesh)
+		{
+			const int32 OutlineColorInt = UCombatUtils::GetOutlineInt(this);
+			AdditionalMesh->SetRenderCustomDepth(bShouldOutline);
+			AdditionalMesh->SetCustomDepthStencilValue(OutlineColorInt);
+		}
 	}
 
 	if(!bShouldOutline)
@@ -303,6 +313,16 @@ void ABaseCoverActor::StartMountedFire()
 		return;
 	}
 
+	if(LeftMaterialDissolver)
+	{
+		LeftMaterialDissolver->StartDissolveTimeline();
+	}
+
+	if(RightMaterialDissolver)
+	{
+		RightMaterialDissolver->StartDissolveTimeline();
+	}
+
 	if(ActorInLeftEdge() && bLeftCoverEnabled)
 	{
 		if(ActorInLeftPeek())
@@ -345,6 +365,23 @@ void ABaseCoverActor::StopMountedFire()
 	{
 		return;
 	}
+
+	if(!ActorInLeftEdge())
+	{
+		if(LeftMaterialDissolver)
+		{
+			LeftMaterialDissolver->StartAppearTimeline();
+		}
+	}
+
+	if(!ActorInRightEdge())
+	{
+		if(RightMaterialDissolver)
+		{
+			RightMaterialDissolver->StartAppearTimeline();
+		}
+	}
+	
 	
 	if((ActorInLeftEdge() && bLeftCoverEnabled) || (ActorInRightEdge() && bRightCoverEnabled))
 	{
@@ -383,6 +420,16 @@ void ABaseCoverActor::StartMountedAim()
 		return;
 	}
 
+	if(LeftMaterialDissolver)
+	{
+		LeftMaterialDissolver->StartDissolveTimeline();
+	}
+
+	if(RightMaterialDissolver)
+	{
+		RightMaterialDissolver->StartDissolveTimeline();
+	}
+
 	if(ActorInLeftEdge() && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_COVER_ROLLEDOUT) && bLeftCoverEnabled)
 	{
 		Internal_StartPeekRollout(LeftCoverPeekBox, false);
@@ -403,6 +450,22 @@ void ABaseCoverActor::StopMountedAim()
 	if(!OccupiedActor)
 	{
 		return;
+	}
+
+	if(!ActorInLeftEdge())
+	{
+		if(LeftMaterialDissolver)
+		{
+			LeftMaterialDissolver->StartAppearTimeline();
+		}
+	}
+
+	if(!ActorInRightEdge())
+	{
+		if(RightMaterialDissolver)
+		{
+			RightMaterialDissolver->StartAppearTimeline();
+		}
 	}
 	
 	if(ActorInLeftEdge() || ActorInRightEdge())

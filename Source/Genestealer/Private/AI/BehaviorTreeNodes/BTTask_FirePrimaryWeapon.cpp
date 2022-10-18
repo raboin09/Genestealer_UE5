@@ -6,8 +6,6 @@
 #include "AIController.h"
 #include "API/AIPawn.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
 
 EBTNodeResult::Type UBTTask_FireSelectedWeapon::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

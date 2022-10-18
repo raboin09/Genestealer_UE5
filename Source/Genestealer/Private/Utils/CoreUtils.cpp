@@ -54,6 +54,15 @@ UInventoryComponent* UCoreUtils::GetPlayerInventoryComponent(const UObject* Cont
 	return nullptr;
 }
 
+UOnlineContentManager* UCoreUtils::GetOnlineContentManager(const UObject* ContextObject)
+{
+	if(const UBaseGameInstance* BaseGameInstance = GetBaseGameInstance(ContextObject))
+	{
+		return BaseGameInstance->GetOnlineContentManager();
+	}
+	return nullptr;
+}
+
 bool UCoreUtils::IsObjectPlayerControlled(const UObject* Object)
 {
 	if(!Object)
@@ -70,9 +79,12 @@ bool UCoreUtils::IsObjectPlayerControlled(const UObject* Object)
 
 ABaseHUD* UCoreUtils::GetBaseHUD(const UObject* ContextObject)
 {
-	if(ABaseHUD * BaseHUD = Cast<ABaseHUD>(GetBasePlayerController(ContextObject)))
+	if(const ABasePlayerController* BasePlayerController = GetBasePlayerController(ContextObject))
 	{
-		return BaseHUD;
+		if(ABaseHUD * BaseHUD = Cast<ABaseHUD>(BasePlayerController->GetHUD()))
+		{
+			return BaseHUD;
+		}	
 	}
 	return nullptr;
 }

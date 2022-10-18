@@ -15,6 +15,8 @@ class GENESTEALER_API AProjectileWeapon : public ABaseRangedWeapon
 	GENERATED_BODY()
 	
 protected:
+	AProjectileWeapon();
+	
 	virtual void FireWeapon() override;
 	virtual class ABaseOverlapProjectile* HandleProjectileFire();
 	

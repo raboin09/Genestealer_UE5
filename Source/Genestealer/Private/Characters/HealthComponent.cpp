@@ -4,6 +4,7 @@
 #include "Characters/HealthComponent.h"
 #include "Characters/BaseCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CombatUtils.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -79,6 +80,7 @@ void UHealthComponent::OverrideWoundContainer(const FHealthDefaults& InRot)
 void UHealthComponent::InitHealthComponent(const FHealthDefaults& HealthModel)
 {
 	WoundContainer.InitWoundContainer(HealthModel);
+	ArmorSave = HealthModel.ArmorSave;
 	if(CurrentHealthChanged.IsBound())
 	{
 		FCurrentWoundEventPayload WoundEventPayload;
@@ -111,7 +113,8 @@ void UHealthComponent::BeginPlay()
 
 float UHealthComponent::CalculateDamage(const float RawDamage) const
 {
-	return RawDamage;
+	const float ArmorSaveMod = UCombatUtils::GetArmorSaveReduction(ArmorSave);
+	return RawDamage * ArmorSaveMod;
 }
 
 bool UHealthComponent::IsAlive()

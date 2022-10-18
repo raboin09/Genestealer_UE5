@@ -7,7 +7,6 @@
 #include "NiagaraSystem.h"
 #include "GameFramework/Actor.h"
 #include "API/Effect.h"
-#include "Particles/ParticleSystemComponent.h"
 #include "Engine/DataTable.h"
 #include "BaseEffect.generated.h"
 

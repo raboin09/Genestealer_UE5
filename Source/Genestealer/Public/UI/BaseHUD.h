@@ -6,6 +6,7 @@
 
 #include "Core/BasePlayerController.h"
 #include "GameFramework/HUD.h"
+#include "UMG/InGameDisplay/UIUWAmmoDisplay.h"
 #include "UMG/InGameDisplay/UIUWDamageDisplay.h"
 #include "UMG/InGameDisplay/UIUWHealthDisplay.h"
 
@@ -24,11 +25,15 @@ class GENESTEALER_API ABaseHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 
+	void InitHUDOnNewPawnPossessed();
+
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category="UI|Defaults")
 	float TimeUntilUIHidden;
+	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
+	TSubclassOf<UUIUWAmmoDisplay> AmmoDisplayClass;
 	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
 	TSubclassOf<UUIUWDamageDisplay> DamageDisplayClass;
 	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
@@ -54,13 +59,14 @@ private:
 			TempWidget->AddToViewport();
 			return TempWidget;
 		}
-	
 		return nullptr;	
 	}
 
 	UPROPERTY()
 	ABasePlayerController* Controller;
-	
+
+	UPROPERTY()
+	UUIUWAmmoDisplay* AmmoDisplay;
 	UPROPERTY()
 	UUIUWDamageDisplay* DamageDisplay;
 	UPROPERTY()

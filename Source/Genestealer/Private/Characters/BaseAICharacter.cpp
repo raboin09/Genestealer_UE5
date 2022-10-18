@@ -6,8 +6,10 @@
 #include "AI/BaseAIController.h"
 #include "Characters/InteractionComponent.h"
 #include "Core/BasePlayerController.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Quest/QuestManagerComponent.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
 
@@ -16,6 +18,9 @@ ABaseAICharacter::ABaseAICharacter(const FObjectInitializer& ObjectInitializer) 
 	AIControllerClass = ABaseAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
+
+	MajorWaypointIndex = -1;
+	MinorWaypointIndex = -1;
 }
 
 FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) const
@@ -76,9 +81,11 @@ void ABaseAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	UWorldUtils::TryAddActorToQuestableArray(this);
+	//Add emptying of array in GameInstance
+	UWorldUtils::TryAddActorToTeamArray(this, AbsoluteAffiliation);
 	UQuestManagerComponent::TryAddActorToActiveQuests(this);
 
-	if(CurrentAffiliation == EAffiliation::Allies && bIsASquadMember)
+	if(bIsASquadMember && UCombatUtils::GetAffiliationRelatedToPlayerCharacter(this) == EAffectedAffiliation::Allies)
 	{
 		if(ABasePlayerController* BasePlayerController = UCoreUtils::GetBasePlayerController(this))
 		{
@@ -88,6 +95,8 @@ void ABaseAICharacter::BeginPlay()
 			BasePlayerController->AddNewAISquadMember(NewAIPawn);
 		}
 	}
+	MajorWaypointIndex = UKismetMathLibrary::RandomIntegerInRange(1, 4);
+	MinorWaypointIndex = 1;
 }
 
 void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload)

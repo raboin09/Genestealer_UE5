@@ -27,8 +27,6 @@ ABaseDestructibleActor::ABaseDestructibleActor()
 
 	StartingHealth.MaxWounds = 1;
 	StartingHealth.MaxHealthPerWound = 50;
-	
-	DestructibleAffiliation = EAffiliation::Destructible;
 }
 
 void ABaseDestructibleActor::BeginPlay()

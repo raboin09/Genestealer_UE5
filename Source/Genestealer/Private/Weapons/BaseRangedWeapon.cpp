@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/FeedbackUtils.h"
 
@@ -278,8 +279,17 @@ void ABaseRangedWeapon::StopReload()
 		StopWeaponAnimation(ReloadAnim);
 		DetermineWeaponState();
 	}
+	
 	K2_HandleStopReload();
 	BroadcastAmmoUsage();
+}
+
+void ABaseRangedWeapon::ResetOverlay()
+{
+	if(ABaseCharacter* AnimOwner = Cast<ABaseCharacter>(OwningPawn))
+	{
+		AnimOwner->SetOverlayState(WeaponOverlayState);
+	}
 }
 
 void ABaseRangedWeapon::StopFire()
@@ -356,6 +366,7 @@ void ABaseRangedWeapon::OnUnEquip()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_StopReload);
 		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadWeapon);
+		GetWorldTimerManager().ClearTimer(TimerHandle_ReloadOverlay);
 	}
 	if(!FireVFXSystem)
 	{
@@ -433,28 +444,27 @@ FVector ABaseRangedWeapon::GetShootDirection(const FVector& AimDirection)
 	}
 	const int32 RandomSeed = FMath::Rand();
 	const FRandomStream WeaponRandomStream(RandomSeed);
-	const float ConeHalfAngle = FMath::DegreesToRadians(0.f);
+	const float ConeHalfAngle = FMath::DegreesToRadians(IsWeaponPlayerControlled() ? 0.f : (GetAIAccuracy()));
 	return WeaponRandomStream.VRandCone(AimDirection, ConeHalfAngle, ConeHalfAngle);
 }
 
 float ABaseRangedWeapon::GetCurrentSpread() const
 {
-	return TraceSpread + CurrentFiringSpread;
+	float BaseSpread = TraceSpread + CurrentFiringSpread;
+	if(!IsWeaponPlayerControlled())
+	{
+		BaseSpread += GetAIAccuracy();
+	}
+	return BaseSpread;
 }
 
-float ABaseRangedWeapon::GetCurrentFiringSpreadPercentage() const
+float ABaseRangedWeapon::GetAIAccuracy() const
 {
-	float FinalSpread = CurrentFiringSpread;
-	// if (IInteractableInterface* CastedInterface = Cast<IInteractableInterface>(OwningPawn))
-	// {
-	// 	if(CastedInterface->IsTargeting())
-	// 	{
-	// 		FinalSpread *= TargetingSpreadMod;	
-	// 	}
-	// 	FinalSpread *= CastedInterface->GetSpreadModification();
-	// }
-
-	return FinalSpread / FiringSpreadMax;
+	if(const IAIPawn* AIPawn = Cast<IAIPawn>(OwningPawn))
+	{
+		return UCombatUtils::GetBallisticSkillValueFromEnum(AIPawn->GetBallisticSkill());
+	}
+	return 0.f;
 }
 
 bool ABaseRangedWeapon::ShouldLineTrace() const
@@ -589,13 +599,19 @@ void ABaseRangedWeapon::StartReload()
 		bPendingReload = true;
 		DetermineWeaponState();
 		StopWeaponAnimation(FireAnim);
+		ReloadAudio = PlayWeaponSound(ReloadSound);
 		if(ReloadAnim)
 		{
 			FAnimMontagePlayData PlayData;
 			PlayData.MontageToPlay = ReloadAnim; 
 			const float AnimDuration = PlayWeaponAnimation(PlayData);
 			K2_HandleStartReload(AnimDuration);
+			if(ABaseCharacter* AnimOwner = Cast<ABaseCharacter>(OwningPawn))
+			{
+				AnimOwner->SetOverlayState(EALSOverlayState::PistolOneHanded);
+			}
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, AnimDuration, false);
+			GetWorldTimerManager().SetTimer(TimerHandle_ReloadOverlay, this, &ABaseRangedWeapon::ResetOverlay, FMath::Max(0.1f, AnimDuration - 0.2f), false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, FMath::Max(0.1f, AnimDuration - 0.1f), false);
 		} else
 		{
@@ -603,15 +619,13 @@ void ABaseRangedWeapon::StartReload()
 			GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &ABaseRangedWeapon::StopReload, ReloadDurationIfNoAnim, false);
 			GetWorldTimerManager().SetTimer(TimerHandle_ReloadWeapon, this, &ABaseRangedWeapon::ReloadWeapon, ReloadDurationIfNoAnim - .1f, false);
 		}
-
-		ReloadAudio = PlayWeaponSound(ReloadSound);
 	}
 }
 
 void ABaseRangedWeapon::BroadcastAmmoUsage()
 {
 	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / AmmoPerClip) * AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % AmmoPerClip;
-	OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(CurrentAmmoInClip, AmmoPerClip, TotalAmmo));
+	OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(CurrentAmmoInClip, AmmoPerClip, TotalAmmo, (AmmoPerClip * InitialClips)));
 }
 
 void ABaseRangedWeapon::HandleFiring()
@@ -629,8 +643,8 @@ void ABaseRangedWeapon::HandleFiring()
 		StartReload();
 	} else
 	{
-		UseAmmo();
 		Super::HandleFiring();
+		UseAmmo();
 	}
 }
 
