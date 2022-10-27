@@ -23,7 +23,7 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 	}
 
 	const FWound OldWound = WoundContainer.GetCurrentWound();
-	const float Delta = CalculateDamage(RawDamage);
+	const float Delta = CalculateDamage(RawDamage, InstigatingActor);
 	WoundContainer.TakeDamage(Delta);
 	const FWound NewWound = WoundContainer.GetCurrentWound();
 	if(WoundContainer.IsAlive())
@@ -111,10 +111,14 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-float UHealthComponent::CalculateDamage(const float RawDamage) const
+float UHealthComponent::CalculateDamage(const float RawDamage, AActor* InstigatingActor) const
 {
-	const float ArmorSaveMod = UCombatUtils::GetArmorSaveReduction(ArmorSave);
-	return RawDamage * ArmorSaveMod;
+	if(!UGameplayTagUtils::ActorHasGameplayTag(InstigatingActor, TAG_STATE_ARMOR_PIERCING))
+	{
+		const float ArmorSaveMod = UCombatUtils::GetArmorSaveReduction(ArmorSave);
+		return RawDamage * ArmorSaveMod;
+	}
+	return RawDamage;
 }
 
 bool UHealthComponent::IsAlive()

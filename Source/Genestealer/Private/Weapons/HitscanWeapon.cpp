@@ -107,7 +107,7 @@ void AHitscanWeapon::Internal_ProcessInstantHit(const FHitResult& Impact, const 
 	const FVector EndTrace = Origin + ShootDirection * TraceRange;
 	const FVector EndPoint = Impact.GetActor() ? Impact.ImpactPoint : EndTrace;
 	Internal_SpawnTrailEffect(EndPoint);
-	if(!Impact.GetActor())
+	if(!Impact.GetActor() || UCombatUtils::AreActorsAllies(Impact.GetActor(), GetOwningPawn()))
 	{
 		return;
 	}

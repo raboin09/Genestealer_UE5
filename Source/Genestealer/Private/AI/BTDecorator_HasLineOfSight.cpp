@@ -30,7 +30,14 @@ bool UBTDecorator_HasLineOfSight::CalculateRawConditionValue(UBehaviorTreeCompon
 		{
 			return false;
 		}
-		EndLocation = EnemyActor->GetActorLocation();	
+
+		if(const IAttackable* Attackable = Cast<IAttackable>(EnemyActor))
+		{
+			EndLocation = Attackable->GetHeadLocation();
+		} else
+		{
+			EndLocation = EnemyActor->GetActorLocation();	
+		}
 	} else if (TargetKeyType == UBlackboardKeyType_Vector::StaticClass())
 	{
 		EndLocation = MyBlackboard->GetValue<UBlackboardKeyType_Vector>(KeyID);
@@ -60,7 +67,7 @@ bool UBTDecorator_HasLineOfSight::LOSTrace(AActor* InActor, AActor* InEnemyActor
 	TraceParams.AddIgnoredActor(MyBot);
 	const FVector StartLocation = MyBot->GetActorLocation();
 	FHitResult Hit(ForceInit);
-	GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, GENESTEALER_TRACE_WEAPON, TraceParams);
+	GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility, TraceParams);
 	if(!Hit.bBlockingHit)
 	{
 		return false;

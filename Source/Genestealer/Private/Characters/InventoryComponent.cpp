@@ -44,6 +44,8 @@ void UInventoryComponent::SpawnInventoryActors(TSubclassOf<AActor> PrimaryWeapon
 	{
 		EquipAlternateWeapon();
 	}
+
+	HideWeapons(false);
 }
 
 void UInventoryComponent::ReplaceCurrentWeapon(TSubclassOf<AActor> WeaponClass)
@@ -106,6 +108,14 @@ bool UInventoryComponent::DoesCurrentWeaponForceAimOnFire() const
 		return CurrentWeapon->ShouldForceAimOnFire();
 	}
 	return false;
+}
+
+void UInventoryComponent::HideWeapons(bool bShouldHide)
+{
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->HideMesh(bShouldHide);
+	}
 }
 
 bool UInventoryComponent::CanWeaponAim() const
@@ -345,19 +355,18 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 	{
 		if(ACharacter* CastedChar = Cast<ACharacter>(GetOwner()))
 		{
+			// Needed to catch this for the first BeginPlay loop
+			if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(NewWeapon.GetObject()))
+			{
+				AmmoEntity->BroadcastAmmoUsage();
+				if(UUIEventHub* EventHub = UCoreUtils::GetUIEventHub(GetOwner()))
+				{
+					AmmoEntity->OnAmmoAmountChanged().AddDynamic(EventHub, &UUIEventHub::UIEventHandler_AmmoChanged);	
+				}
+			}
 			NewWeapon->SetOwningPawn(CastedChar);
 			NewWeapon->OnEquip(LastWeapon);		
 		}
 	}
 	CurrentWeaponChanged.Broadcast(FCurrentWeaponChangedPayload(NewWeapon, LastWeapon));
-	
-	// Needed to catch this for the first BeginPlay loop
-	if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(NewWeapon.GetObject()))
-	{
-		AmmoEntity->BroadcastAmmoUsage();
-		if(UUIEventHub* EventHub = UCoreUtils::GetUIEventHub(GetOwner()))
-		{
-			AmmoEntity->OnAmmoAmountChanged().AddDynamic(EventHub, &UUIEventHub::UIEventHandler_AmmoChanged);	
-		}
-	}
 }

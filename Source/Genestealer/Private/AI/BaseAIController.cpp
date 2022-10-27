@@ -57,31 +57,32 @@ void ABaseAIController::OnUnPossess()
 
 void ABaseAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
 {
-	const FVector FocalPoint = GetUpdatedFocalPoint();
-	const FVector SourcePoint = GetUpdatedSourcePoint();
-	APawn* const MyPawn = GetPawn();
-	// Look toward focus
-	if (!FocalPoint.IsZero() && MyPawn)
-	{
-		if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 250)
-		{
-			Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
-			return;
-		}
-		
-		const FVector Direction = FocalPoint - SourcePoint;
-		FRotator NewControlRotation = Direction.Rotation();
-
-		NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
-		SetControlRotation(NewControlRotation);
-
-		if (bUpdatePawn)
-		{
-			// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);
-			MyPawn->FaceRotation(NewControlRotation, DeltaTime);
-		}
-
-	}
+	Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
+	// const FVector FocalPoint = GetUpdatedFocalPoint();
+	// const FVector SourcePoint = GetUpdatedSourcePoint();
+	// APawn* const MyPawn = GetPawn();
+	// // Look toward focus
+	// if (!FocalPoint.IsZero() && MyPawn)
+	// {
+	// 	if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 250)
+	// 	{
+	// 		Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
+	// 		return;
+	// 	}
+	// 	
+	// 	const FVector Direction = FocalPoint - SourcePoint;
+	// 	FRotator NewControlRotation = Direction.Rotation();
+	//
+	// 	NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
+	// 	SetControlRotation(NewControlRotation);
+	//
+	// 	if (bUpdatePawn)
+	// 	{
+	// 		// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);
+	// 		MyPawn->FaceRotation(NewControlRotation, DeltaTime);
+	// 	}
+	//
+	// }
 }
 
 FVector ABaseAIController::GetUpdatedFocalPoint()
@@ -112,6 +113,14 @@ void ABaseAIController::SetEnemy(ACharacter* InEnemy)
 			SetFocus(InEnemy);
 			InitAIComponents(AIPawn->GetAttackBehavior());
 			BlackboardComponent->SetValue<UBlackboardKeyType_Bool>(IsInCombatKeyID, true);
+			if(const auto AIChar = Cast<ABaseAICharacter>(GetPawn()))
+			{
+				const bool bHasMelee = AIChar->GetInventoryComponent()->GetCurrentWeaponType() == EWeaponType::Melee;
+				if(!UGameplayTagUtils::ActorHasGameplayTag(AIChar, TAG_STATE_IMMOVABLE) && bHasMelee)
+				{
+					AIChar->SetDesiredGait(EALSGait::Sprinting);	
+				}
+			}
 		} else
 		{
 			ClearFocus(EAIFocusPriority::Gameplay);

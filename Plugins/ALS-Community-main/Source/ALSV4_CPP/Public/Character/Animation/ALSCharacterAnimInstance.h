@@ -251,6 +251,9 @@ public:
 
 	/** Blend Curves */
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Genestealer")
+	FVector ikAdjuster = FVector();
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Configuration|Blend Curves")
 	TObjectPtr<UCurveFloat> DiagonalScaleAmountCurve = nullptr;
 

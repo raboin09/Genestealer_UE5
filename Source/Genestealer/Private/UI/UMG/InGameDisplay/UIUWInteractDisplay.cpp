@@ -11,7 +11,8 @@ void UUIUWInteractDisplay::HandleNewInteractEvent(const FNewActorTargetedPayload
 {
 	if(NewActorTargetedPayload.NewlyTargetedActor)
 	{
-		// K2_HandleNewInteract(FText::MakeText("PlaceholderText"));
+		ShowInteractDisplay();
+		K2_HandleNewInteract(NewActorTargetedPayload.NewlyTargetedActor->GetInteractionText());
 	} else
 	{
 		HideInteractDisplay();
@@ -38,4 +39,5 @@ void UUIUWInteractDisplay::NativeConstruct()
 	{
 		UIEventHub->OnNewActorTargeted().AddDynamic(this, &UUIUWInteractDisplay::HandleNewInteractEvent);
 	}
+	FadeOutDisplay(true);
 }

@@ -144,6 +144,7 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta);
 	}
 
+	K2_HandleDamageEvent(EventPayload.DamageHitReactEvent.HitResult, EventPayload.Delta);
 	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
 	SetInCombat(true, EventPayload.InstigatingActor);
 	GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
@@ -212,7 +213,11 @@ void ABaseCharacter::HandleNewWeaponAddedEvent(const FNewWeaponAddedPayload& Eve
 		{
 			SocketAttach = "WeaponBack_L";
 		}
-		AddedWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);
+
+		if(AddedWeapon->GetWeaponMesh() != GetMesh())
+		{
+			AddedWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);	
+		}
 	}
 }
 
@@ -229,7 +234,11 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 		{
 			SocketAttach = "WeaponBack_L";
 		}
-		OldWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);
+
+		if(OldWeapon->GetWeaponMesh() != GetMesh())
+		{
+			OldWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketAttach);	
+		}
 	}
 	
 	const TScriptInterface<IWeapon> NewWeapon = CurrentWeaponChangedPayload.NewWeapon;
@@ -241,7 +250,11 @@ void ABaseCharacter::HandleCurrentWeaponChanged(const FCurrentWeaponChangedPaylo
 	{
 		SocketName = "hand_r";	
 	}
-	NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
+
+	if(NewWeapon->GetWeaponMesh() != GetMesh())
+	{
+		NewWeapon->GetWeaponMesh()->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketName);
+	}
 	SetOverlayState(NewWeapon->GetWeaponOverlay());
 	if(NewWeapon->GetWeaponType() == EWeaponType::Heavy && IsInCover())
 	{
@@ -329,6 +342,7 @@ void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, co
 	{
 		Internal_CoverDodgeTryEnd();
 	}
+	GetWorldTimerManager().SetTimer(TimerHandle_HideWeapons, this, &ABaseCharacter::Internal_HideWeapons, .5f, false);
 	RagdollStart();
 	GetMesh()->AddImpulse(Impulse * ImpulseScale, BoneName, bVelocityChange);
 }
@@ -362,6 +376,7 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 	}
 	else
 	{
+		GetWorldTimerManager().SetTimer(TimerHandle_HideWeapons, this, &ABaseCharacter::Internal_ShowWeapons, .5f, false);
 		RagdollEnd();
 	}
 }
@@ -650,6 +665,22 @@ void ABaseCharacter::Internal_CoverDodgeTryEnd()
 		CurrentMount->VacateMount(this);	
 	}
 	CurrentMount = nullptr;
+}
+
+void ABaseCharacter::Internal_HideWeapons()
+{
+	if(InventoryComponent)
+	{
+		InventoryComponent->HideWeapons(true);	
+	}
+}
+
+void ABaseCharacter::Internal_ShowWeapons()
+{
+	if(InventoryComponent)
+	{
+		InventoryComponent->HideWeapons(false);	
+	}
 }
 
 void ABaseCharacter::Internal_AddDefaultTagsToContainer()

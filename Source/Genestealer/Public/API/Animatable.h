@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Library/ALSCharacterEnumLibrary.h"
 #include "UObject/Interface.h"
 #include "Animatable.generated.h"
 

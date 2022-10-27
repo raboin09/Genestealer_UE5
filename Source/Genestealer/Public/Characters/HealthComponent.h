@@ -36,7 +36,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	float CalculateDamage(const float RawDamage) const;
+	float CalculateDamage(const float RawDamage, AActor* InstigatingActor) const;
 	
 	UPROPERTY()
 	FWoundContainer WoundContainer;

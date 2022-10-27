@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "Genestealer/Genestealer.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/CombatUtils.h"
 #include "Utils/EffectUtils.h"
 
 AConeWeapon::AConeWeapon()
@@ -108,6 +109,11 @@ void AConeWeapon::PostInitializeComponents()
 
 bool AConeWeapon::TryTraceToOverlappedActor(const FHitResult& Impact, const FVector& StartTrace, AActor* TargetActor)
 {
+	if(UCombatUtils::AreActorsAllies(Impact.GetActor(), GetOwningPawn()))
+	{
+		return false;
+	}
+	
 	if(TargetActor == Impact.GetActor())
 	{
 		UEffectUtils::ApplyEffectsToHitResult(WeaponEffects, AdjustHitResultIfNoValidHitComponent(Impact), GetInstigator());

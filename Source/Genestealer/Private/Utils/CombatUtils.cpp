@@ -34,11 +34,11 @@ float UCombatUtils::GetArmorSaveReduction(EArmorSave InArmorSave)
 	switch (InArmorSave) {
 		case EArmorSave::Default: return 1.f;
 		case EArmorSave::Invulnerable: return 0.f;
-		case EArmorSave::TwoPlus: return .17f;
-		case EArmorSave::ThreePlus: return .33f;
-		case EArmorSave::FourPlus: return .5f;
-		case EArmorSave::FivePlus: return .67f;
-		case EArmorSave::SixPlus: return .83f;
+		case EArmorSave::TwoPlus: return .33f;
+		case EArmorSave::ThreePlus: return .5f;
+		case EArmorSave::FourPlus: return .67f;
+		case EArmorSave::FivePlus: return .83f;
+		case EArmorSave::SixPlus: return 1.f;
 		default: return 1.f;
 	}
 }

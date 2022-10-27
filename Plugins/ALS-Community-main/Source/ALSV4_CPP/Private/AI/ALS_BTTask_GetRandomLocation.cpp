@@ -5,6 +5,8 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 UALS_BTTask_GetRandomLocation::UALS_BTTask_GetRandomLocation()
 {
@@ -32,7 +34,13 @@ EBTNodeResult::Type UALS_BTTask_GetRandomLocation::ExecuteTask(UBehaviorTreeComp
 			}
 		}
 
-		const FVector Origin = Pawn->GetActorLocation();
+		auto Player = UGameplayStatics::GetPlayerCharacter(Pawn, 0);
+		if(!Player)
+		{
+			return EBTNodeResult::Failed;
+		}
+		
+		const FVector Origin = Player->GetActorLocation();
 		FNavLocation Destination;
 
 		if (NavSys->GetRandomReachablePointInRadius(Origin, MaxDistance, Destination, nullptr, SharedFilter))

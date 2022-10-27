@@ -28,6 +28,9 @@ public:
 	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
 	virtual void Tick(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleDamageEvent(FHitResult DamageEvent, float DecalSize);
+
 	////////////////////////////////
 	/// ALSCharacter overrides
 	////////////////////////////////
@@ -131,7 +134,7 @@ protected:
 	float InCombatTime;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
 	TArray<TSubclassOf<AActor>> DefaultEffects;
-	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Genestealer|Defaults")
 	EAbsoluteAffiliation AbsoluteAffiliation;
 	UPROPERTY(EditAnywhere, Category="Genestealer|Defaults", meta=(MustImplement="Weapon"))
 	TSubclassOf<AActor> StartingPrimaryWeaponClass;
@@ -165,6 +168,9 @@ private:
 	void Internal_CoverDodgeTryStart();
 	void Internal_CoverDodgeTryEnd();
 
+	void Internal_HideWeapons();
+	void Internal_ShowWeapons();
+
 	////////////////////////////////
 	/// Knockbacks and Hit Reacts
 	////////////////////////////////
@@ -188,6 +194,7 @@ protected:
 	virtual void GL_HandleSprintAction(bool bValue) override;
 	
 private:
+	FTimerHandle TimerHandle_HideWeapons;
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Ragdoll;
 	

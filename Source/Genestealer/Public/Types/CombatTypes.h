@@ -28,7 +28,7 @@ enum class EAffectedAffiliation : uint8
 UENUM(BlueprintType)
 enum class EArmorSave : uint8
 {
-	Default UMETA(DisplayName="Deafult"),
+	Default UMETA(DisplayName="Default"),
 	Invulnerable UMETA(DisplayName="Invulnerable"),
 	TwoPlus UMETA(DisplayName="2+"),
 	ThreePlus UMETA(DisplayName="3+"),

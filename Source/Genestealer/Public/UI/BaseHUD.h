@@ -9,6 +9,7 @@
 #include "UMG/InGameDisplay/UIUWAmmoDisplay.h"
 #include "UMG/InGameDisplay/UIUWDamageDisplay.h"
 #include "UMG/InGameDisplay/UIUWHealthDisplay.h"
+#include "UMG/InGameDisplay/UIUWInteractDisplay.h"
 
 #include "BaseHUD.generated.h"
 
@@ -38,6 +39,8 @@ protected:
 	TSubclassOf<UUIUWDamageDisplay> DamageDisplayClass;
 	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
 	TSubclassOf<UUIUWHealthDisplay> HealthDisplayClass;
+	UPROPERTY(EditDefaultsOnly, Category="UI|Classes")
+	TSubclassOf<UUIUWInteractDisplay> InteractDisplayClass;
 	
 private:
 
@@ -71,6 +74,8 @@ private:
 	UUIUWDamageDisplay* DamageDisplay;
 	UPROPERTY()
 	UUIUWHealthDisplay* HealthDisplay;
+	UPROPERTY()
+	UUIUWInteractDisplay* InteractDisplay;
 
 	UPROPERTY()
 	bool bShouldDrawCrosshair;

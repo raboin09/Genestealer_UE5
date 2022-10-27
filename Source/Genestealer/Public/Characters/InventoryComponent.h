@@ -23,6 +23,7 @@ public:
 	void ReplaceCurrentWeapon(TSubclassOf<AActor> WeaponClass);
 	void DestroyInventory(bool bRagdollWeapon, bool bSpawnWeaponPickup);
 	bool DoesCurrentWeaponForceAimOnFire() const;
+	void HideWeapons(bool bShouldHide);
 	bool CanWeaponAim() const;
 	TSubclassOf<AActor> GetAlternateWeaponClass() const;
 	TSubclassOf<AActor> GetPrimaryWeaponClass() const;

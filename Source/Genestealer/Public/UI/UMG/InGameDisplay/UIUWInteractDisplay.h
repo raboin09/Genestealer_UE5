@@ -23,7 +23,8 @@ protected:
 	void ShowInteractDisplay();
 	void HideInteractDisplay();
 	
-	// UFUNCTION(BlueprintImplementableEvent)
-	// void K2_HandleNewInteract(FText InteractText);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleNewInteract(const FString& InteractText);
+	
 	virtual void NativeConstruct() override;
 };

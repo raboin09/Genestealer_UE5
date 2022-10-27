@@ -295,11 +295,11 @@ void ABaseRangedWeapon::ResetOverlay()
 void ABaseRangedWeapon::StopFire()
 {
 	Super::StopFire();
-	if(ReloadAudio)
-	{
-		ReloadAudio->Deactivate();
-		ReloadAudio = nullptr;
-	}
+	// if(ReloadAudio)
+	// {
+	// 	ReloadAudio->Deactivate();
+	// 	ReloadAudio = nullptr;
+	// }
 }
 
 void ABaseRangedWeapon::GiveAmmo(int AddAmount)
@@ -625,7 +625,7 @@ void ABaseRangedWeapon::StartReload()
 void ABaseRangedWeapon::BroadcastAmmoUsage()
 {
 	const int32 TotalAmmo = ((( CurrentAmmo - CurrentAmmoInClip ) / AmmoPerClip) * AmmoPerClip) + ( CurrentAmmo - CurrentAmmoInClip ) % AmmoPerClip;
-	OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(CurrentAmmoInClip, AmmoPerClip, TotalAmmo, (AmmoPerClip * InitialClips)));
+	OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(CurrentAmmoInClip, AmmoPerClip, HasInfiniteAmmo() ? 0 : TotalAmmo, HasInfiniteAmmo() ? 0 : (AmmoPerClip * InitialClips)));
 }
 
 void ABaseRangedWeapon::HandleFiring()

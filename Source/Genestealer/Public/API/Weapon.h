@@ -51,7 +51,8 @@ public:
 	virtual EALSOverlayState GetWeaponOverlay() PURE_VIRTUAL(IWeapon::GetWeaponOverlay, return EALSOverlayState::Default;);
 	virtual EWeaponState GetCurrentState() const PURE_VIRTUAL(IWeapon::GetCurrentState, return EWeaponState::Idle; );
 	virtual FTransform GetLeftHandSocketTransform() const PURE_VIRTUAL(IWeapon::GetLeftHandSocketTransform, return FTransform(); );
-	
+
+	virtual void HideMesh(bool bHide) PURE_VIRTUAL(IWeapon::HideMesh,);
 	virtual void OnEnterInventory(ACharacter* NewOwner) PURE_VIRTUAL(IWeapon::OnEnterInventory,);
 	virtual void OnLeaveInventory() PURE_VIRTUAL(IWeapon::OnLeaveInventory,);
 

@@ -472,6 +472,7 @@ void UALSCharacterAnimInstance::SetFootOffsets(float DeltaSeconds, FName EnableF
 	USkeletalMeshComponent* OwnerComp = GetOwningComponent();
 	FVector IKFootFloorLoc = OwnerComp->GetSocketLocation(IKFootBone);
 	IKFootFloorLoc.Z = OwnerComp->GetSocketLocation(RootBone).Z;
+	IKFootFloorLoc += ikAdjuster;
 
 	UWorld* World = GetWorld();
 	check(World);
@@ -479,7 +480,8 @@ void UALSCharacterAnimInstance::SetFootOffsets(float DeltaSeconds, FName EnableF
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Character);
 
-	const FVector TraceStart = IKFootFloorLoc + FVector(0.0, 0.0, Config.IK_TraceDistanceAboveFoot);
+	const FVector TraceStart = IKFootFloorLoc + FVector(0.0, 0.0, Config.IK_TraceDistanceAboveFoot);\
+	
 	const FVector TraceEnd = IKFootFloorLoc - FVector(0.0, 0.0, Config.IK_TraceDistanceBelowFoot);
 
 	FHitResult HitResult;

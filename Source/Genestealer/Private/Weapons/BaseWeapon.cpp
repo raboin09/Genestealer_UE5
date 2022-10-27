@@ -33,6 +33,11 @@ ABaseWeapon::ABaseWeapon()
 	SetRootComponent(WeaponRootComponent);
 }
 
+void ABaseWeapon::HideMesh(bool bHide)
+{
+	Internal_HideMesh(bHide);
+}
+
 
 void ABaseWeapon::InitWeaponMesh(UMeshComponent* InMeshComp)
 {
@@ -54,17 +59,32 @@ void ABaseWeapon::BeginPlay()
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	CachedTransform = GetWeaponMesh()->GetRelativeTransform();
-	Internal_HideMesh(true);
+	if(Internal_IsNotCharMesh())
+	{
+		CachedTransform = GetWeaponMesh()->GetRelativeTransform();
+		Internal_HideMesh(true);
+	}
 }
 
 void ABaseWeapon::OnEquip(const TScriptInterface<IWeapon> LastWeapon)
 {
+	if(bIsArmorPiercing)
+	{
+		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_ARMOR_PIERCING);
+	} else
+	{
+		UGameplayTagUtils::RemoveTagFromActor(OwningPawn, TAG_STATE_ARMOR_PIERCING);
+	}
+	
 	Internal_HideMesh(false);
 	bPendingEquip = true;
 	DetermineWeaponState();
-	GetWeaponMesh()->SetRelativeLocation(CachedTransform.GetLocation());
-	GetWeaponMesh()->SetRelativeRotation(CachedTransform.GetRotation());
+
+	if(Internal_IsNotCharMesh())
+	{
+		GetWeaponMesh()->SetRelativeLocation(CachedTransform.GetLocation());
+		GetWeaponMesh()->SetRelativeRotation(CachedTransform.GetRotation());	
+	}
 	if(WeaponType == EWeaponType::Heavy)
 	{
 		UGameplayTagUtils::AddTagToActor(OwningPawn, TAG_STATE_CANNOT_MOUNT);
@@ -123,10 +143,14 @@ void ABaseWeapon::OnUnEquip()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_OnEquipFinished);
 	}
-	CachedTransform = GetWeaponMesh()->GetRelativeTransform();
-	GetWeaponMesh()->SetRelativeLocation(UnEquipTransform.GetLocation());
-	GetWeaponMesh()->SetRelativeRotation(UnEquipTransform.GetRotation());
-	
+
+	if(Internal_IsNotCharMesh())
+	{
+		CachedTransform = GetWeaponMesh()->GetRelativeTransform();
+		GetWeaponMesh()->SetRelativeLocation(UnEquipTransform.GetLocation());
+		GetWeaponMesh()->SetRelativeRotation(UnEquipTransform.GetRotation());
+		
+	}
 	DetermineWeaponState();
 }
 
@@ -190,9 +214,11 @@ void ABaseWeapon::SetOwningPawn(ACharacter* IncomingCharacter)
 
 void ABaseWeapon::StartWeaponRagdoll(bool bSpawnPickup)
 {
-	Internal_StartMeshRagdoll(GetWeaponMesh());
+	if(Internal_IsNotCharMesh())
+	{
+		Internal_StartMeshRagdoll(GetWeaponMesh());	
+	}
 	SetLifeSpan(5.f);
-	// TODO Alternate Mesh
 }
 
 UMeshComponent* ABaseWeapon::GetWeaponMesh() const
@@ -206,6 +232,12 @@ UMeshComponent* ABaseWeapon::GetWeaponMesh() const
 	{
 		return WeaponStaticMesh;
 	}
+
+	if(OwningPawn)
+	{
+		return OwningPawn->GetMesh();
+	}
+	
 	return nullptr;
 }
 
@@ -295,10 +327,19 @@ void ABaseWeapon::Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const
 
 void ABaseWeapon::Internal_HideMesh(bool bShouldHide)
 {
-	// if(GetWeaponMesh())
-	// {
-	// 	GetWeaponMesh()->SetHiddenInGame(bShouldHide);
-	// }
+	if(Internal_IsNotCharMesh() && GetWeaponMesh())
+	{
+		GetWeaponMesh()->SetHiddenInGame(bShouldHide);
+	}
+}
+
+bool ABaseWeapon::Internal_IsNotCharMesh() const
+{
+	if(!OwningPawn)
+	{
+		return false;
+	}
+	return OwningPawn->GetMesh() != GetWeaponMesh();
 }
 
 void ABaseWeapon::ApplyWeaponEffectsToActor(const FHitResult& Impact, const bool bShouldRotateHit)

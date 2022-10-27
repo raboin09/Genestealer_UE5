@@ -24,4 +24,5 @@ public:
 	virtual EAbsoluteAffiliation GetInteractableAffiliation() const PURE_VIRTUAL(IInteractable::GetInteractableAffiliation, return EAbsoluteAffiliation::Neutral;)
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) PURE_VIRTUAL(IInteractable::SwitchOutlineOnMesh, );
 	virtual void InteractWithActor(AActor* InstigatingActor) PURE_VIRTUAL(IInteractable::InteractWithActor, );
+	virtual FString GetInteractionText() const PURE_VIRTUAL(IInteractable::GetInteractionText, return "";);
 };

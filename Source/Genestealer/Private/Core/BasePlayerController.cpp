@@ -96,9 +96,20 @@ TScriptInterface<IInteractable> ABasePlayerController::GetTargetedActor() const
 		auto DrawDebug = EDrawDebugTrace::None;
 		UKismetSystemLibrary::SphereTraceSingle(this, OutStartTrace, OutEndTrace, UCoreUtils::GetPlayerControllerSphereTraceRadius(this), UEngineTypes::ConvertToTraceType(GENESTEALER_TRACE_INTERACTION), false, IgnoreActors, DrawDebug, Hit, true
 			, FLinearColor::Red, FLinearColor::Green, 1.f);
-		if(Hit.GetActor() && Hit.GetActor()->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+		AActor* HitActor = Hit.GetActor();
+		if(HitActor && Hit.GetActor()->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
 		{
-			return Hit.GetActor();
+			if(HitActor->IsA(ABaseWeaponPickup::StaticClass()))
+			{
+				return HitActor->GetDistanceTo(PlayerCharacter) <= 1500.f ? HitActor : nullptr;
+			}
+
+			if(HitActor->IsA(ABaseWeaponPickup::StaticClass()))
+			{
+				return HitActor->GetDistanceTo(PlayerCharacter) <= UCoreUtils::GetCoverPointValidDistance() ? HitActor : nullptr;
+			}
+
+			return HitActor;
 		}
 	}
 	return nullptr;

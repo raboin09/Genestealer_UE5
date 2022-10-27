@@ -40,6 +40,11 @@ FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) 
 
 void ABaseAICharacter::FireWeapon(bool bStartFiring)
 {
+	if(GetCurrentPlayingMontage())
+	{
+		return;
+	}
+	
 	if(bStartFiring)
 	{
 		GL_HandleFireAction(false);	
@@ -95,7 +100,7 @@ void ABaseAICharacter::BeginPlay()
 			BasePlayerController->AddNewAISquadMember(NewAIPawn);
 		}
 	}
-	MajorWaypointIndex = UKismetMathLibrary::RandomIntegerInRange(1, 4);
+	MajorWaypointIndex = UKismetMathLibrary::RandomIntegerInRange(1, 5);
 	MinorWaypointIndex = 1;
 }
 
@@ -109,6 +114,11 @@ void ABaseAICharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEven
 	if(QuestObjectiveEvent.IsBound())
 	{
 		QuestObjectiveEvent.Broadcast(FQuestObjectiveEventPayload(this, EQuestObjectiveAction::Death));
+	}
+
+	if(InteractionComponent)
+	{
+		InteractionComponent->SwitchOutlineOnAllMeshes(false);
 	}
 
 	UWorldUtils::TryRemoveActorFromQuestableArray(this);

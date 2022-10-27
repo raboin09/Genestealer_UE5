@@ -60,6 +60,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	FString SocketPrefix = "R_";
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
+	bool bRandomizeMontages = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Animation")
 	UAnimMontage* FireAnim;
 	UPROPERTY(BlueprintReadOnly)
 	FName CachedComboSection;

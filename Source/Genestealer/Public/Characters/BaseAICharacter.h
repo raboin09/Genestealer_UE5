@@ -55,6 +55,9 @@ public:
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return AbsoluteAffiliation; }
+	virtual FString GetInteractionText() const override { return InteractionText; }
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	FString InteractionText;
 	
 	////////////////////////////////
 	// IQuestable overrides

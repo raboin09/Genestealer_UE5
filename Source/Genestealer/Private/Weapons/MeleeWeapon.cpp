@@ -207,10 +207,10 @@ void AMeleeWeapon::Internal_CheckForCollisionHit()
 
 FName AMeleeWeapon::Internal_GetNextMontageSection() const
 {
-	// if(const IAIPawn* AIPawn = Cast<IAIPawn>(OwningPawn))
-	// {
-	// 	return FName(ComboPrefix + FString::FromInt(UKismetMathLibrary::RandomIntegerInRange(1, MaxComboSections))); 
-	// }
+	if(bRandomizeMontages)
+	{
+		return FName(ComboPrefix + FString::FromInt(UKismetMathLibrary::RandomIntegerInRange(1, MaxComboSections)));
+	}
 	return FName(ComboPrefix + FString::FromInt(ComboSectionIncrement));
 }
 

@@ -31,6 +31,7 @@ public:
 	///////////////////////////////
 	// IWeapon overrides
 	///////////////////////////////
+	virtual void HideMesh(bool bHide) override;
 	virtual void OnEquip(const TScriptInterface<IWeapon> LastWeapon) override;
 	virtual void OnEquipFinished() override;
 	virtual void OnUnEquip() override;
@@ -131,6 +132,8 @@ protected:
 	float TimeBetweenShots = .2f;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	bool bFriendlyFire = false;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects")
+	bool bIsArmorPiercing = false;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Effects", meta=(MustImplement="Effect"))
 	TArray<TSubclassOf<AActor>> WeaponEffects;
 
@@ -163,6 +166,7 @@ private:
 	void PlayWeaponMissEffectFX(const FHitResult& Impact, const bool bShouldRotateHit);
 	void Internal_StartMeshRagdoll(UMeshComponent* InMeshComp) const;
 	void Internal_HideMesh(bool bShouldHide);
+	bool Internal_IsNotCharMesh() const;
 	void InitWeaponMesh(UMeshComponent* InMeshComp);
 	
 private:

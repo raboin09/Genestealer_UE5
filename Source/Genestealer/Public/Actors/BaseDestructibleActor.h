@@ -35,7 +35,10 @@ protected:
 	virtual EAbsoluteAffiliation GetInteractableAffiliation() const override { return EAbsoluteAffiliation::ChaosCult; }
 	virtual void SwitchOutlineOnMesh(bool bShouldOutline) override;
 	virtual void InteractWithActor(AActor* InstigatingActor) override;
-
+	virtual FString GetInteractionText() const override { return InteractionText; }
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Genestealer")
+	FString InteractionText;
+	
 	////////////////////////////////
 	// ABaseDestructibleActor
 	////////////////////////////////

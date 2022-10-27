@@ -26,6 +26,7 @@ void ABaseHUD::InitHUDOnNewPawnPossessed()
 	HealthDisplay = Internal_CreateWidget<UUIUWHealthDisplay>(HealthDisplayClass);
 	DamageDisplay = Internal_CreateWidget<UUIUWDamageDisplay>(DamageDisplayClass);
 	AmmoDisplay = Internal_CreateWidget<UUIUWAmmoDisplay>(AmmoDisplayClass);
+	InteractDisplay = Internal_CreateWidget<UUIUWInteractDisplay>(InteractDisplayClass);
 	
 	if(UUIEventHub* UIEventHub = UCoreUtils::GetUIEventHub(this))
 	{
