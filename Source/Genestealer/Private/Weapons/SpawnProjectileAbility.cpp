@@ -4,6 +4,7 @@
 #include "Weapons/SpawnProjectileAbility.h"
 
 #include "Actors/BaseOverlapProjectile.h"
+#include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
 
 ASpawnProjectileAbility::ASpawnProjectileAbility()
@@ -35,9 +36,10 @@ void ASpawnProjectileAbility::ResetActivatable()
 
 void ASpawnProjectileAbility::Activate(TArray<TSubclassOf<AActor>> ActivationEffects)
 {
-	const FVector Origin = GetRaycastOriginLocation();
-	const FVector Direction = GetAdjustedAim();
-	Internal_SpawnProjectile(Origin, Direction);
+	FVector Origin, ShootDir;
+	K2_OnActivated();
+	Internal_AimAndShootProjectile(Origin, ShootDir);
+	Internal_SpawnProjectile(Origin, ShootDir);
 }
 
 void ASpawnProjectileAbility::StartFire()
@@ -65,6 +67,7 @@ void ASpawnProjectileAbility::Internal_StartAttack()
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_ATTACK_COMMITTED);
 	const FAnimMontagePlayData PlayData = GetPlayData();
 	PlayWeaponAnimation(PlayData);
+	K2_OnMontageStarted();
 }
 
 void ASpawnProjectileAbility::Internal_StopAttack()
@@ -72,15 +75,60 @@ void ASpawnProjectileAbility::Internal_StopAttack()
 	UGameplayTagUtils::RemoveTagFromActor(this, TAG_STATE_ATTACK_COMMITTED);
 }
 
+void ASpawnProjectileAbility::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity)
+{
+	OutVelocity = GetShootDirection(GetAdjustedAim());
+	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
+	OutSpawnOrigin = GetRaycastOriginLocation();
+	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
+	const float RaycastCircleRadius = UCoreUtils::GetPlayerControllerSphereTraceRadius(this) * 1.5f; 
+	if (FHitResult Impact = WeaponTrace(StartTrace, EndTrace, ShouldLineTrace(), RaycastCircleRadius); Impact.bBlockingHit)
+	{
+		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
+		bool bWeaponPenetration = false;
+
+		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
+		{
+			bWeaponPenetration = true;
+		}
+		else if (DirectionDot < 0.5f)
+		{
+			FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
+			FVector MuzzleEndTrace = OutSpawnOrigin;
+			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
+			{
+				bWeaponPenetration = true;
+			}
+		}
+
+		if (bWeaponPenetration)
+		{
+			OutSpawnOrigin = Impact.ImpactPoint - OutVelocity * 10.0f;
+		}
+		else
+		{
+			OutVelocity = AdjustedDir;
+		}
+	}
+}
+
 ABaseOverlapProjectile* ASpawnProjectileAbility::Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity)
 {
+
 	FTransform SpawnTrans = FTransform();
 	SpawnTrans.SetLocation(SpawnOrigin);
 	if (ABaseOverlapProjectile* Projectile = UWorldUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
+		RecordStatsEvent(ShotFired);
 		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
+		Projectile->IgnoreActor(this);
+		Projectile->IgnoreActor(GetInstigator());
+		for(AActor* TempActor : GetActorsToIgnoreCollision())
+		{
+			Projectile->IgnoreActor(TempActor);
+		}
 		UWorldUtils::FinishSpawningActor_Deferred(Projectile, SpawnTrans);
 		if(UProjectileMovementComponent* ProjectileMovementComponent = Projectile->FindComponentByClass<UProjectileMovementComponent>())
 		{

@@ -58,6 +58,8 @@ protected:
 	UFUNCTION()
 	void FireAction(const FInputActionValue& Value);
 	UFUNCTION()
+	void ReloadAction(const FInputActionValue& Value);
+	UFUNCTION()
 	void SecureLocationOrder(const FInputActionValue& Value);
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Defaults")

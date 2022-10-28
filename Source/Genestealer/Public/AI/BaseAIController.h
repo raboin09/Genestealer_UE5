@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "API/AIPawn.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Characters/BaseCharacter.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BaseAIController.generated.h"
 
@@ -44,7 +45,6 @@ private:
 	UAISenseConfig_Sight* Sight;
 	UPROPERTY(Transient, VisibleDefaultsOnly)
 	UAIPerceptionComponent* AIPerceptionComponent;
-
 	
 	int32 EnemyKeyID;
 	int32 IsInCombatKeyID;
@@ -56,5 +56,7 @@ private:
 	UBehaviorTreeComponent* BehaviorTreeComponent;
 	UPROPERTY(Transient)
 	TScriptInterface<IAIPawn> AIPawn;
+	UPROPERTY()
+	ABaseCharacter* EnemyRef;
 
 };

@@ -23,6 +23,7 @@ class GENESTEALER_API IAIPawn
 	GENERATED_BODY()
 
 public:
+	virtual void NewEnemyAcquired() PURE_VIRTUAL(IAIPawn::NewEnemyAcquired, )
 	virtual class UBehaviorTree* GetDefaultBehavior() const PURE_VIRTUAL(IAIPawn::GetDefaultBehavior, return nullptr;)
 	virtual UBehaviorTree* GetAttackBehavior() const PURE_VIRTUAL(IAIPawn::GetAttackBehavior, return nullptr;)
 	virtual bool IsAIFiring() PURE_VIRTUAL(IAIPawn::IsAIFiring, return false;)

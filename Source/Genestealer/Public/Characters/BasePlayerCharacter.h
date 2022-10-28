@@ -19,6 +19,9 @@ public:
 	ABasePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	FORCEINLINE FPlayerAimingChanged& OnPlayerAimingChanged() { return PlayerAimingChanged; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_MeleeBloodSplatter(const FHitResult& DamageHitResult);
 	
 protected:
 	virtual void GL_HandleFireAction(bool bValue) override;

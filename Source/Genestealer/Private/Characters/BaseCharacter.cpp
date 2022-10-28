@@ -3,6 +3,7 @@
 #include "Characters/BaseCharacter.h"
 
 #include "Actors/BaseCoverActor.h"
+#include "AI/BaseAIController.h"
 #include "API/Activatable.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/EffectContainerComponent.h"
@@ -85,6 +86,15 @@ void ABaseCharacter::K2_HandleTagAdded_Implementation(const FGameplayTag& AddedT
 {
 }
 
+void ABaseCharacter::PlayAudioDialogue(USoundBase* SoundToPlay, bool bForce)
+{
+	if(CurrentDialogue && CurrentDialogue->IsPlaying() && bForce)
+	{
+		UAudioManager::StopSound(CurrentDialogue);
+	}
+	CurrentDialogue = UAudioManager::SpawnSoundAttached(SoundToPlay, GetMesh(), "head");
+}
+
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -143,6 +153,11 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 	{
 		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta);
 	}
+
+	// if(ABasePlayerCharacter* PlayerCharacter = Cast<ABasePlayerCharacter>(EventPayload.InstigatingActor))
+	// {
+	// 	PlayerCharacter->K2_MeleeBloodSplatter(EventPayload.DamageHitReactEvent.HitResult);
+	// }
 
 	K2_HandleDamageEvent(EventPayload.DamageHitReactEvent.HitResult, EventPayload.Delta);
 	GetWorldTimerManager().ClearTimer(TimerHandle_InCombat);
@@ -268,10 +283,8 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	{
 		return;
 	}
-	
-	ClearHeldObject();
-	
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_DEAD);
+	ClearHeldObject();
 	GetMesh()->SetRenderCustomDepth(false);
 	DetachFromControllerPendingDestroy();
 	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_IMMOVABLE))
@@ -283,6 +296,15 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	{
 		Internal_TryStartCharacterKnockback(DeathEventPayload.HitReactEvent, false);
 	}
+
+	for(const auto AICon : EnemyTrackers)
+	{
+		if(AICon)
+		{
+			AICon->SetEnemy(nullptr);
+		}
+	}
+	
 	K2_OnDeath();
 	SetLifeSpan(5.f);
 }
@@ -350,9 +372,13 @@ void ABaseCharacter::Internal_ApplyCharacterKnockback(const FVector& Impulse, co
 void ABaseCharacter::Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback)
 {	
 	float ImpulseValue = UCombatUtils::GetHitImpulseValue(HitReactEvent.HitReactType);
-	if(ImpulseValue == 0.f)
+	if(!bShouldRecoverFromKnockback)
 	{
 		ImpulseValue = UCombatUtils::GetHitImpulseValue(EHitReactType::Knockback_VeryLight);
+	}
+	else if(bShouldRecoverFromKnockback && ImpulseValue == 0.f)
+	{
+		return;
 	}
 	const float KnockdownDuration = UCombatUtils::GetKnockbackRecoveryTime(HitReactEvent.HitReactType);
 	const FName HitBoneName = UCombatUtils::GetNearestValidBoneForImpact(HitReactEvent.HitResult.BoneName);
@@ -384,6 +410,11 @@ void ABaseCharacter::Internal_TryCharacterKnockbackRecovery()
 void ABaseCharacter::Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent)
 {
 	if(!HealthComponent || !HealthComponent->IsAlive())
+	{
+		return;
+	}
+
+	if(InventoryComponent && InventoryComponent->GetCurrentWeaponState() == EWeaponState::Firing)
 	{
 		return;
 	}
@@ -529,6 +560,14 @@ void ABaseCharacter::GL_HandleFireAction(bool bValue)
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_InCombat, this, &ABaseCharacter::Internal_SetOutOfCombat, InCombatTime, false);
 		}
+	}
+}
+
+void ABaseCharacter::GL_HandleReloadAction()
+{
+	if(InventoryComponent)
+	{
+		InventoryComponent->StartReload();
 	}
 }
 

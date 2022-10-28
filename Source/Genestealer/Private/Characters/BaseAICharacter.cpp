@@ -38,18 +38,20 @@ FVector ABaseAICharacter::GetSocketLocation(FName SocketName, bool bWeaponMesh) 
 	return GetMesh()->GetSocketLocation(SocketName);
 }
 
-void ABaseAICharacter::FireWeapon(bool bStartFiring)
+void ABaseAICharacter::NewEnemyAcquired()
 {
-	if(GetCurrentPlayingMontage())
+	K2_HandleNewEnemyAcquired();
+}
+
+void ABaseAICharacter::FireWeapon(bool bStartFiring)
+{	
+	if(bStartFiring && !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_STUNNED) && !GetCurrentPlayingMontage())
 	{
-		return;
-	}
-	
-	if(bStartFiring)
+		GL_HandleFireAction(true);	
+	} else if(!bStartFiring)
 	{
 		GL_HandleFireAction(false);	
 	}
-	GL_HandleFireAction(bStartFiring);
 }
 
 void ABaseAICharacter::Aim(bool bStartAiming)

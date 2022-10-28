@@ -227,6 +227,14 @@ void ABasePlayerController::FireAction(const FInputActionValue& Value)
 	}
 }
 
+void ABasePlayerController::ReloadAction(const FInputActionValue& Value)
+{
+	if (PossessedCharacter)
+	{
+		PossessedCharacter->ReloadAction();
+	}
+}
+
 void ABasePlayerController::SecureLocationOrder(const FInputActionValue& Value)
 {
 	for(TScriptInterface<IAIPawn> Act : AISquadMembers)

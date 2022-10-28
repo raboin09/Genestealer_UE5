@@ -45,6 +45,7 @@ public:
 	FORCEINLINE virtual bool IsAIFiring() override { return IsFiring(); }
 	FORCEINLINE virtual EBallisticSkill GetBallisticSkill() const override { return BallisticSkill; }
 	FORCEINLINE virtual FVector GetSocketLocation(FName SocketName, bool bWeaponMesh = false) const override;
+	virtual void NewEnemyAcquired() override;
 	virtual void FireWeapon(bool bStartFiring) override;
 	virtual void Aim(bool bStartAiming) override;
 	virtual float GetWeaponRange() const override;
@@ -65,6 +66,8 @@ public:
 	FORCEINLINE virtual FQuestObjectiveEvent& OnQuestObjectiveEvent() override { return QuestObjectiveEvent; }
 	
 protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleNewEnemyAcquired();
 	virtual void BeginPlay() override;
 	virtual void HandleDeathEvent(const FActorDeathEventPayload& DeathEventPayload) override;
 

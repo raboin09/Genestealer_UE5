@@ -358,10 +358,19 @@ void UInventoryComponent::Internal_SetCurrentWeapon(TScriptInterface<IWeapon> Ne
 			// Needed to catch this for the first BeginPlay loop
 			if(IRangedEntity* AmmoEntity = Cast<IRangedEntity>(NewWeapon.GetObject()))
 			{
-				AmmoEntity->BroadcastAmmoUsage();
+				if(CastedChar->IsPlayerControlled())
+				{
+					AmmoEntity->BroadcastAmmoUsage();
+					if(UUIEventHub* EventHub = UCoreUtils::GetUIEventHub(GetOwner()))
+					{
+						AmmoEntity->OnAmmoAmountChanged().AddDynamic(EventHub, &UUIEventHub::UIEventHandler_AmmoChanged);	
+					}	
+				}
+			} else
+			{
 				if(UUIEventHub* EventHub = UCoreUtils::GetUIEventHub(GetOwner()))
 				{
-					AmmoEntity->OnAmmoAmountChanged().AddDynamic(EventHub, &UUIEventHub::UIEventHandler_AmmoChanged);	
+					EventHub->OnAmmoAmountChanged().Broadcast(FAmmoAmountChangedPayload(-1, -1, -1, -1));
 				}
 			}
 			NewWeapon->SetOwningPawn(CastedChar);

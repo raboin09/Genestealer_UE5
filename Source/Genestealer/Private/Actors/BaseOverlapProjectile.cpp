@@ -150,7 +150,7 @@ void ABaseOverlapProjectile::OnImpact(const FHitResult& HitResult)
 		return;
 	}
 
-	if(HitActorClass->ImplementsInterface(UAttackable::StaticClass()))
+	if(HitActorClass->ImplementsInterface(UAttackable::StaticClass()) && !UCombatUtils::AreActorsAllies( HitResult.GetActor(), GetInstigator()) )
 	{
 		K2_HandleImpact(HitResult);
 	} else

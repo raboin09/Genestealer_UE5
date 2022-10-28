@@ -16,6 +16,8 @@
 #include "Weapons/BaseWeapon.h"
 #include "BaseCharacter.generated.h"
 
+class ABaseAIController;
+
 UCLASS(Abstract, NotBlueprintable, config=Game, AutoExpandCategories=("Genestealer"), PrioritizeCategories = "Genestealer")
 class GENESTEALER_API ABaseCharacter : public AALSCharacter, public IAttackable, public ITaggable, public IAnimatable
 {
@@ -27,10 +29,7 @@ public:
 	////////////////////////////
 	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
 	virtual void Tick(float DeltaSeconds) override;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_HandleDamageEvent(FHitResult DamageEvent, float DecalSize);
-
+	
 	////////////////////////////////
 	/// ALSCharacter overrides
 	////////////////////////////////
@@ -84,6 +83,10 @@ public:
 	////////////////////////////////
 	/// ABaseCharacter
 	////////////////////////////////
+	FORCEINLINE void AddTrackedAIController(ABaseAIController* TrackedCon) { if(IsAlive()) EnemyTrackers.AddUnique(TrackedCon); }
+	FORCEINLINE void RemoveTrackedAIController(ABaseAIController* TrackedCon) { if(IsAlive()) EnemyTrackers.Remove(TrackedCon); } 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HandleDamageEvent(FHitResult DamageEvent, float DecalSize);
 	UFUNCTION(BlueprintCallable, Category = "Genestealer")
 	FORCEINLINE bool IsAlive() { return !UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_DEAD); }
 	FORCEINLINE UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
@@ -98,6 +101,8 @@ public:
 	void K2_HandleTagAdded(const FGameplayTag& AddedTag);
 	UFUNCTION(BlueprintNativeEvent, Category = "Genestealer")
 	void K2_HandleTagRemoved(const FGameplayTag& RemovedTag);
+	UFUNCTION(BlueprintCallable)
+	void PlayAudioDialogue(USoundBase* SoundToPlay, bool bForce = false);
 	
 protected:
 	////////////////////////////
@@ -142,7 +147,8 @@ protected:
 	// TSubclassOf<AActor> StartingAlternateWeaponClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
 	FHealthDefaults StartingHealth;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Genestealer|Defaults")
+	EBallisticSkill BallisticSkill;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Sounds") 
 	USoundCue* DeathSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Anims")
@@ -152,7 +158,7 @@ protected:
 	UEffectContainerComponent* EffectContainerComponent;
 
 	FCharacterInCombatChanged CharacterInCombatChanged;
-	EBallisticSkill BallisticSkill;
+
 private:
 	void Internal_StopAllAnimMontages() const;
 	float Internal_PlayMontage(const FAnimMontagePlayData& AnimMontagePlayData);
@@ -178,7 +184,6 @@ private:
 	void Internal_TryStartCharacterKnockback(const FDamageHitReactEvent& HitReactEvent, bool bShouldRecoverFromKnockback = true);
 	void Internal_TryCharacterKnockbackRecovery();
 	void Internal_TryPlayHitReact(const FDamageHitReactEvent& HitReactEvent);
-	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 	void Internal_AssignNewMountable(UObject* InMountableObject, FHitResult InHitResult);
 	
 protected:
@@ -189,18 +194,27 @@ protected:
 	virtual bool GL_IsForwardMovementAllowed(float Value) override;
 	virtual bool GL_IsRightMovementAllowed(float Value) override;
 	virtual void GL_HandleFireAction(bool bValue) override;
+	virtual void GL_HandleReloadAction() override;
 	virtual void GL_HandleCoverDodgeAction() override;
 	virtual void GL_HandleAimAction(bool bValue) override;
 	virtual void GL_HandleSprintAction(bool bValue) override;
+	
+	UPROPERTY(Transient)
+	EHitReactType LastKnownHitReact;
+	FGameplayTag Internal_GetHitDirectionTag(const FVector& OriginatingLocation) const;
 	
 private:
 	FTimerHandle TimerHandle_HideWeapons;
 	FTimerHandle TimerHandle_InCombat;
 	FTimerHandle TimerHandle_Ragdoll;
-	
+
 	UPROPERTY(Transient)
-	EHitReactType LastKnownHitReact;
+	UAudioComponent* CurrentDialogue;
 	
 	UPROPERTY(Transient)
 	TScriptInterface<IMountable> CurrentMount;
+
+	// Array of AIControllers who have this marked as an enemy
+	UPROPERTY()
+	TArray<ABaseAIController*> EnemyTrackers = {};
 };

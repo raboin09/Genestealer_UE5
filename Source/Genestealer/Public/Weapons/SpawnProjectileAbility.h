@@ -37,6 +37,11 @@ protected:
 	FORCEINLINE virtual void StopFire() override {}
 	virtual void StartFire() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnMontageStarted();
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnActivated();
+
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	TSubclassOf<class ABaseOverlapProjectile> ProjectileClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(EditCondition = "ProjectileClass != nullptr", EditConditionHides))
@@ -48,9 +53,10 @@ protected:
 
 private:
 	FORCEINLINE TArray<TSubclassOf<AActor>> Internal_GetAdditionalEffectsToApplyToProjectile() const { return WeaponEffects; };
-
+	virtual void Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity);
+	virtual ABaseOverlapProjectile* Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity);
+	
 	virtual FAnimMontagePlayData GetPlayData() override;
 	void Internal_StartAttack();
 	void Internal_StopAttack();
-	virtual ABaseOverlapProjectile* Internal_SpawnProjectile(const FVector& SpawnOrigin, const FVector& ProjectileVelocity);
 };

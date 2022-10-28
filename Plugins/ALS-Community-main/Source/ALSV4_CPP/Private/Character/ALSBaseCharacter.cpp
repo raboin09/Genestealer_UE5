@@ -659,6 +659,11 @@ void AALSBaseCharacter::GetCameraParameters(float& TPFOVOut, float& FPFOVOut, bo
 	bRightShoulderOut = bRightShoulder;
 }
 
+void AALSBaseCharacter::ReloadAction_Implementation()
+{
+	GL_HandleReloadAction();
+}
+
 void AALSBaseCharacter::RagdollUpdate(float DeltaTime)
 {
 	GetMesh()->bOnlyAllowAutonomousTickPose = false;

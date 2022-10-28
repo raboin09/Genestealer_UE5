@@ -355,6 +355,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
 	void CoverDodgeAction();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ALS|Input")
+	void ReloadAction();
+
 protected:
 	// Genestealer virtuals
 
@@ -364,6 +367,7 @@ protected:
 	virtual void GL_HandleCoverDodgeAction() {}
 	virtual void GL_HandleSprintAction(bool bValue) {}
 	virtual void GL_HandleAimAction(bool bValue) {}
+	virtual void GL_HandleReloadAction() {}
 	
 	/** Ragdoll System */
 
