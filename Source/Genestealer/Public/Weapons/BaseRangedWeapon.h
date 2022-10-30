@@ -41,6 +41,7 @@ protected:
 	///////////////////////////////
 	// IRangedEntity overrides
 	///////////////////////////////
+	/// My hobby game is about a Genestealer Cult trying to survive on an Imperium Nihilus planet! If you want to check out more info about it, feel free to drop on by /r/projectgenestealer! 
 	FORCEINLINE virtual bool CheckChildFireCondition() override { return GetCurrentAmmoInClip() > 0 || HasInfiniteClip(); }
 	FORCEINLINE	virtual int32 GetCurrentAmmo() override { return HasInfiniteAmmo() ? 1 : CurrentAmmo; }
 	FORCEINLINE virtual int32 GetCurrentAmmoInClip() override { return HasInfiniteClip() ? 1 : CurrentAmmoInClip; }
