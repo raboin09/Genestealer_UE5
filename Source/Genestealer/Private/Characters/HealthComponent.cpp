@@ -5,6 +5,7 @@
 #include "Characters/BaseCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CombatUtils.h"
+#include "Utils/CoreUtils.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -24,7 +25,7 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 
 	const FWound OldWound = WoundContainer.GetCurrentWound();
 	const float Delta = CalculateDamage(RawDamage, InstigatingActor);
-	WoundContainer.TakeDamage(Delta);
+	const float ActualTakenDamage = WoundContainer.TakeDamage(Delta);
 	const FWound NewWound = WoundContainer.GetCurrentWound();
 	if(WoundContainer.IsAlive())
 	{
@@ -40,14 +41,17 @@ float UHealthComponent::TakeDamage(const float RawDamage, AActor* ReceivingActor
 		WoundEventPayload.bWasDamage = true;
 		WoundEventPayload.DamageHitReactEvent = HitReactEvent;
 		WoundEventPayload.DamageHitReactEvent.DamageTaken = Delta;
+		RecordStatsEvent(Delta, ReceivingActor, InstigatingActor);
 		CurrentHealthChanged.Broadcast(WoundEventPayload);		
 	} else
 	{
 		FActorDeathEventPayload DeathEventPayload;
+		DeathEventPayload.DyingDamage = ActualTakenDamage;
 		DeathEventPayload.DyingActor = ReceivingActor;
 		DeathEventPayload.KillingActor = InstigatingActor;
 		DeathEventPayload.HitReactEvent = HitReactEvent;
 		DeathEventPayload.HitResult = HitReactEvent.HitResult;
+		RecordStatsEvent(ActualTakenDamage, ReceivingActor, InstigatingActor);
 		ActorDeath.Broadcast(DeathEventPayload);
 	}
 	return Delta;
@@ -128,6 +132,17 @@ bool UHealthComponent::IsAlive()
 
 void UHealthComponent::Execute(AActor* ExecutedActor, AActor* ExecutingActor)
 {
+	RecordStatsEvent(WoundContainer.GetAllWoundsHealthSum(), ExecutedActor, ExecutingActor);
 	TakeDamage(WoundContainer.GetAllWoundsHealthSum(), ExecutedActor, ExecutingActor, FDamageHitReactEvent());
 }
 
+void UHealthComponent::RecordStatsEvent(const float Delta, const AActor* ReceivingActor, AActor* InstigatingActor)
+{
+	if(UCoreUtils::GetPlayerCharacter(this) == ReceivingActor)
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, DamageTaken, Delta, InstigatingActor);
+	} else if(UCoreUtils::GetPlayerCharacter(this) == InstigatingActor)
+	{
+		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, Delta);	
+	}
+}

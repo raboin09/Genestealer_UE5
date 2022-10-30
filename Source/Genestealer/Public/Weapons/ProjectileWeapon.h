@@ -21,6 +21,10 @@ protected:
 	virtual class ABaseOverlapProjectile* HandleProjectileFire();
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	float AIAdjustYawRotation = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
+	float AIAdjustPitchRotation = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire")
 	TSubclassOf<class ABaseOverlapProjectile> ProjectileClass;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Fire", meta=(EditCondition = "ProjectileClass != nullptr", EditConditionHides))
 	bool bSlowDownProjectileOnAIShooters = true;

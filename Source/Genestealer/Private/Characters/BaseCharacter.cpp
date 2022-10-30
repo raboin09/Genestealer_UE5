@@ -146,14 +146,6 @@ void ABaseCharacter::HandleCurrentWoundChangedEvent(const FCurrentWoundEventPayl
 		return;
 	}
 
-	if(!IsPlayerControlled())
-	{
-		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta, this);
-	} else
-	{
-		UPlayerStatsComponent::RecordStatsEvent(this, DamageGiven, EventPayload.Delta);
-	}
-
 	// if(ABasePlayerCharacter* PlayerCharacter = Cast<ABasePlayerCharacter>(EventPayload.InstigatingActor))
 	// {
 	// 	PlayerCharacter->K2_MeleeBloodSplatter(EventPayload.DamageHitReactEvent.HitResult);
@@ -283,6 +275,8 @@ void ABaseCharacter::HandleDeathEvent(const FActorDeathEventPayload& DeathEventP
 	{
 		return;
 	}
+
+	K2_HandleDamageEvent(DeathEventPayload.HitResult, DeathEventPayload.DyingDamage);
 	UGameplayTagUtils::AddTagToActor(this, TAG_STATE_DEAD);
 	ClearHeldObject();
 	GetMesh()->SetRenderCustomDepth(false);

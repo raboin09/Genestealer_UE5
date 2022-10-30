@@ -14,7 +14,6 @@ class GENESTEALER_API ABaseExplodingProjectile : public ABaseOverlapProjectile
 public:
 	ABaseExplodingProjectile();
 
-	bool bFriendlyFire = false;
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -28,6 +27,8 @@ protected:
 	USoundCue* ExplosionSound;
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
 	UNiagaraSystem* ExplosionNiagara;
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer")
+	bool bFriendlyFire = false;
 
 private:
 	void Internal_ExplodeAllActorsInRadius();

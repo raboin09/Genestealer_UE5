@@ -103,7 +103,7 @@ struct FWoundContainer
 	void MaximizeWoundContainer();	
 	FWound& GetCurrentWound();
 
-	void TakeDamage(float Damage);
+	float TakeDamage(float Damage);
 	void ApplyHeal(float HealAmount);
 	bool IsAlive();
 	float GetAllWoundsHealthSum();

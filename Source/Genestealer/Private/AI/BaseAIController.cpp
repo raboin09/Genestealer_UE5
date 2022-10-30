@@ -58,31 +58,30 @@ void ABaseAIController::OnUnPossess()
 void ABaseAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
 {
 	Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
-	const FVector FocalPoint = GetUpdatedFocalPoint();
-	const FVector SourcePoint = GetUpdatedSourcePoint();
-	APawn* const MyPawn = GetPawn();
-	// Look toward focus
-	if (!FocalPoint.IsZero() && MyPawn)
-	{
-		if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 250)
-		{
-			Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
-			return;
-		}
-		
-		const FVector Direction = FocalPoint - SourcePoint;
-		FRotator NewControlRotation = Direction.Rotation();
-	
-		NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
-		SetControlRotation(NewControlRotation);
-	
-		if (bUpdatePawn)
-		{
-			// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);
-			MyPawn->FaceRotation(NewControlRotation, DeltaTime);
-		}
-	
-	}
+	// const FVector FocalPoint = GetUpdatedFocalPoint();
+	// const FVector SourcePoint = GetUpdatedSourcePoint();
+	// APawn* const MyPawn = GetPawn();
+	// // Look toward focus
+	// if (!FocalPoint.IsZero() && MyPawn)
+	// {
+	// 	if(UKismetMathLibrary::Vector_Distance(FocalPoint, SourcePoint) <= 250)
+	// 	{
+	// 		Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
+	// 		return;
+	// 	}
+	// 	
+	// 	const FVector Direction = FocalPoint - SourcePoint;
+	// 	FRotator NewControlRotation = Direction.Rotation();
+	//
+	// 	NewControlRotation.Yaw = FRotator::ClampAxis(NewControlRotation.Yaw);
+	// 	SetControlRotation(NewControlRotation);
+	//
+	// 	if (bUpdatePawn)
+	// 	{
+	// 		// UKismetSystemLibrary::DrawDebugLine(this, SourcePoint, FocalPoint, FLinearColor::Red, .1f, 1.f);
+	// 		MyPawn->FaceRotation(NewControlRotation, DeltaTime);
+	// 	}	
+	// }
 }
 
 FVector ABaseAIController::GetUpdatedFocalPoint()
@@ -105,6 +104,11 @@ FVector ABaseAIController::GetUpdatedSourcePoint()
 
 void ABaseAIController::SetEnemy(ACharacter* InEnemy)
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ALOOF))
+	{
+		return;
+	}
+	
 	if (BlackboardComponent)
 	{
 		BlackboardComponent->SetValue<UBlackboardKeyType_Object>(EnemyKeyID, InEnemy);
@@ -165,7 +169,7 @@ ACharacter* ABaseAIController::GetEnemy() const
 
 void ABaseAIController::SetIsInCombat(const FCharacterInCombatChangedPayload& CharacterInCombatChangedPayload)
 {
-	if(!CharacterInCombatChangedPayload.bIsInCombat)
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_ALOOF) || !CharacterInCombatChangedPayload.bIsInCombat)
 	{
 		ClearFocus(EAIFocusPriority::Gameplay);
 		SetEnemy(nullptr);

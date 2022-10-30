@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Actors/BaseOverlapProjectile.h"
 #include "Core/PlayerStatsComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
@@ -39,19 +40,19 @@ void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, 
 		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
 		bool bWeaponPenetration = false;
 
-		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
-		{
-			bWeaponPenetration = true;
-		}
-		else if (DirectionDot < 0.5f)
-		{
-			FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
-			FVector MuzzleEndTrace = OutSpawnOrigin;
-			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
-			{
-				bWeaponPenetration = true;
-			}
-		}
+		// if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
+		// {
+		// 	bWeaponPenetration = true;
+		// }
+		// else if (DirectionDot < 0.5f)
+		// {
+		// 	FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
+		// 	FVector MuzzleEndTrace = OutSpawnOrigin;
+		// 	if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
+		// 	{
+		// 		bWeaponPenetration = true;
+		// 	}
+		// }
 
 		if (bWeaponPenetration)
 		{
@@ -71,8 +72,18 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 	SpawnTrans.SetLocation(SpawnOrigin);
 	if (ABaseOverlapProjectile* Projectile = UWorldUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
-		RecordStatsEvent(ShotFired);
-		Projectile->InitVelocity(ProjectileVelocity);
+		if(bCanHeadshot)
+		{
+			RecordStatsEvent(ShotFired);
+		}
+		
+		FVector RotatedVelocity = ProjectileVelocity; 
+		if(!IsWeaponPlayerControlled())
+		{
+			RotatedVelocity = UKismetMathLibrary::RotateAngleAxis(RotatedVelocity, AIAdjustYawRotation, FVector(1, 0, 0));
+			RotatedVelocity = UKismetMathLibrary::RotateAngleAxis(RotatedVelocity, AIAdjustPitchRotation, FVector(0, 1, 0));
+		}
+		Projectile->InitVelocity(RotatedVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
 		Projectile->IgnoreActor(this);

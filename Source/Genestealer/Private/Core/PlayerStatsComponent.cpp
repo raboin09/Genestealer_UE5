@@ -8,6 +8,15 @@ UPlayerStatsComponent::UPlayerStatsComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+FPlayerStats UPlayerStatsComponent::GetPlayerStatistics(const UObject* ContextObject)
+{
+	if(const UPlayerStatsComponent* PlayerStatsComponent = UCoreUtils::GetPlayerStatsComponent(ContextObject))
+	{
+		return PlayerStatsComponent->GetPlayerStats();
+	}
+	return FPlayerStats();
+}
+
 void UPlayerStatsComponent::RecordStatsEvent(const UObject* ContextObject, EStatsEvent Event, float Modifier, AActor* NonPlayerActorInstigator)
 {
 	if(UPlayerStatsComponent* PlayerStatsComponent = UCoreUtils::GetPlayerStatsComponent(ContextObject))

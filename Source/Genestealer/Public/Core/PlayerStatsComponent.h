@@ -49,6 +49,8 @@ class GENESTEALER_API UPlayerStatsComponent : public UActorComponent
 public:	
 	UPlayerStatsComponent();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static FPlayerStats GetPlayerStatistics(const UObject* ContextObject);
 	static void RecordStatsEvent(const UObject* ContextObject, EStatsEvent Event, float Modifier = 1.f, AActor* NonPlayerActorInstigator = nullptr);
 
 	UFUNCTION()

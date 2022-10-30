@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Core/PlayerStatsComponent.h"
 #include "Types/HealthTypes.h"
 #include "Types/EventDeclarations.h"
 #include "HealthComponent.generated.h"
@@ -57,6 +58,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "AICharacter|BaseStats")
 	bool IsAlive();
+
+	void RecordStatsEvent(const float Delta, const AActor* ReceivingActor, AActor* InstigatingActor);
 	
 	FORCEINLINE void ZeroizeWoundContainer() { WoundContainer.ZeroizeWoundContainer(); }
 	FORCEINLINE void MaximizeWoundContainer() { WoundContainer.MaximizeWoundContainer(); }

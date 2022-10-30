@@ -124,7 +124,9 @@ USTRUCT(BlueprintType)
 struct FActorDeathEventPayload
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY()
+	float DyingDamage = 0.f;
 	UPROPERTY()
 	AActor* DyingActor = nullptr;
 	UPROPERTY()

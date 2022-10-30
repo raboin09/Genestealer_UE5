@@ -23,6 +23,7 @@
 #define TAG_STATE_STUNNED FGameplayTag::RequestGameplayTag("State.Stunned")
 #define TAG_STATE_IMMOVABLE FGameplayTag::RequestGameplayTag("State.Immovable")
 #define TAG_STATE_CANNOT_SPRINT FGameplayTag::RequestGameplayTag("State.CannotSprint")
+#define TAG_STATE_ALOOF FGameplayTag::RequestGameplayTag("State.Aloof")
 #define TAG_STATE_LOADING FGameplayTag::RequestGameplayTag("State.Loading")
 #define TAG_STATE_ARMOR_PIERCING FGameplayTag::RequestGameplayTag("State.ArmorPiercing")
 #define TAG_STATE_DEAD FGameplayTag::RequestGameplayTag("State.Dead")

@@ -20,7 +20,7 @@ void FWoundContainer::MaximizeWoundContainer()
 	}
 }
 
-void FWoundContainer::TakeDamage(float Damage)
+float FWoundContainer::TakeDamage(float Damage)
 {
 	FWound& CurrWound = GetCurrentWound();
 	if(Damage > CurrWound.CurrentHealth)
@@ -31,10 +31,10 @@ void FWoundContainer::TakeDamage(float Damage)
 		{
 			Wounds[CurrWound.WoundArrayIndex + 1].CurrentHealth -= Delta;
 		}
-	} else
-	{
-		CurrWound.CurrentHealth -= Damage;
+		return Delta;
 	}
+	CurrWound.CurrentHealth -= Damage;
+	return Damage;
 }
 
 void FWoundContainer::ApplyHeal(float HealAmount)

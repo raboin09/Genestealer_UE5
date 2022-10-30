@@ -4,6 +4,7 @@
 #include "Weapons/SpawnProjectileAbility.h"
 
 #include "Actors/BaseOverlapProjectile.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Utils/CoreUtils.h"
 #include "Utils/WorldUtils.h"
 
@@ -78,6 +79,11 @@ void ASpawnProjectileAbility::Internal_StopAttack()
 void ASpawnProjectileAbility::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, FVector& OutVelocity)
 {
 	OutVelocity = GetShootDirection(GetAdjustedAim());
+	if(!IsWeaponPlayerControlled())
+	{
+		OutVelocity = UKismetMathLibrary::RotateAngleAxis(OutVelocity, AIAdjustYawRotation, FVector(0, 0, 1));
+		OutVelocity = UKismetMathLibrary::RotateAngleAxis(OutVelocity, OutVelocity.X > 0 ? -1 * AIAdjustPitchRotation : AIAdjustPitchRotation, FVector(0, 1, 0));
+	}
 	const FVector StartTrace = GetCameraDamageStartLocation(OutVelocity);
 	OutSpawnOrigin = GetRaycastOriginLocation();
 	const FVector EndTrace = StartTrace + OutVelocity * TraceRange;
@@ -119,7 +125,11 @@ ABaseOverlapProjectile* ASpawnProjectileAbility::Internal_SpawnProjectile(const 
 	SpawnTrans.SetLocation(SpawnOrigin);
 	if (ABaseOverlapProjectile* Projectile = UWorldUtils::SpawnActorToWorld_Deferred<ABaseOverlapProjectile>(this, ProjectileClass, this, GetInstigator(), ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn))
 	{
-		RecordStatsEvent(ShotFired);
+		if(bCanHeadshot)
+		{
+			RecordStatsEvent(ShotFired);
+		}
+		
 		Projectile->InitVelocity(ProjectileVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());

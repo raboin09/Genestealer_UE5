@@ -103,6 +103,9 @@ protected:
 	UPROPERTY(Transient)
 	UAnimMontage* CurrentMontage;
 	virtual FAnimMontagePlayData GetPlayData();
+
+	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon|Stats")
+	bool bCanHeadshot = false;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Genestealer|Weapon")
 	UTexture2D* Crosshair;
