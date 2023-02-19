@@ -252,6 +252,8 @@ FTransform ABaseWeapon::GetLeftHandSocketTransform() const
 
 void ABaseWeapon::RecordStatsEvent(EStatsEvent StatEvent, float Mod, AActor* ActorRef)
 {
+	// UKismetSystemLibrary::PrintString(this, GetInstigator()->GetName());
+	UKismetSystemLibrary::PrintString(this, GetOwningPawn()->GetName());
 	if(IsWeaponPlayerControlled() && (UCombatUtils::AreActorsEnemies(ActorRef, GetInstigator()) || !ActorRef))
 	{
 		UPlayerStatsComponent::RecordStatsEvent(this, StatEvent, Mod, ActorRef);

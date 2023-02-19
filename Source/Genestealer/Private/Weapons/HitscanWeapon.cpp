@@ -46,10 +46,15 @@ void AHitscanWeapon::FireWeapon()
 		Internal_FireShot();
 	}
 
-	if(FiringMechanism != EFiringMechanism::Continuous && FiringMechanism != EFiringMechanism::ScatterShot)
+	if(FiringMechanism != EFiringMechanism::Continuous)
 	{
-		RecordStatsEvent(ShotFired, NumberOfShotsPerFire);	
+		for(int i=0; i<NumberOfShotsPerFire; i++)
+		{
+			UKismetSystemLibrary::PrintString(this, "Shot Fired");
+			RecordStatsEvent(ShotFired, NumberOfShotsPerFire);	
+		}		
 	}
+	
 	Super::FireWeapon();
 }
 

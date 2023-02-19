@@ -459,6 +459,11 @@ FGameplayTag ABaseCharacter::Internal_GetHitDirectionTag(const FVector& Originat
 
 bool ABaseCharacter::GL_IsForwardMovementAllowed(float Value)
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
+	{
+		return false;
+	}
+	
 	if(UGameplayTagUtils::ActorHasAnyGameplayTags(this, {TAG_STATE_IN_COVER, TAG_STATE_STUNNED}, true))
 	{
 		return false;
@@ -468,6 +473,11 @@ bool ABaseCharacter::GL_IsForwardMovementAllowed(float Value)
 
 bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
+	{
+		return false;
+	}
+	
 	if(Value > 0.f)
 	{
 		UGameplayTagUtils::AddTagToActor(this, TAG_INPUT_RIGHT_MOVEMENT);
@@ -505,7 +515,7 @@ bool ABaseCharacter::GL_IsRightMovementAllowed(float Value)
 
 void ABaseCharacter::GL_HandleFireAction(bool bValue)
 {
-	if(!InventoryComponent)
+	if(!InventoryComponent || UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
 	{
 		return;
 	}
@@ -567,6 +577,11 @@ void ABaseCharacter::GL_HandleReloadAction()
 
 void ABaseCharacter::GL_HandleCoverDodgeAction()
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
+	{
+		return;
+	}
+	
 	if(!CanGetInCover())
 	{
 		return;
@@ -591,6 +606,11 @@ void ABaseCharacter::GL_HandleCoverDodgeAction()
 
 void ABaseCharacter::GL_HandleAimAction(bool bValue)
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
+	{
+		return;
+	}
+	
 	if(bValue)
 	{
 	    if(!InventoryComponent || !InventoryComponent->CanWeaponAim()){
@@ -627,6 +647,11 @@ void ABaseCharacter::GL_HandleAimAction(bool bValue)
 
 void ABaseCharacter::GL_HandleSprintAction(bool bValue)
 {
+	if(UGameplayTagUtils::ActorHasGameplayTag(this, TAG_STATE_MAIN_MENU))
+	{
+		return;
+	}
+	
 	if(IsMounted() || (InventoryComponent && InventoryComponent->GetCurrentWeaponType() == EWeaponType::Heavy))
 	{
 		return;
@@ -656,7 +681,7 @@ void ABaseCharacter::Internal_CoverDodgeTryStart()
 	{
 		StartTrace = GetHeadLocation();
 	}
-	
+
 	const FVector EndTrace = StartTrace + (StartRotation.Vector() * UCoreUtils::GetCoverPointValidDistance());
 	const TArray<AActor*> IgnoreActors;
 	FHitResult HitResult;

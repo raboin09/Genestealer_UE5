@@ -24,7 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void IncrementMinorWaypoint()
 	{
-		if(MinorWaypointIndex < 3)
+		if(MinorWaypointIndex < 4)
 		{
 			MinorWaypointIndex++;
 		}

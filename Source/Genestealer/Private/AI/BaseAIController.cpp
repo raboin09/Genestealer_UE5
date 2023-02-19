@@ -9,6 +9,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -115,6 +116,11 @@ void ABaseAIController::SetEnemy(ACharacter* InEnemy)
 		if(ABaseCharacter* BaseCharacter = Cast<ABaseCharacter>(InEnemy))
 		{
 			SetFocus(BaseCharacter);
+			if(ABaseCharacter* AICast = Cast<ABaseCharacter>(InEnemy))
+			{
+				AICast->GetMovementComponent()->StopActiveMovement();
+			}
+			
 			if(AIPawn->GetAttackBehavior() != AIPawn->GetDefaultBehavior())
 			{
 				InitAIComponents(AIPawn->GetAttackBehavior());	
@@ -245,6 +251,7 @@ void ABaseAIController::InitAIComponents(UBehaviorTree* BehaviorTree)
 	{
 		return;
 	}
+	
 	BehaviorTreeComponent->StopTree();
 	if (BehaviorTree->BlackboardAsset)
 	{
