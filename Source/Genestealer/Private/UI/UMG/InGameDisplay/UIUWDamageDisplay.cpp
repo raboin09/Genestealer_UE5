@@ -67,10 +67,10 @@ void UUIUWDamageDisplay::NativeOnInitialized()
 
 bool UUIUWDamageDisplay::Internal_IsLowOnHealthOnLastWound(const FCurrentWoundEventPayload& CurrentWoundEventPayload) const
 {
-	return CurrentWoundEventPayload.MaxWounds - CurrentWoundEventPayload.NewWound.WoundArrayIndex <= 1 && (CurrentWoundEventPayload.NewWound.CurrentHealth / UKismetMathLibrary::Max(1, CurrentWoundEventPayload.NewWound.MaxHealth)) <= .8f;
+	return CurrentWoundEventPayload.MaxWounds - CurrentWoundEventPayload.NewWound.WoundArrayIndex <= 1 && (CurrentWoundEventPayload.NewWound.CurrentHealth / UKismetMathLibrary::Max(1, CurrentWoundEventPayload.NewWound.MaxHealth)) <= .25f;
 }
 
 bool UUIUWDamageDisplay::Internal_IsHighOnHealthOnLastWound(const FCurrentWoundEventPayload& CurrentWoundEventPayload) const
 {
-	return CurrentWoundEventPayload.MaxWounds - CurrentWoundEventPayload.NewWound.WoundArrayIndex <= 1 && (CurrentWoundEventPayload.NewWound.CurrentHealth / UKismetMathLibrary::Max(1, CurrentWoundEventPayload.NewWound.MaxHealth)) > .8f;
+	return CurrentWoundEventPayload.MaxWounds - CurrentWoundEventPayload.NewWound.WoundArrayIndex <= 1 && (CurrentWoundEventPayload.NewWound.CurrentHealth / UKismetMathLibrary::Max(1, CurrentWoundEventPayload.NewWound.MaxHealth)) > .25f;
 }

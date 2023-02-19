@@ -10,7 +10,7 @@ UPlayerStatsComponent::UPlayerStatsComponent()
 
 FPlayerStats UPlayerStatsComponent::GetPlayerStatistics(const UObject* ContextObject)
 {
-	if(const UPlayerStatsComponent* PlayerStatsComponent = UCoreUtils::GetPlayerStatsComponent(ContextObject))
+	if(UPlayerStatsComponent* PlayerStatsComponent = UCoreUtils::GetPlayerStatsComponent(ContextObject))
 	{
 		return PlayerStatsComponent->GetPlayerStats();
 	}
@@ -32,35 +32,35 @@ void UPlayerStatsComponent::HandleStatsEvent(EStatsEvent Event, float Modifier, 
 	case Headshot:
 		{
 			PlayerStats.Headshots += Modifier;
-			//UKismetSystemLibrary::PrintString(this, "HEADSHOT%: " + FString::SanitizeFloat(PlayerStats.Headshots / PlayerStats.ShotsHit));
+			// UKismetSystemLibrary::PrintString(this, "HEADSHOT%: " + FString::SanitizeFloat(PlayerStats.Headshots / PlayerStats.ShotsHit));
 			break;
 		}
 	case ShotFired:
 		{
 			PlayerStats.ShotsFired += Modifier;
 			float Accuracy = PlayerStats.ShotsHit / PlayerStats.ShotsFired;
-			//UKismetSystemLibrary::PrintString(this, "ACCURACY%: " + FString::SanitizeFloat(Accuracy));
+			UKismetSystemLibrary::PrintString(this, "ACCURACY%: " + FString::SanitizeFloat(Accuracy));
 			break;
 		}
 	case ShotHit:
 		{
 			PlayerStats.ShotsHit += Modifier;
 			float Accuracy = PlayerStats.ShotsHit / PlayerStats.ShotsFired;
-			//UKismetSystemLibrary::PrintString(this, "ACCURACY%: " + FString::SanitizeFloat(Accuracy));
+			// UKismetSystemLibrary::PrintString(this, "ACCURACY%: " + FString::SanitizeFloat(Accuracy));
 			break;
 		}
 	case MeleeHit:
 		{
 			PlayerStats.MeleeHit += Modifier;
 			float Accuracy = PlayerStats.MeleeHit / PlayerStats.MeleeSwung;
-			//UKismetSystemLibrary::PrintString(this, "MELEE%: " + FString::SanitizeFloat(Accuracy));
+			// UKismetSystemLibrary::PrintString(this, "MELEE%: " + FString::SanitizeFloat(Accuracy));
 			break;
 		}
 	case MeleeSwung:
 		{
 			PlayerStats.MeleeSwung += Modifier;
 			float Accuracy = PlayerStats.MeleeHit / PlayerStats.MeleeSwung;
-			//UKismetSystemLibrary::PrintString(this, "MELEE%: " + FString::SanitizeFloat(Accuracy));
+			// UKismetSystemLibrary::PrintString(this, "MELEE%: " + FString::SanitizeFloat(Accuracy));
 			break;
 		}
 	case DamageGiven:

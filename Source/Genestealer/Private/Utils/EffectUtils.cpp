@@ -33,25 +33,26 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 		return;
 	}
 
+	TArray<AActor*> CulledHitActors = AllHitActors;
 	for(AActor* CurrActor : AllHitActors)
 	{
 		switch (AffectedAffiliation) {
 		case EAffectedAffiliation::Allies:
 				if(!UCombatUtils::AreActorsAllies(CurrActor, InstigatingActor))
 				{
-					AllHitActors.Remove(CurrActor);
+					CulledHitActors.Remove(CurrActor);
 				}
 				break;
 			case EAffectedAffiliation::Enemies:
 				if(!UCombatUtils::AreActorsEnemies(CurrActor, InstigatingActor))
 				{
-					AllHitActors.Remove(CurrActor);
+					CulledHitActors.Remove(CurrActor);
 				}
 				break;
 			case EAffectedAffiliation::Neutral:
 				if(!UCombatUtils::IsActorNeutral(CurrActor))
 				{
-					AllHitActors.Remove(CurrActor);
+					CulledHitActors.Remove(CurrActor);
 				}
 				break;
 			case EAffectedAffiliation::All:
@@ -63,9 +64,8 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 	if(bValidateHit)
 	{
 		TArray<AActor*> ValidatedHitActors;
-		for(FHitResult ValidationHit : HitResults)
+		for(AActor* CurrActor : CulledHitActors)
 		{
-			AActor* CurrActor = ValidationHit.GetActor(); 
 			if(!CurrActor)
 			{
 				continue;
@@ -82,17 +82,16 @@ void UEffectUtils::ApplyEffectsToHitResultsInRadius(AActor* InstigatingActor, TA
 				continue;
 			}
 
-			AllHitActors.Remove(CurrActor);
+			CulledHitActors.Remove(CurrActor);
 
 			FHitResult ValidationLineTraceHit;
-			UKismetSystemLibrary::LineTraceSingle(InstigatingActor, ValidationTraceStartLocation, MeshComponent->GetSocketLocation(HitValidationBone), ValidationTraceType, true, AllHitActors, EDrawDebugTrace::None, ValidationLineTraceHit, true, FLinearColor::Red, FLinearColor::Green, 15.f);
+			UKismetSystemLibrary::LineTraceSingle(InstigatingActor, ValidationTraceStartLocation, MeshComponent->GetSocketLocation(HitValidationBone), ValidationTraceType, true, CulledHitActors, EDrawDebugTrace::None, ValidationLineTraceHit, true, FLinearColor::Red, FLinearColor::Green, 15.f);
 			if(ValidationLineTraceHit.bBlockingHit)
 			{
 				ApplyEffectsToHitResult(EffectsToApply, ValidationLineTraceHit, InstigatingActor);
 			}
 			
 			ValidatedHitActors.AddUnique(CurrActor);
-			AllHitActors.AddUnique(CurrActor);
 		}
 	} else
 	{

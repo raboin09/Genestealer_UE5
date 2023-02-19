@@ -40,19 +40,19 @@ void AProjectileWeapon::Internal_AimAndShootProjectile(FVector& OutSpawnOrigin, 
 		const FVector AdjustedDir = (Impact.ImpactPoint - OutSpawnOrigin);
 		bool bWeaponPenetration = false;
 
-		// if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
-		// {
-		// 	bWeaponPenetration = true;
-		// }
-		// else if (DirectionDot < 0.5f)
-		// {
-		// 	FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
-		// 	FVector MuzzleEndTrace = OutSpawnOrigin;
-		// 	if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
-		// 	{
-		// 		bWeaponPenetration = true;
-		// 	}
-		// }
+		if (const float DirectionDot = FVector::DotProduct(AdjustedDir, OutVelocity); DirectionDot < 0.0f)
+		{
+			bWeaponPenetration = true;
+		}
+		else if (DirectionDot < 0.5f)
+		{
+			FVector MuzzleStartTrace = OutSpawnOrigin - GetRaycastOriginRotation() * 25.0f;
+			FVector MuzzleEndTrace = OutSpawnOrigin;
+			if (FHitResult MuzzleImpact = WeaponTrace(MuzzleStartTrace, MuzzleEndTrace, ShouldLineTrace(), RaycastCircleRadius); MuzzleImpact.bBlockingHit)
+			{
+				bWeaponPenetration = true;
+			}
+		}
 
 		if (bWeaponPenetration)
 		{
@@ -86,8 +86,10 @@ ABaseOverlapProjectile* AProjectileWeapon::Internal_SpawnProjectile(const FVecto
 		Projectile->InitVelocity(RotatedVelocity);
 		Projectile->SetLifeSpan(ProjectileLife);
 		Projectile->AddAdditionalEffectsToApply(Internal_GetAdditionalEffectsToApplyToProjectile());
+		Projectile->SetInstigator(OwningPawn);
 		Projectile->IgnoreActor(this);
-		Projectile->IgnoreActor(GetInstigator());
+		Projectile->SetOwner(OwningPawn);
+		Projectile->IgnoreActor(OwningPawn);
 		for(AActor* TempActor : GetActorsToIgnoreCollision())
 		{
 			Projectile->IgnoreActor(TempActor);

@@ -11,11 +11,19 @@ void UUIUWInteractDisplay::HandleNewInteractEvent(const FNewActorTargetedPayload
 {
 	if(NewActorTargetedPayload.NewlyTargetedActor)
 	{
-		ShowInteractDisplay();
-		K2_HandleNewInteract(NewActorTargetedPayload.NewlyTargetedActor->GetInteractionText());
+		if(UGameplayTagUtils::ActorHasGameplayTag(GetOwningPlayerPawn(), TAG_STATE_MAIN_MENU))
+		{
+			return;
+		}
+		if(NewActorTargetedPayload.NewlyTargetedActor->GetInteractionText() != "")
+		{
+			ShowInteractDisplay();
+			K2_HandleNewInteract(NewActorTargetedPayload.NewlyTargetedActor->GetInteractionText());	
+		}
 	} else
 	{
 		HideInteractDisplay();
+		K2_HandleNewInteract("");	
 	}
 }
 

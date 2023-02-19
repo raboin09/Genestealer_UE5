@@ -195,6 +195,7 @@ protected:
 	virtual bool GL_IsRightMovementAllowed(float Value) override;
 	virtual void GL_HandleFireAction(bool bValue) override;
 	virtual void GL_HandleReloadAction() override;
+	UFUNCTION(BlueprintCallable)
 	virtual void GL_HandleCoverDodgeAction() override;
 	virtual void GL_HandleAimAction(bool bValue) override;
 	virtual void GL_HandleSprintAction(bool bValue) override;

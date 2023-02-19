@@ -57,8 +57,9 @@ public:
 	void HandleStatsEvent(EStatsEvent Event, float Modifier = 1.f, AActor* NonPlayerActorInstigator = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE FPlayerStats GetPlayerStats() const { return PlayerStats; }
+	FORCEINLINE FPlayerStats& GetPlayerStats() { return PlayerStats; }
 
 private:
+	UPROPERTY()
 	FPlayerStats PlayerStats;
 };

@@ -74,6 +74,7 @@ void UInventoryComponent::Internal_SpawnWeaponFromClass(TSubclassOf<AActor> Weap
 	if(WeaponClass && WeaponClass->ImplementsInterface(UWeapon::StaticClass()))
 	{
 		AActor* SpawnedWeapon = UWorldUtils::SpawnActorToWorld_Deferred<AActor>(this, WeaponClass);
+		SpawnedWeapon->SetInstigator(Cast<ACharacter>(GetOwner()));
 		if(const TScriptInterface<IWeapon> NewWeapon = SpawnedWeapon)
 		{
 			NewWeapon->SetOwningPawn(Cast<ACharacter>(GetOwner()));

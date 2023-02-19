@@ -65,7 +65,12 @@ void ABaseHUD::HandleNewActorTargeted(const FNewActorTargetedPayload& NewActorTa
 
 void ABaseHUD::HandlePlayerAimingChanged(const FPlayerAimingChangedPayload& PlayerAimingChangedPayload)
 {
-	bShouldDrawCrosshair = PlayerAimingChangedPayload.bIsAiming;
+	bool bPawnIsNotPaused = true;
+	if(Controller)
+	{
+		bPawnIsNotPaused = !UGameplayTagUtils::ActorHasGameplayTag(Controller->PlayerCharacter, TAG_STATE_MAIN_MENU);
+	}
+	bShouldDrawCrosshair = PlayerAimingChangedPayload.bIsAiming && bPawnIsNotPaused;
 	CurrentCrosshair = PlayerAimingChangedPayload.CrosshairTexture;
 	CrosshairDrawSize = PlayerAimingChangedPayload.CrosshairSize;
 }

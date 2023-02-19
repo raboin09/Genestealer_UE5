@@ -454,10 +454,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "ALS|Input")
 	EALSStance DesiredStance = EALSStance::Standing;
 
-	UPROPERTY(EditDefaultsOnly, Category = "ALS|Input", BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ALS|Input")
 	float LookUpDownRate = 1.25f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "ALS|Input", BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ALS|Input")
 	float LookLeftRightRate = 1.25f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ALS|Input", BlueprintReadOnly)
